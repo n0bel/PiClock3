@@ -19,3 +19,6 @@ It is based on python3 and PyQt5.   It is also much more modular and less monoli
 At this point, this project is a placeholder for development of PiClock3, and no
 releases or previews are completed.   For something useful that works use the
 original PiClock (https://github.com/n0bel/PiClock)  It is still being updated.
+
+I'll be commiting many partially complete commits here as an easy means to
+distribute code my PiClocks for testing.
