@@ -1,0 +1,14 @@
+module: PiClock3.WeatherCommon
+refresh: 10
+icons-base-folder: '{plugin-folder}'
+icons-folder: 'icons-lightblue'
+color: '{styles.default.color}'
+units:
+  temperature: F    # F,C
+  length: in        # in, mm, cm
+  speed: mph        # mph, kph, mps, km/h, m/s
+  direction: dir    # dir, deg
+  rate: in/hr       # in/hr, mm/hr, cm/hr
+  pressure: in      # in, mb, mm, hPa
+
+  

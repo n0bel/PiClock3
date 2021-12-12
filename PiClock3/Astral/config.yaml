@@ -1,0 +1,6 @@
+module: PiClock3.Astral
+block: bottom-line
+format: "{language.sunrise} {plugin-data.sunrise:%H:%M} {language.sunset} {plugin-data.sunset:%H:%M} {language.moon_phase} {plugin-data.moonphase}"
+location:
+    lattitude: "{location.lattitude}"
+    longitude: "{location.longitude}"

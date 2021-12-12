@@ -24,9 +24,17 @@ I'll be commiting many partially complete commits here as an easy means to
 distribute code my PiClocks for testing.
 
 No detailed instructions have been created.  Basic information follows.
+
 PiOS as of 2021-10-30 (bullseye)
-pip3 install PyQt5
-pip3 install astral
-pip3 install pyyaml
-pip3 install pyyaml-include
+```
+sudo apt install python3-pyqt5
+sudo apt install python3-yaml
+sudo pip3 install pyyaml-include
+sudo pip3 install astral
+git clone https://github.com/n0bel/PiClock3.git
+cd PiClock3
+cp Config-Example.yaml Config.yaml
+cp ApiKeys-Example.yaml ApiKeys.yaml
+python3 PyQtPiClock3.py
+```
 
