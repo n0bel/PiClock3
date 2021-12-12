@@ -1,0 +1,42 @@
+styles:
+  background-color: transparent
+blocks:
+  maps-background:
+    type: label
+    width: 1
+    height: 1.0
+    casecade: false
+    background-image: "{folders.image}/clockbackground-chris.png"
+    styles:
+      background-color: transparent
+  maps-radar1:
+    order: 2
+    type: frame
+    width: .4
+    height: .8
+    top: 0.05
+    left: 0.05
+    styles:
+      background-color: "#444"
+  maps-radar2:
+    order: 2
+    type: frame
+    width: .4
+    height: .8
+    top: 0.05
+    left: 0.55
+    styles:
+      background-color: "#444"
+  maps-bottom-line:
+    order: 3
+    type: label
+    width: 1.0
+    height: .05
+    bottom: 0.0
+    left: 0.0
+    text: Maps Bottom Line
+    styles:
+      color: white
+      background-color: transparent
+      font-size: 0.75
+      qproperty-alignment: AlignLeft

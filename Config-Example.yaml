@@ -1,0 +1,38 @@
+pages:
+  clock-page: !include ClockPage.yaml
+  clock-page--:
+    order: 0
+  maps-page: !include MapsPage.yaml
+  maps-page--:
+    order: 1
+
+styles:
+  default:
+    font-size: 12px
+    background-color: grey
+    color: '#bef'
+
+language: !include PiClock3/Language-en.yaml
+locale:
+location:
+  lattitude: 45
+  longitude: -93
+
+plugins:
+  clock: !include PiClock3/AnalogClock/config.yaml
+#  clock: !include PiClock3/DigitalClock/config.yaml
+  astral: !include PiClock3/Astral/config.yaml
+  weather-common: !include PiClock3/WeatherCommon/config.yaml
+  current-conditions: !include PiClock3/Metar/config.yaml
+  current-conditions--:
+    METAR: KLVN
+  date: !include PiClock3/Date/config.yaml
+
+folders:
+  image: PiClock3/images
+  marker: PiClock3/markers
+  icon: icons-lightblue
+
+logging-level: debug
+
+#apikeys: !include ApiKeys.yaml

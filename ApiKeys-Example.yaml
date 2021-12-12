@@ -1,0 +1,7 @@
+
+googleapi: 'GOOGLEAPIKEY'
+#dsapi: 'DARKSKYAPIKEY'
+mbapi: 'MAPBOXAPIKEY'
+owmapi: 'OPENWEATHERMAPAPIKEY'
+#ccapi: 'CLIMACELLV4APIKEY'
+

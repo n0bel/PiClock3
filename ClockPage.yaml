@@ -1,0 +1,193 @@
+styles:
+  background-color: transparent
+blocks:
+  clock-background:
+    type: frame
+    width: 1.0
+    height: 1.0
+    background-image: "{folders.image}/clockbackground-kevin.png"
+    styles:
+      background-color: transparent
+  clock-face:
+    type: frame
+    order: 1
+    width: 0.5
+    aspect: 1.0
+    horizontal-center: 0.0
+    vertical-center: 0.0
+  forecast:
+    order: 2
+    type: frame
+    width: 0.2
+    height: 1.0
+    top: 0.0
+    right: 0.0
+    style-cascade: false
+    blocks:
+      forecast-hourly-1:
+        order: 1
+        type: frame
+        width: 1.0
+        height: 0.111119
+        top: 0.0
+        right: 0.0
+        styles:
+          border-image: "url({folders.image}/bb2.png) 5 5 10 5"
+          padding: 20px
+          font-size: 0.3
+      forecast-hourly-2:
+        order: 2
+        type: frame
+        width: 1.0
+        height: 0.111119
+        top: 0.111111
+        right: 0.0
+        styles:
+          border-image: "url({folders.image}/bb2.png) 10 5 10 5 "
+      forecast-hourly-3:
+        order: 3
+        type: frame
+        width: 1.0
+        height: 0.111119
+        top: 0.222222
+        right: 0.0
+        styles:
+          border-image: "url({folders.image}/bb2.png) 10 5 10 5 "
+      forecast-daily-1:
+        order: 3
+        type: frame
+        width: 1.0
+        height: 0.111119
+        top: 0.333333
+        right: 0.0
+        styles:
+          border-image: "url({folders.image}/bb2.png) 10 5 10 5 "
+      forecast-daily-2:
+        order: 3
+        type: frame
+        width: 1.0
+        height: 0.111119
+        top: 0.444444
+        right: 0.0
+        styles:
+          border-image: "url({folders.image}/bb2.png) 10 5 10 5 "
+      forecast-daily-3:
+        order: 3
+        type: frame
+        width: 1.0
+        height: 0.111119
+        top: 0.555555
+        right: 0.0
+        styles:
+          border-image: "url({folders.image}/bb2.png) 10 5 10 5 "
+      forecast-daily-4:
+        order: 3
+        type: frame
+        width: 1.0
+        height: 0.111119
+        top: 0.666666
+        right: 0.0
+        styles:
+          border-image: "url({folders.image}/bb2.png) 10 5 10 5 "
+      forecast-daily-5:
+        order: 3
+        type: frame
+        width: 1.0
+        height: 0.111119
+        top: 0.777777
+        right: 0.0
+        styles:
+          border-image: "url({folders.image}/bb2.png) 10 5 10 5 "
+      forecast-daily-6:
+        order: 3
+        type: frame
+        width: 1.0
+        height: 0.111119
+        top: 0.888888
+        right: 0.0
+        styles:
+          border-image: "url({folders.image}/bb2.png) 10 5 5 5 "
+  current:
+    order: 2
+    type: frame
+    width: 0.2
+    height: 0.3333
+    top: 0.0
+    left: 0.0
+  clock-radar1-frame:
+    order: 2
+    type: frame
+    width: 0.2
+    height: 0.333339
+    top: 0.333333
+    left: 0.0
+    blocks:
+      clock-radar1:
+        type: frame
+        order: 2
+        type: frame
+        width: .97
+        height: .985
+        horizontal-center: 0.0
+        vertical-center: 0.0
+        styles:
+          background-color: "#444"
+      clock-radar1-border:
+        order: 2
+        type: frame
+        width: 1.0
+        height: 1.0
+        horizontal-center: 0.0
+        vertical-center: 0.0
+        styles:
+          border-image: "url({folders.image}/bb1.png) 5 5 10 5"
+  clock-radar2-frame:
+    order: 2
+    type: frame
+    width: 0.2
+    height: 0.333333
+    top: 0.666666
+    left: 0.0
+    blocks:
+      clock-radar2:
+        type: frame
+        order: 2
+        type: frame
+        width: .97
+        height: .985
+        horizontal-center: 0.0
+        vertical-center: 0.0
+        styles:
+          background-color: "#444"
+      clock-radar2-border:
+        order: 2
+        type: frame
+        width: 1.0
+        height: 1.0
+        horizontal-center: 0.0
+        vertical-center: 0.0
+        styles:
+          border-image: "url({folders.image}/bb1.png) 10 5 5 5"
+  top-line:
+    order: 3
+    type: label
+    width: 1.0
+    height: 0.1
+    top: 0.0
+    left: 0.0
+    styles:
+      color: '{styles.default.color}'
+      font-size: 0.75
+      qproperty-alignment: AlignCenter
+  bottom-line:
+    order: 3
+    type: label
+    width: 1.0
+    height: 0.1
+    bottom: 0.0
+    left: 0.0
+    styles:
+      color: '{styles.default.color}'
+      font-size: 0.5
+      qproperty-alignment: AlignCenter
+

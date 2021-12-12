@@ -1,0 +1,17 @@
+pressure: Pressure
+humidity: Humidity
+wind: Wind
+gusting: Gusting
+feels_like: Feels Like
+sunrise: Sunrise
+sunset: Sunset
+moon_phase: Moon Phase
+new_moon: New Moon
+waning_crecent: Waning Crecent
+last_quarter: Last Quarter
+waning_gibbous: Waning Gibbous
+full_moon: Full Moon
+waxing_gibbous: Waxing Gibbous
+first_quarter: First Quarter
+waxing_crecent: Waxing Crecent
+        

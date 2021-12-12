@@ -16,9 +16,17 @@ blog http://n0bel.net/v1/index.php/projects/raspberry-pi-clock
 PiClock3 is a complete rewrite of PiClock (https://github.com/n0bel/PiClock).
 It is based on python3 and PyQt5.   It is also much more modular and less monolithic.
 
-At this point, this project is a placeholder for development of PiClock3, and no
-releases or previews are completed.   For something useful that works use the
-original PiClock (https://github.com/n0bel/PiClock)  It is still being updated.
+At this point, this is a rough preview of the direction being taken for PiClock3.
+For something useful that works use the original PiClock (https://github.com/n0bel/PiClock)
+It is still being updated.
 
 I'll be commiting many partially complete commits here as an easy means to
 distribute code my PiClocks for testing.
+
+No detailed instructions have been created.  Basic information follows.
+PiOS as of 2021-10-30 (bullseye)
+pip3 install PyQt5
+pip3 install astral
+pip3 install pyyaml
+pip3 install pyyaml-include
+
