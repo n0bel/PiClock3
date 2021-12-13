@@ -20,6 +20,8 @@ At this point, this is a rough preview of the direction being taken for PiClock3
 For something useful that works use the original PiClock (https://github.com/n0bel/PiClock)
 It is still being updated.
 
+On-going updates to this will be https://github.com/n0bel/PiClock/issues/230 
+
 I'll be commiting many partially complete commits here as an easy means to
 distribute code my PiClocks for testing.
 
@@ -31,6 +33,9 @@ sudo apt install python3-pyqt5
 sudo apt install python3-yaml
 sudo pip3 install pyyaml-include
 sudo pip3 install astral
+sudo pip3 install tzlocal
+sudo pip3 install compassheadinglib
+sudo pip3 install metar
 git clone https://github.com/n0bel/PiClock3.git
 cd PiClock3
 cp Config-Example.yaml Config.yaml
