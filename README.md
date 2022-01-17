@@ -43,3 +43,30 @@ cp ApiKeys-Example.yaml ApiKeys.yaml
 python3 PyQtPiClock3.py
 ```
 
+### Currently Completed Plugins
+* Clock (Analog, Digital plugins)
+* Sunrise/sunset/moonphase (Astral plugin)
+* Date at the top (Date plugin)
+* Current conditions (METAR plugin only)
+
+### Work In progress (my local commits too buggy to release)
+* Radar Plugin (via RainViewer)
+* Google Maps Plugin (for radar background)
+* Mapbox Maps Plugin (for radar background)
+
+### Remaining To DO
+* Forecast Plugins
+  * Open Weather Map
+  * DarkSky
+  * Climacell
+  * Open-Meteo
+* Current Condions Plugin
+  * Open Weather Map
+  * Dark Sky
+  * ClimaCell
+  * Open-Meteo
+
+
+I'll welcome any contributions.
+
+
