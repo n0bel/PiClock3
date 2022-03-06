@@ -26,11 +26,9 @@ class Date(Plugin):
         self.lastDay = -1
 
     def start(self):
-        timer = QTimer()
-        timer.timeout.connect(self.doDate)
-        timer.start(1000)
-
-        self.doDate()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.doDate)
+        self.timer.start(1000)
 
     def pageChange(self):
         return
