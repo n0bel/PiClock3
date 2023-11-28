@@ -1,12 +1,10 @@
-import os
-import sys
-import logging
 import logging.handlers
-
-from PiClock3.PiClock3 import PiClock3
-from PiClock3.Config import Config
+import sys
 
 from PyQt5.QtWidgets import QMessageBox, QApplication
+
+from PiClock3.Config import Config
+from PiClock3.PiClock3 import PiClock3
 
 
 class LogHandler(logging.handlers.RotatingFileHandler):

@@ -1,27 +1,16 @@
-import os
-import sys
-import time
-import yaml
-from yamlinclude import YamlIncludeConstructor
-import logging
-import logging.handlers
-import queue
-import datetime
-import re
 import importlib
 import inspect
-from .DottedDict import DottedDict
-from .Config import Config
-from .Plugin import Plugin
+import logging
+import logging.handlers
+import os
 
-from PyQt5 import (QtGui, QtNetwork)
-from PyQt5.QtCore import (QObject, QThread, pyqtSlot, pyqtSignal, Qt, QRect,
+from PyQt5 import (QtNetwork)
+from PyQt5.QtCore import (Qt, QRect,
                           QSize)
-from PyQt5.QtWidgets import (QWidget, QLabel, QMessageBox, QListWidget,
-                             QPushButton, QApplication, QTableWidget,
-                             QGridLayout, QListWidgetItem, QTableWidgetItem,
-                             QLineEdit, QFrame)
-from PyQt5.QtGui import (QIcon, QIntValidator)
+from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
+
+from .DottedDict import DottedDict
+from .Plugin import Plugin
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +30,7 @@ class PiClock3(QWidget):
         self.config = config
         super().__init__()
         self.screen = QApplication.desktop().screenGeometry()
-        logging.info("%s" % (self.screen))
+        logging.info("%s" % self.screen)
         self.initData()
         self.initWidgets()
         self.showFullScreen()
@@ -135,7 +124,7 @@ class PiClock3(QWidget):
                 page.setVisible(False)
         logging.debug("Current %s Max %s" % (current, count))
         current = (current + n) % count
-        logging.debug("new Current %s" % (current))
+        logging.debug("new Current %s" % current)
         for pageName in self.pages:
             page = self.pages[pageName]
             if page.pageNumber == current:
@@ -163,14 +152,14 @@ class PiClock3(QWidget):
 
         if 'background-image' in page:
             styleString += " border-image: url(" + \
-                self.expand(page['background-image']) + \
-                ") 0 0 0 0 stretch stretch;"
+                           self.expand(page['background-image']) + \
+                           ") 0 0 0 0 stretch stretch;"
 
         if 'styles' in page:
             for sty in page.styles:
                 styleString += " " + sty + ": " + \
-                    self.expand(str(page.styles[sty])) + ';'
-        # redo font size if it is a bare number and size of parent was passed
+                               self.expand(str(page.styles[sty])) + ';'
+            # redo font size if it is a bare number and size of parent was passed
             if 'font-size' in page.styles and isinstance(size, QSize):
                 fs = str(page.styles['font-size'])
                 if fs.replace('.', '', 1).replace('-', '', 1).isnumeric():
@@ -228,7 +217,7 @@ class PiClock3(QWidget):
                             % (blockName, type))
         blockWidget.setObjectName(blockName)
         geometry = self._calcGeometry(parent, block)
-        logging.debug("Block Geometry: %s" % (geometry))
+        logging.debug("Block Geometry: %s" % geometry)
         blockWidget.setGeometry(geometry)
         styleString = self._buildFullStyleString(
             blockName, block, blockWidget.size()
@@ -236,7 +225,7 @@ class PiClock3(QWidget):
         logging.debug("Block Style " + styleString)
         blockWidget.setStyleSheet(styleString)
         if 'text' in block:
-            logger.debug("Block Text: %s" % (block.text))
+            logger.debug("Block Text: %s" % block.text)
             blockWidget.setText(block.text)
         blockWidget.blockName = blockName
         blockWidget.blockType = type
@@ -285,7 +274,7 @@ class PiClock3(QWidget):
         if 'bottom' in block:
             top = parentHeight - parentHeight * block.bottom - height
 
-        return QRect(left, top, width, height)
+        return QRect(int(left), int(top), int(width), int(height))
 
 
 class LogHandler(logging.handlers.RotatingFileHandler):

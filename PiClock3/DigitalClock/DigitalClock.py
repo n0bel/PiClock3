@@ -1,15 +1,12 @@
+import datetime
 import logging
 
-import time
-import datetime
-import locale
-import os
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QLabel, QGraphicsDropShadowEffect
+
 from ..Plugin import Plugin
 
-from PyQt5 import QtGui, QtNetwork
-from PyQt5.QtGui import QPixmap, QMovie, QBrush, QColor, QPainter, QTransform
-from PyQt5.QtCore import Qt, QUrl, QTimer, QSize, QRect, QBuffer, QIODevice, QByteArray
-from PyQt5.QtWidgets import QFrame, QLabel, QGraphicsDropShadowEffect
 logger = logging.getLogger(__name__)
 
 
@@ -17,6 +14,11 @@ class DigitalClock(Plugin):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
+        self.ctimer = None
+        self.lasttimestr = None
+        self.glow = None
+        self.clockrect = None
+        self.clockface = None
 
     def fontCalc(self, size):
         return "%dpx" % (float(size) * self.block.frameRect().height())

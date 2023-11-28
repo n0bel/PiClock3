@@ -1,22 +1,15 @@
-import logging
-
-import time
 import datetime
-import locale
-import os
+import logging
 import random
+
 import tzlocal
+from PyQt5 import QtGui
+from PyQt5.QtCore import Qt, QUrl, QTimer
+from PyQt5.QtNetwork import QNetworkRequest
+from PyQt5.QtWidgets import QLabel
+from metar import Metar as MetarModule
 
 from ..Plugin import Plugin
-
-from PyQt5 import QtGui, QtNetwork
-from PyQt5.QtGui import QPixmap, QMovie, QBrush, QColor, QPainter, QTransform
-from PyQt5.QtCore import Qt, QUrl, QTimer, QSize, QRect, QBuffer, QIODevice, QByteArray
-from PyQt5.QtWidgets import QFrame, QLabel, QGraphicsDropShadowEffect
-from PyQt5.QtNetwork import QNetworkReply
-from PyQt5.QtNetwork import QNetworkRequest
-
-from metar import Metar as MetarModule
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +20,6 @@ class TimeZoneUTC(datetime.tzinfo):
 
 
 class Metar(Plugin):
-
     metar_cond = [
         ('CLR', '', '', 'Clear', 'clear-day', 0),
         ('NSC', '', '', 'Clear', 'clear-day', 0),
@@ -79,12 +71,22 @@ class Metar(Plugin):
         ('IC', '', '', 'Ice Crystals', 'snow', 13),
         ('PL', '', '', 'Ice Pellets', 'snow', 13),
 
-        ('GR', '', '+', 'Heavy Hail', 'thuderstorm', 14),
-        ('GR', '', '', 'Hail', 'thuderstorm', 14),
+        ('GR', '', '+', 'Heavy Hail', 'thunderstorm', 14),
+        ('GR', '', '', 'Hail', 'thunderstorm', 14),
     ]
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
+        self.metarreply = None
+        self.timer = None
+        self.wdate = None
+        self.feelslike = None
+        self.wind = None
+        self.humidity = None
+        self.pressure = None
+        self.temper = None
+        self.wxdesc = None
+        self.wxicon = None
         self.wxconfig = self.piclock.config.plugins['weather-common']
         self.wxcommon = piclock.plugins['weather-common']
 
@@ -216,7 +218,7 @@ class Metar(Plugin):
         y = rr.top() + int(rr.height() * .95)
         self.wdate.setGeometry(x, y, w, h)
 
-        #self.clockrect = self.block.frameRect()
+        # self.clockrect = self.block.frameRect()
         # self.w.setGeometry(self.clockrect)
         # self.w.setStyleSheet(
         #    "#w { background-color: transparent; " +
@@ -228,10 +230,10 @@ class Metar(Plugin):
         #
         # self.wx
 
-        timer = QTimer()
-        timer.timeout.connect(self.getMetar)
-        timer.start(1000 * self.wxconfig['refresh'] *
-                    60 + random.uniform(1000, 10000))
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.getMetar)
+        self.timer.start(int(1000 * self.wxconfig['refresh'] *
+                             60 + random.uniform(1000, 10000)))
 
         self.getMetar()
         logging.info("startup finished %s %s", self.name, self.module)
@@ -242,7 +244,7 @@ class Metar(Plugin):
     def getMetar(self):
         logging.info("getMetar")
         metarurl = "https://tgftp.nws.noaa.gov/data/observations/metar/stations/" + \
-            self.config.METAR + ".TXT"
+                   self.config.METAR + ".TXT"
         logging.info("metar url %s", metarurl)
         r = QUrl(metarurl)
         r = QNetworkRequest(r)
@@ -256,7 +258,7 @@ class Metar(Plugin):
             if wxline.startswith(self.config.METAR):
                 wxstr = wxline
         logging.info('wxmetar: %s', wxstr)
-        f = MetarModule.Metar(wxstr)
+        f = MetarModule.Metar(wxstr, strict=False)
         logging.info("metardata %s", f)
         dt = f.time.replace(
             tzinfo=TimeZoneUTC()).astimezone(
@@ -312,11 +314,12 @@ class Metar(Plugin):
                               self.wxcommon.units('pressure', 'mb', f.press.value('MB')))
         self.humidity.setText(self.piclock.language('humidity') + ' ' +
                               self.wxcommon.humidity(f.temp.value('C'), f.dewpt.value('C')))
-        ws = (self.piclock.language('wind') + ' ' +
-              self.wxcommon.units('direction', 'deg', f.wind_dir.value()) + ' ' +
-              self.wxcommon.units('speed', 'kph', f.wind_speed.value('KMH')))
+        ws = self.piclock.language('wind')
+        if f.wind_dir:
+            ws += ' ' + self.wxcommon.units('direction', 'deg', f.wind_dir.value())
+        ws += ' ' + self.wxcommon.units('speed', 'kph', f.wind_speed.value('KMH'))
         if f.wind_gust:
-            ws += (self.piclock.language('gusting') + ' ' +
+            ws += (' ' + self.piclock.language('gusting') + ' ' +
                    self.wxcommon.units('speed', 'kph', f.wind_speed.value('KMH')))
         self.wind.setText(ws)
         self.feelslike.setText(self.piclock.language('feels_like') + ' ' +
