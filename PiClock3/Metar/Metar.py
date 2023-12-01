@@ -310,8 +310,9 @@ class Metar(Plugin):
                 'temperature',
                 'C',
                 f.temp.value('C')))
-        self.pressure.setText(self.piclock.language('pressure') + ' ' +
-                              self.wxcommon.units('pressure', 'mb', f.press.value('MB')))
+        if f.press:
+            self.pressure.setText(self.piclock.language('pressure') + ' ' +
+                                  self.wxcommon.units('pressure', 'mb', f.press.value('MB')))
         self.humidity.setText(self.piclock.language('humidity') + ' ' +
                               self.wxcommon.humidity(f.temp.value('C'), f.dewpt.value('C')))
         ws = self.piclock.language('wind')
