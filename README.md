@@ -27,7 +27,7 @@ distribute code my PiClocks for testing.
 
 No detailed instructions have been created.  Basic information follows.
 
-1. On GitHub.com, navigate to the main page of the repository: [PiClock3](../)
+1. On GitHub.com, navigate to the main page of the repository: [PiClock3](./)
 2. Above the list of files, click the **< > Code** button.
 3. Copy the HTTPS URL for the repository. It'll look something like this:
 https://github.com/USERNAME/PiClock3.git
