@@ -1,19 +1,13 @@
+import datetime
 import logging
 
-import time
-import datetime
-import locale
-import os
-import random
 import tzlocal
+from PyQt5.QtCore import QTimer
+from astral import LocationInfo
+from astral import moon
+from astral.sun import sun
 
 from ..Plugin import Plugin
-
-from astral import LocationInfo
-from astral.sun import sun
-from astral import moon
-
-from PyQt5.QtCore import QTimer
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +42,7 @@ class Plugin(Plugin):
             return
 
         locationInfo = LocationInfo('here', 'here',
-                                    tzlocal.get_localzone().zone,
+                                    tzlocal.get_localzone_name(),
                                     self.piclock.expand(
                                         self.config.location.lattitude),
                                     self.piclock.expand(self.config.location.longitude))
@@ -61,7 +55,7 @@ class Plugin(Plugin):
         self.pluginData['moonphase'] = self.piclock.language(
             self.phaseWords(m))
         self.pluginData['moonage'] = m
-        #self.pluginData['sunrise'] = s['sunrise']
+        # self.pluginData['sunrise'] = s['sunrise']
         ds = self.piclock.expand(self.config.format)
         self.block.setText(ds)
 

@@ -1,15 +1,10 @@
-import logging
-
-import time
 import datetime
 import locale
-import os
-import random
-import tzlocal
-
-from ..Plugin import Plugin
+import logging
 
 from PyQt5.QtCore import QTimer
+
+from ..Plugin import Plugin
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +18,7 @@ class Date(Plugin):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
+        self.timer = None
         self.lastDay = -1
 
     def start(self):
@@ -48,11 +44,11 @@ class Date(Plugin):
 
         # date
         sup = 'th'
-        if (now.day == 1 or now.day == 21 or now.day == 31):
+        if now.day == 1 or now.day == 21 or now.day == 31:
             sup = 'st'
-        if (now.day == 2 or now.day == 22):
+        if now.day == 2 or now.day == 22:
             sup = 'nd'
-        if (now.day == 3 or now.day == 23):
+        if now.day == 3 or now.day == 23:
             sup = 'rd'
         if 'locale' in self.config:
             sup = ""

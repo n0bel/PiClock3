@@ -1,0 +1,5 @@
+tzlocal>=5.2
+metar>=1.11.0
+astral>=3.2
+pyyaml-include>=1.3.1
+compassheadinglib>=2021.1.7
