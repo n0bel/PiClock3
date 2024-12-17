@@ -1,18 +1,4 @@
 # PiClock3
-A Fancy Clock built around a monitor and a Raspberry Pi and Python3 + PyQt5
-
-![PiClock Picture](https://raw.githubusercontent.com/n0bel/PiClock/master/Pictures/20150307_222711.jpg)
-
-This project started out as a way to waste a Saturday afternoon.
-I had a Raspberry Pi and an extra monitor and had just taken down an analog
-clock from my living room wall. I was contemplating getting a radio synced
-analog clock to replace it, so I didn't have to worry about it being accurate.
-
-But instead the PiClock was born.
-
-The early days and evolution of it are chronicled on my
-blog http://n0bel.net/v1/index.php/projects/raspberry-pi-clock
-
 PiClock3 is a complete rewrite of PiClock (https://github.com/n0bel/PiClock).
 It is based on Python3 and PyQt5.  It is also much more modular and less monolithic.
 
