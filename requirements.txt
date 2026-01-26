@@ -1,4 +1,4 @@
-tzlocal~=5.1
+tzlocal~=5.3
 metar~=1.11.0
 astral~=3.2
 pyyaml-include~=1.3.1
