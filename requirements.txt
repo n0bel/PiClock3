@@ -1,5 +1,5 @@
 tzlocal~=5.3
-metar~=1.11.0
+metar~=2.0.1
 astral~=3.2
 pyyaml-include~=2.2.0
 compassheadinglib~=2026.1.22
