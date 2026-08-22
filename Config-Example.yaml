@@ -28,6 +28,71 @@ plugins:
     METAR: KLVN
   date: !include PiClock3/Date/config.yaml
 
+  # base map under the radar - needs a key in ApiKeys.yaml
+  mapbox: !include PiClock3/Mapbox/config.yaml
+  googlemaps: !include PiClock3/GoogleMaps/config.yaml
+
+  # radar tiles.  librewxr needs no key and has no zoom cap;
+  # rainviewer is the same plugin pointed at a different index.
+  librewxr: !include PiClock3/RainViewer/config.yaml
+  librewxr--:
+    index: https://api.librewxr.net/public/weather-maps.json
+  rainviewer: !include PiClock3/RainViewer/config.yaml
+
+  radar1: !include PiClock3/Radar/config.yaml
+  radar1--:
+    block: clock-radar1
+    base-provider: mapbox
+    radar-provider: librewxr
+    zoom: 7
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          lattitude: '{location.lattitude}'
+          longitude: '{location.longitude}'
+        color: red
+        size: large
+        image: teardrop-home
+
+  radar2: !include PiClock3/Radar/config.yaml
+  radar2--:
+    block: clock-radar2
+    base-provider: mapbox
+    radar-provider: librewxr
+    zoom: 11
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          lattitude: '{location.lattitude}'
+          longitude: '{location.longitude}'
+        color: green
+        size: medium
+        image: teardrop-home
+
+  radar3: !include PiClock3/Radar/config.yaml
+  radar3--:
+    block: maps-radar1
+    base-provider: mapbox
+    radar-provider: librewxr
+    zoom: 7
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+
+  radar4: !include PiClock3/Radar/config.yaml
+  radar4--:
+    block: maps-radar2
+    base-provider: mapbox
+    radar-provider: librewxr
+    zoom: 11
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+
 folders:
   image: PiClock3/images
   marker: PiClock3/markers
@@ -35,4 +100,4 @@ folders:
 
 logging-level: debug
 
-#apikeys: !include ApiKeys.yaml
+apikeys: !include ApiKeys.yaml

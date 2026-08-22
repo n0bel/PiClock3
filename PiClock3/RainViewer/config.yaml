@@ -1,5 +1,5 @@
 module: PiClock3.RainViewer
-index: https://api.librewxr.net/public/weather-maps.json
+index: https://api.rainviewer.com/public/weather-maps.json
 color: 6
 smooth: 1
 snow: 1

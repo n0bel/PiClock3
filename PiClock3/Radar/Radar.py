@@ -105,7 +105,8 @@ class Radar(Plugin):
         #                 self.mkpixmap.height(), br)
         center = LatLng(float(self.piclock.expand(self.config.center.lattitude)),
                 float(self.piclock.expand(self.config.center.longitude)))
-        for marker in self.config.markers:
+        markers = self.config.markers if 'markers' in self.config else []
+        for marker in markers:
             if 'visible' not in marker or marker['visible'] == 1:
                 loc = LatLng(float(self.piclock.expand(marker["location"]["lattitude"])),
                              float(self.piclock.expand(marker["location"]["longitude"])))
