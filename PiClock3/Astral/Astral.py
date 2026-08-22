@@ -17,7 +17,7 @@ class TimeZoneUTC(datetime.tzinfo):
         return datetime.timedelta(hours=0, minutes=0)
 
 
-class Plugin(Plugin):
+class Astral(Plugin):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)

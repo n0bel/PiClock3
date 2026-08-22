@@ -34,7 +34,7 @@ class PiClock3(QWidget):
         self.initData()
         self.initWidgets()
         self.showFullScreen()
-
+        self.nextPage(0)
         logging.info("Startup Finished.")
 
     def keyPressEvent(self, event):
@@ -42,7 +42,7 @@ class PiClock3(QWidget):
             logging.info("F4 Quit")
             self.close()
         if event.key() == Qt.Key_Space:
-            self.nextFrame(1)
+            self.nextPage(1)
 
     def mousePressEvent(self, event):
         return
@@ -111,7 +111,7 @@ class PiClock3(QWidget):
         self.plugins[name] = instance
         instance.start()
 
-    def nextFrame(self, n):
+    def nextPage(self, n):
         current = -1
         count = 0
         for pageName in self.pages:
@@ -128,9 +128,17 @@ class PiClock3(QWidget):
         for pageName in self.pages:
             page = self.pages[pageName]
             if page.pageNumber == current:
-                logging.info("Setting page %s (%s) to visible"
+                logging.debug("Setting page %s (%s) to visible"
                              % (current, pageName))
                 page.setVisible(True)
+        for pluginName in self.plugins:
+            plugin = self.plugins[pluginName]
+            plugin.pageChange()
+            logger.debug("call pageChange %s", pluginName)
+            if hasattr(plugin, 'block'):
+                block = getattr(plugin, 'block')
+                if block != None:
+                    logger.debug(" plugin block visible: %s", block.isVisible())            
 
     def _buildStyleString(self, style):
         styleString = ''
