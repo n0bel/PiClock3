@@ -1,0 +1,3 @@
+module: PiClock3.Radar
+interval: 10
+frames: 7

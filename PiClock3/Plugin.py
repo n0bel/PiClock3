@@ -1,8 +1,9 @@
 import logging
 logger = logging.getLogger(__name__)
 
+from PyQt5.QtCore import (QObject)
 
-class Plugin(object):
+class Plugin(QObject):
 
     def __init__(self, piclock, name, config):
         super().__init__()

@@ -267,6 +267,7 @@ class Metar(Plugin):
         pri = -1
         weather = ''
         icon = ''
+        logging.info(repr(f.sky))
         for s in f.sky:
             for c in self.metar_cond:
                 if s[0] == c[0]:
@@ -316,7 +317,7 @@ class Metar(Plugin):
               self.wxcommon.units('direction', 'deg', f.wind_dir.value()) + ' ' +
               self.wxcommon.units('speed', 'kph', f.wind_speed.value('KMH')))
         if f.wind_gust:
-            ws += (self.piclock.language('gusting') + ' ' +
+            ws += (' ' + self.piclock.language('gusting') + ' ' +
                    self.wxcommon.units('speed', 'kph', f.wind_speed.value('KMH')))
         self.wind.setText(ws)
         self.feelslike.setText(self.piclock.language('feels_like') + ' ' +
