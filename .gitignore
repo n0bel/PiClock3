@@ -130,5 +130,9 @@ dmypy.json
 
 # my logs
 PyQtPiClock3.log*
-ApiKeys.yaml
+ApiKeys.yaml*
 /Config.yaml
+
+# installed plugins
+/plugins/*
+!/plugins/.gitkeep

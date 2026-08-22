@@ -8,6 +8,9 @@ from PiClock3.Config import Config
 
 from PyQt5.QtWidgets import QMessageBox, QApplication
 
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), 'plugins'))
+
 
 class LogHandler(logging.handlers.RotatingFileHandler):
     def __init__(self, *args, **kwargs):
