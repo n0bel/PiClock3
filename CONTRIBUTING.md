@@ -55,14 +55,69 @@ Please don't reformat code you aren't changing.  Optimize-imports and
 reformat-on-save turn a ten line fix into a two hundred line diff, and the ten
 lines get lost in it.
 
-## Python and OS
+## The floor
 
-Python 3.9 is the floor, which means Raspberry Pi OS Bullseye.  Older Pis that
-can't run that should stay on [PiClock 1](https://github.com/n0bel/PiClock),
-which is kept alive for exactly that reason.
+**Python 3.9, which means Raspberry Pi OS Bullseye.**  Older Pis that can't
+run that should stay on [PiClock 1](https://github.com/n0bel/PiClock), which
+is kept alive for exactly that reason.
 
-So no `match` statements and no `int | str` annotations.  Develop on whatever
-you like, but don't reach past 3.9 without saying so.
+A floor only means something if it is honored.  Ours has been broken twice
+without anyone deciding to break it, so it is worth being concrete.
+
+### The code
+
+No `match` statements, no `int | str` annotations.  Neither is needed here and
+both are 3.10.
+
+### Dependencies count too
+
+This is the one that catches people.  A version bump can raise the floor just
+as effectively as a language feature, and it does it silently — the code still
+looks fine, and it still runs on your machine.
+
+Real examples from this repo:
+
+* `tzlocal~=5.4` requires Python 3.10.  The code only needs
+  `get_localzone_name`, which arrived in 3.0.
+* `metar~=2.0.1` requires Python 3.10.  The code only needs `strict=`, which
+  has been there since 1.8.
+* `pyyaml-include~=2.2.0` renamed its module and broke `Config.py` outright.
+
+All three were merged without anyone running them.
+
+**Before adding or bumping a dependency, check its `requires_python`:**
+
+```
+pip index versions <package>
+```
+
+or look at the release on PyPI.  If it is above 3.9, either pin below it or
+say out loud that you are moving the floor.
+
+### Testing against it
+
+Developing on 3.12 and assuming is not testing.  Nothing about a newer
+interpreter will tell you what a 3.9 one does.
+
+At minimum, gate the syntax:
+
+```
+python -c "import ast,sys;[ast.parse(open(f,encoding='utf-8').read(),f,feature_version=(3,9)) for f in sys.argv[1:]]" $(git ls-files '*.py')
+```
+
+That catches `match` and nothing else, so it is a floor on the floor rather
+than a substitute for running it.
+
+Better, and what actually counts: run it on Python 3.9, or on a Bullseye Pi.
+`pip install --dry-run --python-version 3.9 --only-binary=:all: -r
+requirements.txt` will at least tell you whether the dependencies resolve
+there before you find out the hard way.
+
+### Moving the floor
+
+Sometimes it should move.  When it does, that is a decision with its own
+commit and its own reason — not a side effect of a version bump nobody read.
+Update this file and the README when it happens.
 
 ## AI assisted contributions
 
