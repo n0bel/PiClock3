@@ -1,5 +1,14 @@
-tzlocal~=5.4
-metar~=2.0.1
+# Python 3.9 (Raspberry Pi OS Bullseye) is the floor.
+# tzlocal 5.4 and metar 2.0 both require Python 3.10, and neither is needed:
+# get_localzone_name arrived in tzlocal 3.0, and metar has taken strict=
+# since 1.8.  Don't go past these without moving the floor on purpose.
+tzlocal>=3.0,<5.4
+metar>=1.11,<2.0
 astral~=3.2
 pyyaml-include~=2.2.0
 compassheadinglib~=2026.1.22
+
+# PyQt5 is deliberately not listed.  On a Pi install it with
+#   sudo apt install python3-pyqt5
+# pip would build Qt from source, which takes hours and usually runs out
+# of memory on a Pi.
