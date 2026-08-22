@@ -1,12 +1,11 @@
+import logging.handlers
 import os
 import sys
-import logging
-import logging.handlers
-
-from PiClock3.PiClock3 import PiClock3
-from PiClock3.Config import Config
 
 from PyQt5.QtWidgets import QMessageBox, QApplication
+
+from PiClock3.Config import Config
+from PiClock3.PiClock3 import PiClock3
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 'plugins'))

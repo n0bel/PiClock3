@@ -1,16 +1,12 @@
-import logging
-import time
 import datetime
 import locale
-import os
-import sys
+import logging
+
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QPixmap, QTransform
+from PyQt5.QtWidgets import QFrame, QLabel
 
 from ..Plugin import Plugin
-
-from PyQt5 import QtGui, QtNetwork
-from PyQt5.QtGui import QPixmap, QMovie, QBrush, QColor, QPainter, QTransform
-from PyQt5.QtCore import Qt, QUrl, QTimer, QSize, QRect, QBuffer, QIODevice, QByteArray
-from PyQt5.QtWidgets import QFrame, QLabel
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +15,19 @@ class Plugin(Plugin):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
+        self.ctimer = None
+        self.lastmin = None
+        self.secpixmap2 = None
+        self.secpixmap = None
+        self.minpixmap2 = None
+        self.minpixmap = None
+        self.hourpixmap2 = None
+        self.hourpixmap = None
+        self.sechand = None
+        self.minhand = None
+        self.hourhand = None
+        self.clockrect = None
+        self.clockface = None
 
     def start(self):
         self.clockface = QFrame(self.block)
@@ -74,9 +83,9 @@ class Plugin(Plugin):
 
     def tick(self):
         time_now = datetime.datetime.now()
-        if 'date-locale' in self.config:
+        if 'locale' in self.config:
             try:
-                locale.setlocale(locale.LC_TIME, Config.DateLocale)
+                locale.setlocale(locale.LC_TIME, self.config.locale)
             except BaseException:
                 pass
         angle = time_now.second * 6
@@ -91,8 +100,8 @@ class Plugin(Plugin):
         self.sechand.setPixmap(self.secpixmap2)
         ts = self.secpixmap2.size()
         self.sechand.setGeometry(
-            self.clockrect.center().x() - ts.width() / 2,
-            self.clockrect.center().y() - ts.height() / 2,
+            int(self.clockrect.center().x() - ts.width() / 2),
+            int(self.clockrect.center().y() - ts.height() / 2),
             ts.width(),
             ts.height()
         )
@@ -110,8 +119,8 @@ class Plugin(Plugin):
             self.minhand.setPixmap(minpixmap2)
             ts = minpixmap2.size()
             self.minhand.setGeometry(
-                self.clockrect.center().x() - ts.width() / 2,
-                self.clockrect.center().y() - ts.height() / 2,
+                int(self.clockrect.center().x() - ts.width() / 2),
+                int(self.clockrect.center().y() - ts.height() / 2),
                 ts.width(),
                 ts.height()
             )
@@ -128,8 +137,8 @@ class Plugin(Plugin):
             self.hourhand.setPixmap(hourpixmap2)
             ts = hourpixmap2.size()
             self.hourhand.setGeometry(
-                self.clockrect.center().x() - ts.width() / 2,
-                self.clockrect.center().y() - ts.height() / 2,
+                int(self.clockrect.center().x() - ts.width() / 2),
+                int(self.clockrect.center().y() - ts.height() / 2),
                 ts.width(),
                 ts.height()
             )
