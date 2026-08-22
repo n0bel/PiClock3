@@ -65,20 +65,14 @@ class Radar(Plugin):
         self.intervalTick()
         return
 
-    def timeSlot(self, slot, time=int(time.time())):
-        t = (int(time / self.interval) - slot) * self.interval
-        return t
-
     def intervalTick(self):
         logger.debug("tick %s %s", self.name, self.block.isVisible())
         if not self.block.isVisible():
             return
-        timeToDrop = int(time.time()) - self.interval * (self.config.frames-1)
-        frameTimes = sorted(self.radarPixmaps)
-        while len(frameTimes) > 0 and frameTimes[0] < timeToDrop:
-            self.radarPixmaps.pop(frameTimes[0])
-            frameTimes.pop(0)
-            
+        wanted = self.radarProvider.frameTimes(self.frames)
+        for t in list(self.radarPixmaps):
+            if t not in wanted:
+                self.radarPixmaps.pop(t)
         self.getNextNeededFrame()
 
     def animationTick(self):
@@ -162,19 +156,19 @@ class Radar(Plugin):
     def getNextNeededFrame(self):
         if not self.block.isVisible():
             return
-        frameTimes = sorted(self.radarPixmaps)
-        for i in range(0, self.frames):
-            t = self.timeSlot(i)
-            if not t in frameTimes:
-                logger.debug("radar next needed frame %s", time.asctime(time.localtime(t)))
-                self.radarProvider.getRadarPixmap(t, self.config, self.block.frameRect(), self.gotRadarPixmap)
+        times = self.radarProvider.frameTimes(self.frames)
+        if not times:
+            QTimer.singleShot(2000, self.getNextNeededFrame)
+            return
+        for t in times:
+            if t not in self.radarPixmaps:
+                logger.debug("radar next needed frame %s",
+                             time.asctime(time.localtime(t)))
+                self.radarProvider.getRadarPixmap(
+                    t, self.config, self.block.frameRect(), self.gotRadarPixmap)
                 return
 
     def gotRadarPixmap(self, pixmap, timeSlot):
         logger.debug("got radar pixmap %s %s %s", pixmap, timeSlot, time.asctime(time.localtime(timeSlot)))
         self.radarPixmaps[timeSlot] = pixmap
-        self.makeAnimation()
         self.getNextNeededFrame()
-
-    def makeAnimation(self):
-        logger.debug("make animation of %d pixmaps", len(self.radarPixmaps))
