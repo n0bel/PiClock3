@@ -1,7 +1,7 @@
 import logging
 
 from ..Plugin import Plugin
-from ..WebGet import WebGet
+from ..WebGet import WebGet, safeurl
 
 from PyQt5 import (QtGui, QtNetwork)
 from PyQt5.QtCore import (QObject, QThread, pyqtSlot, pyqtSignal, Qt, QRect,
@@ -53,7 +53,7 @@ class MapBox(Plugin):
                str(zoom) + ',0,0/' + \
                str(rsize.width()) + 'x' + str(rsize.height()) + \
                '?access_token=' + self.piclock.expand(self.config.apikey)
-        logger.info("mapbox url %s", mapUrl) 
+        logger.info("mapbox url %s", safeurl(mapUrl)) 
         params = { 'frameRect': frameRect, 'radarConfig': radarConfig, 'rsize': rsize }        
         WebGet(mapUrl,
                 lambda error, data, parms: self.gotMapPixmap(error, data, callback, parms),

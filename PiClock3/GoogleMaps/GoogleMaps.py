@@ -1,7 +1,7 @@
 import logging
 
 from ..Plugin import Plugin
-from ..WebGet import WebGet
+from ..WebGet import WebGet, safeurl
 
 from PyQt5 import (QtGui, QtNetwork)
 from PyQt5.QtCore import (QObject, QThread, pyqtSlot, pyqtSignal, Qt, QRect,
@@ -48,7 +48,7 @@ class GoogleMaps(Plugin):
         mapUrl = 'http://maps.googleapis.com/maps/api/staticmap?' + \
             '&'.join(urlp)
         
-        logger.info("googlemaps url %s", mapUrl)   
+        logger.info("googlemaps url %s", safeurl(mapUrl))   
         
         logger.debug("googlemaps getpixmap")
         params = { 'frameRect': frameRect, 'radarConfig': radarConfig, 'rsize': rsize }

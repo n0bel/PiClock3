@@ -1,10 +1,15 @@
 import logging
+import re
 from PyQt5 import (QtNetwork)
 from PyQt5.QtCore import (QObject, QThread, pyqtSlot, pyqtSignal, Qt, QRect,
                           QSize, QUrl)
 from PyQt5.QtNetwork import (QNetworkReply, QNetworkRequest, QNetworkAccessManager)
 
 logger = logging.getLogger(__name__)
+
+def safeurl(url):
+    return re.sub(r'((?:apikey|appid|key|access_token)=)[^&]*',
+                  r'\1<key>', url)
 
 class WebGet(QObject):
     webGets = []
