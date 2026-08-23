@@ -1,3 +1,5 @@
 module: PiClock3.MapLoop
 interval: 10
 frames: 7
+dwell: 200
+hold: 1200

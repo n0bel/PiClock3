@@ -55,9 +55,13 @@ class MapLoop(Plugin):
         self.intervalTimer.timeout.connect(self.intervalTick)
         self.intervalTimer.start(1000  * self.interval)
         self.intervalTick()
+        self.dwell = max(20, int(self.config.dwell)
+                         if 'dwell' in self.config else 200)
+        self.hold = max(0, int(self.config.hold)
+                        if 'hold' in self.config else 1200)
         self.animationTimer = QTimer()
         self.animationTimer.timeout.connect(self.animationTick)
-        self.animationTimer.start(200)
+        self.animationTimer.start(self.dwell)
         return
 
 
@@ -81,7 +85,7 @@ class MapLoop(Plugin):
         frameTimes = sorted(self.framePixmaps)
         if len(frameTimes) < 1: return
         if self.frame >= len(frameTimes):
-            self.frame = -6;
+            self.frame = -int(self.hold / self.dwell)
         f = self.frame
         if f < 0:
             f = len(frameTimes) - 1
