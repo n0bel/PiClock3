@@ -1,4 +1,4 @@
 module: PiClock3.AnalogClock
-block: clock-face
+block: clock
 clock-images-folder: lightblue
 clock-images-base-folder: '{plugin-folder}'

@@ -31,7 +31,7 @@ class MapLoop(Plugin):
     def start(self):
         self.baseLabel = QLabel(self.block)
         self.baseLabel.setObjectName("baseLabel")
-        rr = self.block.frameRect()
+        rr = self.block.contentsRect()
         self.baseLabel.setGeometry(rr)
         self.baseLabel.setStyleSheet("#baseLabel { background-color: transparent; }")
         self.baseLabel.setAlignment(Qt.AlignCenter)
@@ -48,7 +48,7 @@ class MapLoop(Plugin):
         self.markerLabel.setStyleSheet("#markerLabel { background-color: transparent; }")
 
         logger.debug("maploop get map pixmap")        
-        self.baseProvider.getMapPixmap(self.config, self.block.frameRect(), self.gotMapPixmap)
+        self.baseProvider.getMapPixmap(self.config, self.block.contentsRect(), self.gotMapPixmap)
         self.interval = 60 * self.config.interval
         self.frameCount = self.config.frames
         self.intervalTimer = QTimer()
@@ -172,7 +172,7 @@ class MapLoop(Plugin):
                 logger.debug("maploop next needed frame %s",
                              time.asctime(time.localtime(t)))
                 self.frameProvider.getFramePixmap(
-                    t, self.config, self.block.frameRect(), self.gotFramePixmap)
+                    t, self.config, self.block.contentsRect(), self.gotFramePixmap)
                 return
 
     def gotFramePixmap(self, pixmap, timeSlot):

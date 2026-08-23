@@ -1,0 +1,36 @@
+name: Chris
+description: The chris background
+
+background: '{folders.image}/clockbackground-chris.png'
+
+values:
+  icons: icons-lightblue
+  clockface: lightblue
+
+default:
+  font-size: 12px
+  font-family: Arial
+  background-color: transparent
+  color: '#bef'
+
+borders:
+  default:
+    image: '{folders.image}/bb2.png'
+    slice: [10, 5, 10, 5]
+    first: [5, 5, 10, 5]
+    last:  [10, 5, 5, 5]
+  radar:
+    image: '{folders.image}/bb1.png'
+    slice: [10, 5, 10, 5]
+    first: [5, 5, 10, 5]
+    last:  [10, 5, 5, 5]
+
+styles:
+  centered:
+    qproperty-alignment: AlignCenter
+  date:
+    font-size: 0.75
+    qproperty-alignment: AlignCenter
+  bottom:
+    font-size: 0.5
+    qproperty-alignment: AlignCenter

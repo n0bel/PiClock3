@@ -2,7 +2,9 @@ module: PiClock3.WeatherCommon
 refresh: 10
 icons-base-folder: '{plugin-folder}'
 icons-folder: 'icons-lightblue'
-color: '{styles.default.color}'
+# TODO: should come from the theme - Metar builds its own child labels and
+# styles them explicitly rather than inheriting the page cascade
+color: '#bef'
 units:
   temperature: F    # F,C
   length: in        # in, mm, cm

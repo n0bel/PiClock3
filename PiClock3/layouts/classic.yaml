@@ -1,0 +1,19 @@
+name: Classic
+description: Conditions and two radars left, clock centre, forecast right
+
+provides: [current, maps, clock, date, bottom, forecast]
+
+regions:
+
+  current:  {left: 0.0,  top: 0.0,    width: 0.2, height: 0.3333}
+
+  maps:     {left: 0.0,  top: 0.3333, width: 0.2, height: 0.6667,
+             border: radar, repeat: {count: 2, direction: down}}
+
+  forecast: {right: 0.0, top: 0.0,    width: 0.2, height: 1.0,
+             border: true, repeat: {count: 9, direction: down}}
+
+  clock:    {width: 0.5, aspect: 1.0, horizontal-center: 0.0, vertical-center: 0.0}
+
+  date:     {left: 0.0,  top: 0.0,    width: 1.0, height: 0.1, style: date}
+  bottom:   {left: 0.0,  bottom: 0.0, width: 1.0, height: 0.1, style: bottom}

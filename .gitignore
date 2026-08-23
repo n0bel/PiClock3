@@ -136,3 +136,9 @@ ApiKeys.yaml*
 # installed plugins
 /plugins/*
 !/plugins/.gitkeep
+
+# installed layouts and themes
+/layouts/*
+!/layouts/.gitkeep
+/themes/*
+!/themes/.gitkeep

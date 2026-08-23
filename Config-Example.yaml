@@ -1,17 +1,6 @@
 pages:
-  clock-page: !include ClockPage.yaml
-  clock-page--:
-    order: 0
-  maps-page: !include MapsPage.yaml
-  maps-page--:
-    order: 1
-
-styles:
-  default:
-    font-size: 12px
-    background-color: grey
-    color: '#bef'
-
+  clock-page: {order: 0, layout: classic, theme: kevin}
+  maps-page:  {order: 1, layout: bigmaps, theme: chris}
 language: !include PiClock3/Language-en.yaml
 locale:
 location:
@@ -41,7 +30,7 @@ plugins:
 
   radar1: !include PiClock3/MapLoop/config.yaml
   radar1--:
-    block: clock-radar1
+    block: maps.1
     base-provider: mapbox
     frame-provider: librewxr
     zoom: 7
@@ -58,7 +47,7 @@ plugins:
 
   radar2: !include PiClock3/MapLoop/config.yaml
   radar2--:
-    block: clock-radar2
+    block: maps.2
     base-provider: mapbox
     frame-provider: librewxr
     zoom: 11
@@ -75,7 +64,7 @@ plugins:
 
   radar3: !include PiClock3/MapLoop/config.yaml
   radar3--:
-    block: maps-radar1
+    block: radars.1
     base-provider: mapbox
     frame-provider: librewxr
     zoom: 7
@@ -85,7 +74,7 @@ plugins:
 
   radar4: !include PiClock3/MapLoop/config.yaml
   radar4--:
-    block: maps-radar2
+    block: radars.2
     base-provider: mapbox
     frame-provider: librewxr
     zoom: 11
