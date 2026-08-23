@@ -74,7 +74,8 @@ class PiClock3(QWidget):
             pageFrame.setGeometry(
                 0, 0, self.screen.width(), self.screen.height())
             if 'default' in theme:
-                pageFrame.setStyleSheet(self._buildStyleString(theme['default']))
+                pageFrame.setStyleSheet(self._buildStyleString(
+                    self.scaleFont(theme['default'], self.screen.height())))
             pageFrame.order = page['order'] if 'order' in page else 0
             pageFrame.blockName = pageName
             self.pages[pageName] = pageFrame
@@ -156,17 +157,24 @@ class PiClock3(QWidget):
         means a class - so maps.1 has to become maps_1"""
         return name.replace('.', '_')
 
-    def _regionStyle(self, name, region, theme, rect):
-        """styling that belongs on the region itself - not the frame"""
-        if 'style' not in region:
-            return ''
-        props = dict(theme.get('styles', {}).get(region['style'], {}))
-        # a bare number font-size is a fraction of the region height
+    @staticmethod
+    def scaleFont(props, height):
+        """a bare number font-size is a fraction of the height it sits in, so
+        that nothing in a layout or theme is tied to a pixel count"""
+        props = dict(props)
         fs = props.get('font-size')
         if fs is not None:
             t = str(fs)
             if t.replace('.', '', 1).isdigit():
-                props['font-size'] = "%dpx" % (float(t) * rect.height())
+                props['font-size'] = "%dpx" % (float(t) * height)
+        return props
+
+    def _regionStyle(self, name, region, theme, rect):
+        """styling that belongs on the region itself - not the frame"""
+        if 'style' not in region:
+            return ''
+        props = self.scaleFont(
+            theme.get('styles', {}).get(region['style'], {}), rect.height())
         style = self._buildStyleString(props)
         return "#%s { %s }" % (self.qtName(name), style) if style else ''
 
@@ -183,16 +191,6 @@ class PiClock3(QWidget):
         if position in b:
             cut = b[position]
         return b, [int(v) for v in cut]
-
-    @staticmethod
-    def borderInset(border):
-        """how far the content sits inside the frame.  nothing to do with
-        slice, which is how the frame art is cut up - conflating the two
-        leaves a visible gap between the content and the frame."""
-        v = border.get('inset', 2)
-        if isinstance(v, (list, tuple)):
-            return [int(x) for x in v]
-        return [int(v)] * 4
 
     def _buildRegion(self, parent, name, region, theme):
         rect = self._regionRect(parent.width(), parent.height(), region)
@@ -229,17 +227,14 @@ class PiClock3(QWidget):
         border, cut = self._borderFor(region, theme, position)
         target = outer
         if border:
-            # the frame art is a picture stretched over the whole region, so it
-            # has to sit on top of the content, not behind it.  the content
-            # goes in an inner widget inset by the slice, and plugins bind to
-            # that - which is what the old config spelled out by hand for every
-            # bordered block.
-            top, right, bottom, left = self.borderInset(border)
+            # the frame art is a picture stretched over the whole region, so
+            # it sits on top of the content rather than behind it.  the
+            # content fills the region and the frame overlays its edge, which
+            # is what a frame does - so there is no inset, and nothing here is
+            # measured in pixels.
             inner = QLabel(outer)
             inner.setObjectName(qt + '-content')
-            inner.setGeometry(left, top,
-                              rect.width() - left - right,
-                              rect.height() - top - bottom)
+            inner.setGeometry(0, 0, rect.width(), rect.height())
             overlay = QLabel(outer)
             overlay.setObjectName(qt + '-border')
             overlay.setGeometry(0, 0, rect.width(), rect.height())

@@ -8,7 +8,7 @@ values:
   clockface: lightblue
 
 default:
-  font-size: 12px
+  font-size: 0.02        # a fraction of the screen height
   font-family: Arial
   background-color: transparent
   color: '#bef'
@@ -16,16 +16,14 @@ default:
 borders:
   default:
     image: '{folders.image}/bb2.png'
-    slice: [10, 5, 10, 5]
-    inset: [2, 3, 2, 3]   # how far content sits inside the frame
-    first: [5, 5, 10, 5]
-    last:  [10, 5, 5, 5]
+    slice: [10, 5, 10, 5]   # pixels into the art, not the screen
+    first: [5, 5, 10, 5]    # first cell of a repeat
+    last:  [10, 5, 5, 5]    # last cell
   radar:
     image: '{folders.image}/bb1.png'
-    slice: [10, 5, 10, 5]
-    inset: [2, 3, 2, 3]   # how far content sits inside the frame
-    first: [5, 5, 10, 5]
-    last:  [10, 5, 5, 5]
+    slice: [10, 5, 10, 5]   # pixels into the art, not the screen
+    first: [5, 5, 10, 5]    # first cell of a repeat
+    last:  [10, 5, 5, 5]    # last cell
 
 styles:
   centered:

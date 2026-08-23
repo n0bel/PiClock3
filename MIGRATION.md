@@ -97,7 +97,7 @@ name: Kevin
 background: '{folders.image}/clockbackground-kevin.png'
 
 default:                     # cascades to everything on the page
-  font-size: 12px
+  font-size: 0.02            # a fraction of the screen height
   color: '#bef'
 
 borders:
@@ -122,13 +122,18 @@ any theme still works with any layout.
 
 ## A note on frames
 
-The shipped frame images are pictures of a frame, stretched across the region -
-not true 9-slice art.  So the frame is drawn **over** the content, in an
-overlay, and the content sits in an inner widget inset by the slice values.
-That is what the old config was doing by hand with three nested blocks per
-bordered radar; it is now done once in the loader.
+The shipped frame images are pictures of a frame stretched across the region,
+not true 9-slice art.  So the frame is drawn **over** the content rather than
+behind it: the content fills the region and the frame overlays its edge, which
+is what a frame does.  That is what the old config was doing by hand with
+three nested blocks per bordered radar; it is now done once in the loader.
 
-If you make a genuine 9-slice frame with transparent middle, it will work the
+The `slice` numbers are pixels **into the source image** - they describe how
+the art is cut up, and the art is a fixed size.  Nothing about a layout or a
+theme is measured in screen pixels, so the same files work at 800x600 and at
+1920x1080.
+
+If you make a genuine 9-slice frame with a transparent middle, it works the
 same way.
 
 ## What did not change
