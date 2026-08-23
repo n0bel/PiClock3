@@ -1,0 +1,40 @@
+name: Hairline
+description: The chris background with thin, hard-edged frames
+
+background: '{folders.image}/clockbackground-chris.png'
+
+values:
+  icons: icons-lightblue
+  clockface: lightblue
+
+default:
+  font-size: 0.02        # a fraction of the screen height
+  font-family: Arial
+  background-color: transparent
+  color: '#bef'
+
+borders:
+  # frame-hairline.png is a solid sheet, not a glow, so it has a hard inner
+  # edge.  that is what inset: 1.0 is for - content sits right against the
+  # drop instead of being pulled back into a fade that is not there.
+  #
+  # width is a fraction of screen height, so this stays a hairline on every
+  # screen: 2px at 800x600, 3px at 1080p, 6px at 4k.
+  default:
+    art: '{folders.image}/frame-hairline.png'
+    width: 0.003
+    inset: 1.0
+  radar:
+    art: '{folders.image}/frame-hairline.png'
+    width: 0.003
+    inset: 1.0
+
+styles:
+  centered:
+    qproperty-alignment: AlignCenter
+  date:
+    font-size: 0.75
+    qproperty-alignment: AlignCenter
+  bottom:
+    font-size: 0.5
+    qproperty-alignment: AlignCenter

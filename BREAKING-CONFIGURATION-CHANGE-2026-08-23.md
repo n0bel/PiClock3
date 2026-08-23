@@ -95,10 +95,13 @@ variants are applied automatically, so the stack still reads as one column.
 
 ## Where your own files go
 
-`layouts/` and `themes/` in the PiClock3 directory are yours; the ones we ship
-live in `PiClock3/layouts/` and `PiClock3/themes/`.  Yours are looked at first,
-so dropping in `themes/kevin.yaml` overrides the shipped one without touching
-it.
+`layouts/` and `themes/` beside `Config.yaml` are yours; the ones we ship live
+in `PiClock3/layouts/` and `PiClock3/themes/`.  Yours are looked at first, so
+dropping in `themes/kevin.yaml` overrides the shipped one without touching it.
+
+Both are single `.yaml` files named after the layout or theme - a folder is
+not searched, so something cloned from a git repository has to be unpacked
+rather than left as a checkout.
 
 ## Writing a theme
 
@@ -143,6 +146,11 @@ restores something the old single-theme config had lost: PiClock v1 gave Jean
 a blue frame and everyone else an amber one, so `themes/jean.yaml` asks for
 `frame-blue.png` and the rest ask for `frame-amber.png`.  Green is the color
 v1 used for its bedside and night configs; no shipped theme uses it yet.
+
+A fourth frame, `frame-hairline.png`, is not part of that family: it is a
+solid hard-edged line rather than a glow, and `themes/hairline.yaml` pairs it
+with the chris background.  It is the one shipped example of a drop-off edge,
+so it sets `inset: 1.0` where the others set `0.5`.
 
 The superseded artwork has been deleted - the unused `ba*`, `bb*`, `border*`
 and `squares*` PNGs, and two unused wallpapers.  The `.xcf` files stay: those

@@ -4,9 +4,11 @@ A frame is **one PNG holding a 3x3 grid of cells**.  PiClock3 slices it into
 nine pieces, keeps the corners as corners, and stretches the edges along
 whatever box it is framing.  One file frames a box of any size, on any screen.
 
-The shipped frames are `frame-amber.png`, `frame-blue.png` and
-`frame-green.png` - the same drawing in three colors, 60x60, so 20x20
-cells.
+Four frames ship.  `frame-amber.png`, `frame-blue.png` and `frame-green.png`
+are one soft-edged drawing in three colors, 60x60, so 20x20 cells.
+`frame-hairline.png` is a different drawing entirely - a solid hard-edged
+line, 24x24, so 8x8 cells - and the two kinds want different settings, which
+the rest of this explains.
 
 ## The sheet
 
@@ -78,8 +80,8 @@ with a **fading edge** - a glow, a soft airbrushed line - has no boundary at
 all.  Its alpha just tails off, and there is no pixel that means "content
 starts here".
 
-The shipped frames are the second kind.  Alpha rises and falls symmetrically
-across the 20px cell, peaking dead center:
+The three color frames are the second kind.  Alpha rises and falls
+symmetrically across the 20px cell, peaking dead center:
 
     0  0  2  6 16 41 91 164 213 237 | 244 237 213 164 91 41 16  6  2  1
 
@@ -102,8 +104,12 @@ The frame is drawn **over** the content, so at `0.5` the glow falls across
 the map the way a light would.  If content were drawn on top instead it
 would slice the tube in half and turn your fading edge into a drop-off one.
 
-For a genuine drop-off frame, set `inset: 1.0` and content will sit exactly
-against the hard edge.
+`frame-hairline.png` is the first kind, and shows what that changes.  Every
+cell but the center is solid, so the line has no falloff at all - at any
+width it is N pixels of flat color and then content.  Its theme sets
+`inset: 1.0`, because there is no fade to pull content back out of; content
+sits flush against the edge.  Set `0.5` on a frame like that and you would
+simply hide half the line under the content.
 
 ## Repeats, rules and corners
 
@@ -147,10 +153,11 @@ the alpha channel:
 | `frame-amber.png` | `#fda400` | the original frame art; PiClock v1's kevin |
 | `frame-blue.png` | `#11237e` | PiClock v1's jean |
 | `frame-green.png` | `#1c5721` | PiClock v1's bedside and night configs |
+| `frame-hairline.png` | `#ff8019` | the chris background's own sunset hue, at full strength |
 
-All three are the same alpha with a different RGB, which is the whole point of
-building art that way: a new color costs nothing and loses nothing.  Art with
-a baked-in gradient cannot be recolored like this.
+The three color frames are the same alpha with a different RGB, which is the
+whole point of building art that way: a new color costs nothing and loses
+nothing.  Art with a baked-in gradient cannot be recolored like this.
 
 To add a color, take any of the shipped sheets, keep its alpha channel and
 replace the RGB - in GIMP, Colors > Map > Colorize, or a new layer of flat
@@ -182,6 +189,13 @@ works with any layout.
 Themes in `PiClock3/themes/` are the shipped ones; a file of the same name in
 `themes/` at the top level wins, so you can try a frame without editing
 anything that ships.
+
+A theme is a **single `.yaml` file**, not a folder - `themes/mytheme.yaml`,
+not `themes/mytheme/theme.yaml`.  A theme cloned from a git repository will
+land in a folder and will not be found; unpack it, or point `art:` at
+wherever you put the art.  Art paths are resolved from the directory the
+clock runs in, so `'{folders.image}/x.png'` means `PiClock3/images/x.png`
+and a bare `'themes/mine/x.png'` works too.
 
 ## Checking your work
 
