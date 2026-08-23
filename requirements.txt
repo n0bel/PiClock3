@@ -1,14 +1,19 @@
 # Python 3.9 (Raspberry Pi OS Bullseye) is the floor.
-# tzlocal 5.4 and metar 2.0 both require Python 3.10, and neither is needed:
-# get_localzone_name arrived in tzlocal 3.0, and metar has taken strict=
-# since 1.8.  Don't go past these without moving the floor on purpose.
-tzlocal>=3.0,<5.4
-metar>=1.11,<2.0
+
+# tzlocal and metar are deliberately NOT capped.  Their newer releases declare
+# requires_python >= 3.10, so pip already resolves tzlocal 5.3.1 / metar 1.11
+# on Bullseye and tzlocal 5.4.4 / metar 2.0.1 on Bookworm and newer, by itself.
+# Capping them would hold new systems on old packages for no reason.
+tzlocal>=3.0
+metar>=1.11
 astral~=3.2
-# pyyaml-include 2.x renamed the module yamlinclude -> yaml_include and
-# changed the api.  Config.py uses the 1.x YamlIncludeConstructor.
-pyyaml-include>=1.3,<2
 compassheadinglib~=2026.1.22
+
+# pyyaml-include IS capped, for a different reason.  2.x renamed the module
+# from yamlinclude to yaml_include and changed the api, and it installs quite
+# happily on 3.9 - requires_python cannot express an api break, so the cap has
+# to.  Config.py uses the 1.x YamlIncludeConstructor.
+pyyaml-include>=1.3,<2
 
 # PyQt5 is deliberately not listed.  On a Pi install it with
 #   sudo apt install python3-pyqt5
