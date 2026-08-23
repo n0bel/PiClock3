@@ -71,28 +71,37 @@ both are 3.10.
 
 ### Dependencies count too
 
-This is the one that catches people.  A version bump can raise the floor just
-as effectively as a language feature, and it does it silently — the code still
-looks fine, and it still runs on your machine.
+A version bump can raise the floor as effectively as a language feature, and
+it does it silently — the code still looks fine and still runs on your machine.
+Three pins in this repo did exactly that, all merged without being run:
 
-Real examples from this repo:
+* `tzlocal~=5.4` and `metar~=2.0.1` both require Python 3.10.  The code needs
+  `get_localzone_name` (tzlocal 3.0) and `strict=` (metar 1.8).
+* `pyyaml-include~=2.2.0` renamed its module from `yamlinclude` to
+  `yaml_include`, so `Config.py` could not import it at all.
 
-* `tzlocal~=5.4` requires Python 3.10.  The code only needs
-  `get_localzone_name`, which arrived in 3.0.
-* `metar~=2.0.1` requires Python 3.10.  The code only needs `strict=`, which
-  has been there since 1.8.
-* `pyyaml-include~=2.2.0` renamed its module and broke `Config.py` outright.
-
-All three were merged without anyone running them.
-
-**Before adding or bumping a dependency, check its `requires_python`:**
+**But do not reach for an upper cap.**  That was our first fix and it was
+wrong.  pip already reads `requires_python`, so a release needing 3.10 is
+never offered to a 3.9 box.  With no cap, pip resolves:
 
 ```
-pip index versions <package>
+python 3.9    metar-1.11.0  tzlocal-5.3.1
+python 3.11   metar-2.0.1   tzlocal-5.4.4
 ```
 
-or look at the release on PyPI.  If it is above 3.9, either pin below it or
-say out loud that you are moving the floor.
+Capping those would have done nothing on Bullseye and held Bookworm and
+Trixie on old packages.  **Floor-only specs let every system take the newest
+it can actually run.**
+
+So when a dependency worries you, work out which kind of break it is:
+
+* **Needs a newer Python** — no cap.  `requires_python` handles it, and
+  capping only hurts newer systems.
+* **Changed its API** — cap it, because no metadata expresses that.
+  `pyyaml-include>=1.3,<2` is capped for this reason and stays capped.
+
+Either way, if you genuinely need something the floor cannot run, say out loud
+that you are moving the floor rather than letting a pin do it quietly.
 
 ### Testing against it
 
