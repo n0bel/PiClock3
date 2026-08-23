@@ -17,11 +17,13 @@ borders:
   default:
     image: '{folders.image}/bb2.png'
     slice: [10, 5, 10, 5]
+    inset: [2, 3, 2, 3]   # how far content sits inside the frame
     first: [5, 5, 10, 5]
     last:  [10, 5, 5, 5]
   radar:
     image: '{folders.image}/bb1.png'
     slice: [10, 5, 10, 5]
+    inset: [2, 3, 2, 3]   # how far content sits inside the frame
     first: [5, 5, 10, 5]
     last:  [10, 5, 5, 5]
 

@@ -184,6 +184,16 @@ class PiClock3(QWidget):
             cut = b[position]
         return b, [int(v) for v in cut]
 
+    @staticmethod
+    def borderInset(border):
+        """how far the content sits inside the frame.  nothing to do with
+        slice, which is how the frame art is cut up - conflating the two
+        leaves a visible gap between the content and the frame."""
+        v = border.get('inset', 2)
+        if isinstance(v, (list, tuple)):
+            return [int(x) for x in v]
+        return [int(v)] * 4
+
     def _buildRegion(self, parent, name, region, theme):
         rect = self._regionRect(parent.width(), parent.height(), region)
         rep = region.get('repeat')
@@ -224,7 +234,7 @@ class PiClock3(QWidget):
             # goes in an inner widget inset by the slice, and plugins bind to
             # that - which is what the old config spelled out by hand for every
             # bordered block.
-            top, right, bottom, left = cut
+            top, right, bottom, left = self.borderInset(border)
             inner = QLabel(outer)
             inner.setObjectName(qt + '-content')
             inner.setGeometry(left, top,
