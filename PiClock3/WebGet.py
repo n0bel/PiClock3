@@ -14,13 +14,13 @@ def safeurl(url):
 class WebGet(QObject):
     webGets = []
     
-    def __init__(self, url, callback, params = dict(), manager=None):
+    def __init__(self, url, callback, params=None, manager=None):
         super().__init__()
         WebGet.webGets.append(self)
         self.manager = manager
         self.url = url
         self.callback = callback
-        self.params = params
+        self.params = params if params is not None else {}
         if self.manager == None:
             self.manager = QtNetwork.QNetworkAccessManager(self)
         self.request = QNetworkRequest(QUrl(self.url))

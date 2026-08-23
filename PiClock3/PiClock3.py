@@ -48,14 +48,15 @@ class PiClock3(QWidget):
         return
 
     def initData(self):
-        styles = self.config.styles
+        styles = self.config.styles if 'styles' in self.config else {}
         for style in styles:
             styleString = self._buildStyleString(styles[style])
             logging.debug('styleString: ' + style + '>' + styleString)
             self.styles[style] = styleString
 
     def initWidgets(self):
-        self.setStyleSheet(self.styles.default)
+        if 'default' in self.styles:
+            self.setStyleSheet(self.styles.default)
         unsortedPages = []
         for pageName in self.config.pages:
             page = self.config.pages[pageName]

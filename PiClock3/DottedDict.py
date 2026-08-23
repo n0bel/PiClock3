@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DottedDict(dict):
@@ -20,4 +23,8 @@ class DottedDict(dict):
     # also allows dots
     # actually using format to make it happen
     def expand(self, s):
-        return s.format(**self)
+        try:
+            return s.format(**self)
+        except (KeyError, IndexError, AttributeError) as e:
+            logger.warning("cannot expand %r: no %s", s, e)
+            return s
