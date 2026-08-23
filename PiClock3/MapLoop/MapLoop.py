@@ -152,8 +152,10 @@ class MapLoop(Plugin):
                             mk2.setPixel(x, y, QColor.fromRgbF(r, g, b, a)
                                          .rgba())
                 mk2 = mk2.scaledToHeight(mkh, 1)
-                logger.debug("drawImage %d %d ", pt.x-mkh/2, pt.y-mkh/2)
-                painter.drawImage(pt.x-mkh/2, pt.y-mkh/2, mk2)
+                x = int(pt.x - mkh / 2)
+                y = int(pt.y - mkh / 2)
+                logger.debug("drawImage %d %d", x, y)
+                painter.drawImage(x, y, mk2)
         painter.end()
 
         self.markerLabel.setPixmap(self.markerPixmap)

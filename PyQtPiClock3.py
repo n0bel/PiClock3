@@ -1,4 +1,5 @@
 import logging.handlers
+import traceback
 import os
 import sys
 
@@ -28,6 +29,12 @@ if __name__ == '__main__':
     fileh.setFormatter(fmt)
     logger.addHandler(errh)
     logger.setLevel(logging.WARNING)
+
+    def excepthook(etype, value, tb):
+        logging.error("unhandled exception:\n%s",
+                      ''.join(traceback.format_exception(etype, value, tb)))
+
+    sys.excepthook = excepthook
 
     try:
         app = QApplication(sys.argv)
