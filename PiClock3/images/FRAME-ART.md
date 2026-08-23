@@ -19,15 +19,15 @@ Nine cells in reading order:
     +-----------+-----------+-----------+
     |   left    |  center   |   right   |
     +-----------+-----------+-----------+
-    |bottom-left|  bottom   |bottom-rt  |
+    |bottomleft |  bottom   |bottomright|
     +-----------+-----------+-----------+
 
 - The image must divide evenly into three across and three down.  The cell
   size is derived from the image: width / 3 and height / 3.  It is never
   written down in a theme, so the art cannot disagree with the config.
 - **Keep the cells square.**  Every piece is drawn into a square of the
-  frame's thickness, so a tall cell arrives squashed.  Non-square sheets
-  load, they just distort the corners.
+  frame's thickness, so a tall cell gets squashed.  Non-square sheets still
+  load; they just distort the corners.
 - **The center cell must be fully transparent.**  It is stretched across the
   whole interior of the box; anything in it covers the content.
 
@@ -61,7 +61,7 @@ and the whole page scales together from 800x600 to 1920x1080.
 
 **What this means for you:** the cell's pixel size is not the frame's size on
 screen.  Every piece is rescaled to `width`.  Draw at whatever resolution
-gives you enough detail - 20px cells are plenty for a soft glow, a crisp
+gives you enough detail.  20px cells are plenty for a soft glow; a crisp
 bevel wants more.
 
 **Fill the cell edge to edge.**  This is the one rule that trips people up.
@@ -93,7 +93,7 @@ So the theme names the landing, as a fraction of the frame's thickness:
 
 | `inset` | content edge lands at | looks like |
 |---|---|---|
-| `1.0` | the inner end of the frame | the whole frame sits clear of the content |
+| `1.0` | the inner end of the frame | the whole frame stays clear of the content |
 | `0.75` | part way into the fade | a little of the glow falls across the content |
 | `0.5` | the middle of the line | the inner half of the glow lies on the content |
 
@@ -134,7 +134,7 @@ through it.
 **Two things to design for:**
 
 1. **Your top and left cells get reused as rules.**  A symmetric glow works
-   either way round.  A frame lit from above - a bevel with a highlight on
+   either way.  A frame lit from above - a bevel with a highlight on
    the top edge and a shadow on the bottom - will look like a top edge, not
    like a divider, when it is used between two cells.  If your frame has a
    light direction, its edges will not make convincing rules.
@@ -163,7 +163,7 @@ To add a color, take any of the shipped sheets, keep its alpha channel and
 replace the RGB - in GIMP, Colors > Map > Colorize, or a new layer of flat
 color with the sheet's alpha as a mask.  Nothing else about the file changes.
 
-Painting a frame that is not flat-plus-alpha is fine, it just means color
+Painting a frame that is not flat-plus-alpha is fine.  It just means color
 variants have to be drawn rather than derived.
 
 ## Using it
@@ -190,12 +190,21 @@ Themes in `PiClock3/themes/` are the shipped ones; a file of the same name in
 `themes/` at the top level wins, so you can try a frame without editing
 anything that ships.
 
-A theme is a **single `.yaml` file**, not a folder - `themes/mytheme.yaml`,
-not `themes/mytheme/theme.yaml`.  A theme cloned from a git repository will
-land in a folder and will not be found; unpack it, or point `art:` at
-wherever you put the art.  Art paths are resolved from the directory the
-clock runs in, so `'{folders.image}/x.png'` means `PiClock3/images/x.png`
-and a bare `'themes/mine/x.png'` works too.
+A theme can be a file or a folder.  All of these are found:
+
+    themes/mine.yaml            a file you dropped in
+    themes/mine/theme.yaml      a folder, canonical name
+    themes/mine/mine.yaml       a folder named after itself
+
+The last two are what `git clone <repo> themes/mine` gives you, so a theme
+someone else published works as a checkout with nothing to unpack.
+
+**Inside a folder, ship your art with your theme.**  A plain relative path
+is relative to the folder the theme was loaded from, so write `art:
+'myframe.png'` and put the PNG beside the `.yaml`.  The theme never has to
+know where it was installed.  A path containing a `{placeholder}` is left
+alone - that is how the shipped themes reach the common image directory
+with `'{folders.image}/frame-amber.png'`.
 
 ## Checking your work
 

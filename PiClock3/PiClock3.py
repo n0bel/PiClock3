@@ -124,14 +124,51 @@ class PiClock3(QWidget):
                     % pageName)
 
     def _loadPart(self, kind, name):
-        """a layout or a theme - the user's own first, then the shipped one"""
+        """a layout or a theme - the user's own first, then the shipped one
+
+        either a file or a folder will do.  a folder is what a git checkout
+        of somebody else's theme looks like, so themes/mine.yaml and
+        themes/mine/theme.yaml both work, and so does the repository naming
+        its file after itself.
+        """
+        stem = 'theme' if kind == 'themes' else 'layout'
         for base in (kind, os.path.join('PiClock3', kind)):
-            path = os.path.join(base, name + '.yaml')
-            if os.path.isfile(path):
+            folder = os.path.join(base, name)
+            for path, home in ((os.path.join(base, name + '.yaml'), None),
+                               (os.path.join(folder, stem + '.yaml'), folder),
+                               (os.path.join(folder, name + '.yaml'), folder)):
+                if not os.path.isfile(path):
+                    continue
                 with open(path, encoding='utf-8') as fh:
-                    return yaml.safe_load(fh)
-        raise SystemExit("no %s named '%s' in %s/ or PiClock3/%s/"
-                         % (kind[:-1], name, kind, kind))
+                    part = yaml.safe_load(fh)
+                logging.debug('%s %s from %s', stem, name, path)
+                return self.localArt(part, home) if home else part
+        raise SystemExit(
+            "no %s named '%s'.  looked for %s.yaml, %s/%s.yaml and "
+            "%s/%s.yaml, in %s/ and in PiClock3/%s/\n"
+            % (stem, name, name, name, stem, name, name, kind, kind))
+
+    @staticmethod
+    def localArt(part, home):
+        """point a folder's own art at that folder.
+
+        a theme that ships its own images should not have to know where it
+        was installed, so inside a folder a plain relative path is relative
+        to the folder.  a path with a {placeholder} is left alone: that is
+        how the shipped themes reach the common image directory.
+        """
+        keys = ('art', 'background', 'image')
+        if isinstance(part, list):
+            for v in part:
+                PiClock3.localArt(v, home)
+        elif isinstance(part, dict):
+            for k, v in part.items():
+                if isinstance(v, (dict, list)):
+                    PiClock3.localArt(v, home)
+                elif (k in keys and isinstance(v, str) and '{' not in v
+                      and not os.path.isabs(v)):
+                    part[k] = (home + '/' + v).replace(os.sep, '/')
+        return part
 
     def _regionRect(self, pw, ph, r):
         width = pw * r['width'] if 'width' in r else pw

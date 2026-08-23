@@ -99,9 +99,14 @@ variants are applied automatically, so the stack still reads as one column.
 in `PiClock3/layouts/` and `PiClock3/themes/`.  Yours are looked at first, so
 dropping in `themes/kevin.yaml` overrides the shipped one without touching it.
 
-Both are single `.yaml` files named after the layout or theme - a folder is
-not searched, so something cloned from a git repository has to be unpacked
-rather than left as a checkout.
+Either can be a file or a folder.  `themes/mine.yaml` works, and so do
+`themes/mine/theme.yaml` and `themes/mine/mine.yaml`, which is what
+`git clone <repo> themes/mine` leaves behind - a published theme works as a
+checkout, with nothing to unpack.  Layouts use `layout.yaml` in place of
+`theme.yaml`.
+
+A theme in a folder should ship its art there too: a plain relative path is
+relative to that folder, so it never has to know where it was installed.
 
 ## Writing a theme
 
