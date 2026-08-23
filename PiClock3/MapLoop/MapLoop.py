@@ -38,13 +38,13 @@ class MapLoop(Plugin):
 
         self.frameLabel = QLabel(self.baseLabel)
         self.frameLabel.setObjectName("frameLabel")
-        self.frameLabel.setGeometry(0, 0, rr.width(), rr.height())
+        self.frameLabel.setGeometry(rr.x(), rr.y(), rr.width(), rr.height())
         logger.debug("maploop geom %s", self.frameLabel.frameRect())
         self.frameLabel.setStyleSheet("#frameLabel { background-color: transparent; }")
 
         self.markerLabel = QLabel(self.frameLabel)
         self.markerLabel.setObjectName("markerLabel")
-        self.markerLabel.setGeometry(0, 0, rr.width(), rr.height())
+        self.markerLabel.setGeometry(rr.x(), rr.y(), rr.width(), rr.height())
         self.markerLabel.setStyleSheet("#markerLabel { background-color: transparent; }")
 
         logger.debug("maploop get map pixmap")        

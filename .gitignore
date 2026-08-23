@@ -142,3 +142,4 @@ ApiKeys.yaml*
 !/layouts/.gitkeep
 /themes/*
 !/themes/.gitkeep
+Thumbs.db

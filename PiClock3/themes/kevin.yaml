@@ -14,16 +14,18 @@ default:
   color: '#bef'
 
 borders:
+  # a 3x3 sheet, so the slice is a third of it - the art describes its own
+  # geometry and this file cannot disagree with it.  width is a fraction of
+  # screen height, so a frame is the same weight on a small box as on a big
+  # one, and the same at 800x600 as at 1920x1080.
   default:
-    image: '{folders.image}/bb2.png'
-    slice: [10, 5, 10, 5]   # pixels into the art, not the screen
-    first: [5, 5, 10, 5]    # first cell of a repeat
-    last:  [10, 5, 5, 5]    # last cell
+    art: '{folders.image}/frame-amber.png'
+    width: 0.012
+    inset: 0.5
   radar:
-    image: '{folders.image}/bb1.png'
-    slice: [10, 5, 10, 5]   # pixels into the art, not the screen
-    first: [5, 5, 10, 5]    # first cell of a repeat
-    last:  [10, 5, 5, 5]    # last cell
+    art: '{folders.image}/frame-amber.png'
+    width: 0.012
+    inset: 0.5
 
 styles:
   centered:

@@ -9,6 +9,7 @@ import yaml
 from PyQt5 import (QtNetwork)
 from PyQt5.QtCore import (Qt, QRect,
                           QSize)
+from PyQt5.QtGui import (QImage)
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
 from .DottedDict import DottedDict
@@ -23,6 +24,8 @@ class PiClock3(QWidget):
     # a plain dict: region names contain dots (maps.1) and DottedDict would
     # read those as a path
     blocks = {}
+    # intrinsic size of each frame image, so the inset can be derived
+    artSizes = {}
     styles = DottedDict()
     plugins = DottedDict()
     pluginData = DottedDict()
@@ -116,7 +119,9 @@ class PiClock3(QWidget):
                     "  pages:\n"
                     "    clock-page: {order: 0, layout: classic, theme: kevin}\n\n"
                     "Block names changed with it, so every plugin's block:\n"
-                    "needs updating too.  See MIGRATION.md.\n" % pageName)
+                    "needs updating too.  See\n"
+                    "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n"
+                    % pageName)
 
     def _loadPart(self, kind, name):
         """a layout or a theme - the user's own first, then the shipped one"""
@@ -178,82 +183,187 @@ class PiClock3(QWidget):
         style = self._buildStyleString(props)
         return "#%s { %s }" % (self.qtName(name), style) if style else ''
 
-    def _borderFor(self, region, theme, position):
+    def _borderFor(self, region, theme):
+        """the theme's border entry for a region, or None"""
         if not region.get('border'):
-            return None, None
+            return None
         borders = theme.get('borders', {})
         which = region['border']
-        b = borders.get('default' if which is True else which,
-                        borders.get('default'))
-        if not b:
-            return None, None
-        cut = b.get('slice', [0, 0, 0, 0])
-        if position in b:
-            cut = b[position]
-        return b, [int(v) for v in cut]
+        return borders.get('default' if which is True else which,
+                           borders.get('default'))
+
+    def artSize(self, path):
+        if path not in self.artSizes:
+            img = QImage(path)
+            self.artSizes[path] = None if img.isNull() else img.size()
+            if img.isNull():
+                logging.warning('frame art %s will not load', path)
+        return self.artSizes[path]
+
+    def borderWidth(self, border, screenHeight):
+        """frame weight in pixels.
+
+        a fraction of screen height, so a frame is the same weight on a
+        small box as on a big one, and the same at 800x600 as at 1920x1080.
+        """
+        return max(1, int(round(float(border.get('width', 0.012))
+                                * screenHeight)))
+
+    def borderPull(self, border, bw):
+        """how far content reaches back into the frame.
+
+        the shipped art is a glowing tube - its alpha fades symmetrically
+        either side of the line, so unlike a drop-off edge it names no
+        boundary for content to sit against.  inset says where to put one,
+        as a fraction of the frame's width: 1.0 leaves the whole glow clear
+        of the content, 0.5 brings content up to the middle of the line so
+        the inner half of the glow falls across it.
+
+        content is never pulled past the middle, or two cells sharing a
+        rule would overlap each other.
+        """
+        f = float(border.get('inset', 0.5))
+        return min(bw // 2, max(0, int(round(bw * (1.0 - f)))))
+
+    def borderStyle(self, qt, border, screenHeight, edges=None):
+        """a nine-slice frame painted in the widget's own border.
+
+        the art is a 3x3 sheet, so the slice is a third of it - the art
+        describes its own geometry and a theme cannot disagree with it.
+        qt insets contentsRect by the border, so content cannot cover the
+        frame and nothing here has to work that out.
+
+        edges limits which sides are drawn.  one edge on its own draws no
+        corner art, which is what a divider between cells needs: a corner
+        is where a line ends, and an internal join is where it must not.
+        """
+        art = self.expand(border['art'])
+        size = self.artSize(art)
+        if size is None or size.isEmpty():
+            return ''
+        # a third of the sheet each way, so the cells need not be square
+        cw, ch = size.width() // 3, size.height() // 3
+        bw = self.borderWidth(border, screenHeight)
+        style = ("border-image: url(%s) %d %d %d %d stretch stretch;"
+                 % (art, ch, cw, ch, cw))
+        if edges is None:
+            style += " border-width: %dpx;" % bw
+        else:
+            style += " border-width: 0px;"
+            for e in edges:
+                style += " border-%s-width: %dpx;" % (e, bw)
+        return "#%s { %s }" % (qt, style)
 
     def _buildRegion(self, parent, name, region, theme):
         rect = self._regionRect(parent.width(), parent.height(), region)
         rep = region.get('repeat')
-        if not rep:
-            self._makeRegion(parent, name, rect, region, theme, None)
+        border = self._borderFor(region, theme)
+
+        if not border:
+            if not rep:
+                self._makeRegion(parent, name, rect, region, theme)
+                return
+            for i, cell in enumerate(self._cellRects(rect, rep, 0)):
+                self._makeRegion(parent, '%s.%d' % (name, i + 1), cell,
+                                 region, theme)
             return
-        count = rep.get('count', 1)
-        gap = rep.get('gap', 0)
+
+        # the frame goes on top of the content, so the glow falls across it
+        # the way a light does.  content under the frame would cut the tube
+        # in half and make a fading edge look like a drop-off one.
+        container = QWidget(parent)
+        container.setObjectName(self.qtName(name) + '-group')
+        container.setGeometry(rect)
+
+        bw = self.borderWidth(border, parent.height())
+        pull = self.borderPull(border, bw)
+        area = QRect(bw, bw, rect.width() - bw * 2, rect.height() - bw * 2)
+
+        cells = ([area] if not rep
+                 else self._cellRects(area, rep, bw))
+        for i, cell in enumerate(cells):
+            cname = name if not rep else '%s.%d' % (name, i + 1)
+            self._makeRegion(container, cname,
+                             cell.adjusted(-pull, -pull, pull, pull),
+                             region, theme)
+
+        # added after the cells, so they paint over them
+        qt = self.qtName(name) + '-frame'
+        frame = QLabel(container)
+        frame.setObjectName(qt)
+        frame.setGeometry(0, 0, rect.width(), rect.height())
+        frame.setStyleSheet(self.borderStyle(qt, border, parent.height()))
+
+        if rep:
+            across = rep.get('direction') == 'across'
+            pad = self._repeatPad(area, rep)
+            for i, cell in enumerate(cells):
+                if i:
+                    self._makeDivider(container, '%s.%d-rule' % (name, i + 1),
+                                      border, cell, across, bw, pad,
+                                      parent.height())
+
+    def _repeatPad(self, area, rep):
         across = rep.get('direction') == 'across'
-        span = rect.width() if across else rect.height()
-        # the gap goes between cells, not after every one
-        pad = int(span * gap)
-        cellspan = (span - pad * (count - 1)) / float(count)
+        span = area.width() if across else area.height()
+        return int(span * rep.get('gap', 0))
+
+    def _cellRects(self, area, rep, bw):
+        """the content boxes of a repeat, with room between them for a rule"""
+        count = rep.get('count', 1)
+        across = rep.get('direction') == 'across'
+        span = area.width() if across else area.height()
+        pad = int(span * rep.get('gap', 0))
+        splits = count - 1
+        cellspan = (span - (bw + pad) * splits) / float(count)
+        out = []
         for i in range(count):
-            a = int(round(i * (cellspan + pad)))
+            a = int(round(i * (cellspan + bw + pad)))
             b = int(round(a + cellspan))
             if across:
-                cell = QRect(rect.x() + a, rect.y(),
-                             b - a, rect.height())
+                out.append(QRect(area.x() + a, area.y(), b - a, area.height()))
             else:
-                cell = QRect(rect.x(), rect.y() + a,
-                             rect.width(), b - a)
-            pos = 'first' if i == 0 else ('last' if i == count - 1 else None)
-            self._makeRegion(parent, '%s.%d' % (name, i + 1), cell,
-                             region, theme, pos)
+                out.append(QRect(area.x(), area.y() + a, area.width(), b - a))
+        return out
 
-    def _makeRegion(self, parent, name, rect, region, theme, position):
+    def _makeDivider(self, host, name, border, cell, across, bw, pad,
+                     screenHeight):
+        """the straight rule between two cells of a repeat"""
         qt = self.qtName(name)
-        outer = QLabel(parent)
-        outer.setObjectName(qt)
-        outer.setGeometry(rect)
+        d = QLabel(host)
+        d.setObjectName(qt)
+        # the rule runs to the middle of the side it meets - far enough to
+        # cross the side's glow so the T does not break, not so far that it
+        # reaches the outer edge and juts out past the box.
+        half = bw // 2
+        if across:
+            d.setGeometry(cell.x() - bw - pad + pad // 2, half,
+                          bw, host.height() - half * 2)
+            edge = 'left'
+        else:
+            d.setGeometry(half, cell.y() - bw - pad + pad // 2,
+                          host.width() - half * 2, bw)
+            edge = 'top'
+        d.setStyleSheet(
+            self.borderStyle(qt, border, screenHeight, (edge,)))
 
-        border, cut = self._borderFor(region, theme, position)
-        target = outer
-        if border:
-            # the frame art is a picture stretched over the whole region, so
-            # it sits on top of the content rather than behind it.  the
-            # content fills the region and the frame overlays its edge, which
-            # is what a frame does - so there is no inset, and nothing here is
-            # measured in pixels.
-            inner = QLabel(outer)
-            inner.setObjectName(qt + '-content')
-            inner.setGeometry(0, 0, rect.width(), rect.height())
-            overlay = QLabel(outer)
-            overlay.setObjectName(qt + '-border')
-            overlay.setGeometry(0, 0, rect.width(), rect.height())
-            overlay.setStyleSheet(
-                "#%s-border { border-image: url(%s) %s; }"
-                % (qt, self.expand(border['image']),
-                   ' '.join(str(v) for v in cut)))
-            target = inner
+    def _makeRegion(self, parent, name, rect, region, theme):
+        qt = self.qtName(name)
+        w = QLabel(parent)
+        w.setObjectName(qt)
+        w.setGeometry(rect)
 
         style = self._regionStyle(name, region, theme, rect)
         if style:
-            outer.setStyleSheet(style)
-        target.blockName = name
-        target.blockType = 'label'
+            w.setStyleSheet(style)
+
+        w.blockName = name
+        w.blockType = 'label'
         if name in self.blocks:
             logging.warning('region %s is defined by more than one layout in '
                             'use - the later page wins', name)
-        self.blocks[name] = target
-        logging.debug("Region %s %s%s", name, rect, ' framed' if border else '')
+        self.blocks[name] = w
+        logging.debug("Region %s %s", name, rect)
 
     def loadModule(self, name, moduleConfig):
         mod = importlib.import_module(moduleConfig.module)

@@ -1,9 +1,14 @@
 # PiClock3
 
-> **August 2026 - the configuration format changed and old configs will not
-> load.**  Pages now name a layout and a theme instead of including a tree of
-> blocks, and block names changed with it.  PiClock3 will tell you if it sees
-> an old config.  See [MIGRATION.md](MIGRATION.md).
+> **23 August 2026 - the configuration format changed and older configs will
+> not load.**  Pages now name a layout and a theme instead of including a tree
+> of blocks, and block names changed with it.  PiClock3 will tell you if it
+> sees an older config.  This only affects configurations written before that
+> date - see
+> [BREAKING-CONFIGURATION-CHANGE-2026-08-23.md](BREAKING-CONFIGURATION-CHANGE-2026-08-23.md).
+
+> Drawing frame art?  See
+> [PiClock3/images/FRAME-ART.md](PiClock3/images/FRAME-ART.md).
 
 PiClock3 is a complete rewrite of PiClock (https://github.com/n0bel/PiClock).
 It is based on Python3 and PyQt5.  It is also much more modular and less monolithic.
