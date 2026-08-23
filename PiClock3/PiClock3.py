@@ -99,13 +99,15 @@ class PiClock3(QWidget):
         self.pluginData[name] = DottedDict()
         cls = None
         clsName = ''
-        for cname, obj in inspect.getmembers(mod):
-            try:
-                if hasattr(obj, "__bases__") and Plugin in obj.__bases__:
-                    cls = obj
-                    clsName = cname
-            except BaseException:
-                pass
+        for cname, obj in inspect.getmembers(mod, inspect.isclass):
+            if not issubclass(obj, Plugin) or obj is Plugin:
+                continue
+            if cls is not None and issubclass(cls, obj):
+                continue
+            cls = obj
+            clsName = cname
+        if cls is None:
+            raise TypeError('%s defines no Plugin subclass' % moduleConfig.module)
         logger.debug('found %s %s', cls, clsName)
         instance = cls(self, name, moduleConfig)
         self.plugins[name] = instance

@@ -1,0 +1,3 @@
+module: PiClock3.MapLoop
+interval: 10
+frames: 7

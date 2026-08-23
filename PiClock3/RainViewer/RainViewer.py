@@ -69,10 +69,10 @@ class RainViewer(Plugin):
         past = [t for t in self.order if t <= time.time()]
         return past[-count:]
 
-    def tail(self, radarConfig):
+    def tail(self, layerConfig):
         def setting(name, default):
-            if name in radarConfig:
-                return radarConfig[name]
+            if name in layerConfig:
+                return layerConfig[name]
             if name in self.config:
                 return self.config[name]
             return default
@@ -81,24 +81,24 @@ class RainViewer(Plugin):
         snow = setting('snow', 1)
         return "/256/%%d/%%d/%%d/%d/%d_%d.png" % (color, smooth, snow)
 
-    def getRadarPixmap(self, timeSlot, radarConfig, frameRect, callback):
+    def getFramePixmap(self, timeSlot, layerConfig, frameRect, callback):
         self.freshen()
         path = self.frames.get(timeSlot)
         if path is None:
             logger.debug("no radar frame for %s",
                          time.asctime(time.localtime(timeSlot)))
             return
-        tail = self.host + path + self.tail(radarConfig)
+        tail = self.host + path + self.tail(layerConfig)
 
         def tileurl(z, x, y):
             return tail % (z, x, y)
 
         center = LatLng(
-            float(self.piclock.expand(radarConfig.center["lattitude"])),
-            float(self.piclock.expand(radarConfig.center["longitude"])))
+            float(self.piclock.expand(layerConfig.center["lattitude"])),
+            float(self.piclock.expand(layerConfig.center["longitude"])))
         caption = "{0:%H:%M} ".format(
             datetime.datetime.fromtimestamp(timeSlot)) + self.attribution()
         TileFetcher(center,
-                    int(self.piclock.expand(str(radarConfig.zoom))),
+                    int(self.piclock.expand(str(layerConfig.zoom))),
                     frameRect.width(), frameRect.height(),
                     tileurl, callback, caption=caption, params=timeSlot)

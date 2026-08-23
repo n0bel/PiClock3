@@ -39,11 +39,11 @@ plugins:
     index: https://api.librewxr.net/public/weather-maps.json
   rainviewer: !include PiClock3/RainViewer/config.yaml
 
-  radar1: !include PiClock3/Radar/config.yaml
+  radar1: !include PiClock3/MapLoop/config.yaml
   radar1--:
     block: clock-radar1
     base-provider: mapbox
-    radar-provider: librewxr
+    frame-provider: librewxr
     zoom: 7
     center:
       lattitude: '{location.lattitude}'
@@ -56,11 +56,11 @@ plugins:
         size: large
         image: teardrop-home
 
-  radar2: !include PiClock3/Radar/config.yaml
+  radar2: !include PiClock3/MapLoop/config.yaml
   radar2--:
     block: clock-radar2
     base-provider: mapbox
-    radar-provider: librewxr
+    frame-provider: librewxr
     zoom: 11
     center:
       lattitude: '{location.lattitude}'
@@ -73,21 +73,21 @@ plugins:
         size: medium
         image: teardrop-home
 
-  radar3: !include PiClock3/Radar/config.yaml
+  radar3: !include PiClock3/MapLoop/config.yaml
   radar3--:
     block: maps-radar1
     base-provider: mapbox
-    radar-provider: librewxr
+    frame-provider: librewxr
     zoom: 7
     center:
       lattitude: '{location.lattitude}'
       longitude: '{location.longitude}'
 
-  radar4: !include PiClock3/Radar/config.yaml
+  radar4: !include PiClock3/MapLoop/config.yaml
   radar4--:
     block: maps-radar2
     base-provider: mapbox
-    radar-provider: librewxr
+    frame-provider: librewxr
     zoom: 11
     center:
       lattitude: '{location.lattitude}'

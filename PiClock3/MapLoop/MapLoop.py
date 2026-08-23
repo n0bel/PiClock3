@@ -17,40 +17,40 @@ from ..Projection import (getCorners, getPoint, getTileXY, LatLng)
 
 logger = logging.getLogger(__name__)
 
-class Radar(Plugin):
+class MapLoop(Plugin):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
         self.baseProvider = self.piclock.plugins[self.config['base-provider']]
-        self.radarProvider = self.piclock.plugins[self.config['radar-provider']]
+        self.frameProvider = self.piclock.plugins[self.config['frame-provider']]
         self.mapPixmap = None
         self.markerPixmap = None
-        self.radarPixmaps = dict()
+        self.framePixmaps = dict()
         self.frame = 0
 
     def start(self):
-        self.radarMap = QLabel(self.block)
-        self.radarMap.setObjectName("radarMap")
+        self.baseLabel = QLabel(self.block)
+        self.baseLabel.setObjectName("baseLabel")
         rr = self.block.frameRect()
-        self.radarMap.setGeometry(rr)
-        self.radarMap.setStyleSheet("#radarMap { background-color: transparent; }")
-        self.radarMap.setAlignment(Qt.AlignCenter)
+        self.baseLabel.setGeometry(rr)
+        self.baseLabel.setStyleSheet("#baseLabel { background-color: transparent; }")
+        self.baseLabel.setAlignment(Qt.AlignCenter)
 
-        self.radar = QLabel(self.radarMap)
-        self.radar.setObjectName("radarx")
-        self.radar.setGeometry(0, 0, rr.width(), rr.height())
-        logger.debug("radar geom %s", self.radar.frameRect())
-        self.radar.setStyleSheet("#radarx { background-color: transparent; }")
+        self.frameLabel = QLabel(self.baseLabel)
+        self.frameLabel.setObjectName("frameLabel")
+        self.frameLabel.setGeometry(0, 0, rr.width(), rr.height())
+        logger.debug("maploop geom %s", self.frameLabel.frameRect())
+        self.frameLabel.setStyleSheet("#frameLabel { background-color: transparent; }")
 
-        self.radarOverlay = QLabel(self.radar)
-        self.radarOverlay.setObjectName("radarOverlay")
-        self.radarOverlay.setGeometry(0, 0, rr.width(), rr.height())
-        self.radarOverlay.setStyleSheet("#radarOverlay { background-color: transparent; }")
+        self.markerLabel = QLabel(self.frameLabel)
+        self.markerLabel.setObjectName("markerLabel")
+        self.markerLabel.setGeometry(0, 0, rr.width(), rr.height())
+        self.markerLabel.setStyleSheet("#markerLabel { background-color: transparent; }")
 
-        logger.debug("radar get map pixmap")        
+        logger.debug("maploop get map pixmap")        
         self.baseProvider.getMapPixmap(self.config, self.block.frameRect(), self.gotMapPixmap)
         self.interval = 60 * self.config.interval
-        self.frames = self.config.frames
+        self.frameCount = self.config.frames
         self.intervalTimer = QTimer()
         self.intervalTimer.timeout.connect(self.intervalTick)
         self.intervalTimer.start(1000  * self.interval)
@@ -69,30 +69,30 @@ class Radar(Plugin):
         logger.debug("tick %s %s", self.name, self.block.isVisible())
         if not self.block.isVisible():
             return
-        wanted = self.radarProvider.frameTimes(self.frames)
-        for t in list(self.radarPixmaps):
+        wanted = self.frameProvider.frameTimes(self.frameCount)
+        for t in list(self.framePixmaps):
             if t not in wanted:
-                self.radarPixmaps.pop(t)
+                self.framePixmaps.pop(t)
         self.getNextNeededFrame()
 
     def animationTick(self):
         if not self.block.isVisible():
             return;
-        frameTimes = sorted(self.radarPixmaps)
+        frameTimes = sorted(self.framePixmaps)
         if len(frameTimes) < 1: return
         if self.frame >= len(frameTimes):
             self.frame = -6;
         f = self.frame
         if f < 0:
             f = len(frameTimes) - 1
-        self.radar.setPixmap(self.radarPixmaps[frameTimes[f]])
+        self.frameLabel.setPixmap(self.framePixmaps[frameTimes[f]])
         self.frame += 1
         
     def gotMapPixmap(self, pixmap):
-        logger.info("radar got map pixmap");
+        logger.info("maploop got map pixmap");
         self.mapPixmap = pixmap;
         logger.debug("radar %s", pixmap.size())
-        self.radarMap.setPixmap(pixmap)
+        self.baseLabel.setPixmap(pixmap)
         self.makeMarkerPixmap()
         
     def makeMarkerPixmap(self):
@@ -152,24 +152,24 @@ class Radar(Plugin):
                 painter.drawImage(pt.x-mkh/2, pt.y-mkh/2, mk2)
         painter.end()
 
-        self.radarOverlay.setPixmap(self.markerPixmap)
+        self.markerLabel.setPixmap(self.markerPixmap)
 
     def getNextNeededFrame(self):
         if not self.block.isVisible():
             return
-        times = self.radarProvider.frameTimes(self.frames)
+        times = self.frameProvider.frameTimes(self.frameCount)
         if not times:
             QTimer.singleShot(2000, self.getNextNeededFrame)
             return
         for t in times:
-            if t not in self.radarPixmaps:
-                logger.debug("radar next needed frame %s",
+            if t not in self.framePixmaps:
+                logger.debug("maploop next needed frame %s",
                              time.asctime(time.localtime(t)))
-                self.radarProvider.getRadarPixmap(
-                    t, self.config, self.block.frameRect(), self.gotRadarPixmap)
+                self.frameProvider.getFramePixmap(
+                    t, self.config, self.block.frameRect(), self.gotFramePixmap)
                 return
 
-    def gotRadarPixmap(self, pixmap, timeSlot):
+    def gotFramePixmap(self, pixmap, timeSlot):
         logger.debug("got radar pixmap %s %s %s", pixmap, timeSlot, time.asctime(time.localtime(timeSlot)))
-        self.radarPixmaps[timeSlot] = pixmap
+        self.framePixmaps[timeSlot] = pixmap
         self.getNextNeededFrame()
