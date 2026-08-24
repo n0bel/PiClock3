@@ -1,1 +1,14 @@
 kind: current-conditions
+
+# Where the parts sit inside the region, as fractions of it - the same
+# geometry keys a page layout uses, against this region instead of a page.
+# A bare-number font-size is a fraction of the height it sits in.
+layout:
+  wxicon:    {horizontal-center: 0.0, top: -0.10, width: 0.6, height: 0.6}
+  wxdesc:    {left: 0.0, top: 0.40, width: 1.0, height: 0.6, font-size: 0.10}
+  temper:    {left: 0.0, top: 0.45, width: 1.0, height: 0.6, font-size: 0.20}
+  pressure:  {left: 0.0, top: 0.65, width: 1.0, height: 0.6, font-size: 0.10}
+  humidity:  {left: 0.0, top: 0.75, width: 1.0, height: 0.6, font-size: 0.07}
+  wind:      {left: 0.0, top: 0.82, width: 1.0, height: 0.6, font-size: 0.07}
+  feelslike: {left: 0.0, top: 0.89, width: 1.0, height: 0.6, font-size: 0.05}
+  wdate:     {left: 0.0, top: 0.95, width: 1.0, height: 0.6, font-size: 0.05}

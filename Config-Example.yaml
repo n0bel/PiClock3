@@ -17,8 +17,8 @@ providers:
   mapbox:     {plugin: PiClock3.Mapbox}
   googlemaps: {plugin: PiClock3.GoogleMaps}
 
-  # radar tiles, one plugin per service.  Neither needs a key.  Point a
-  # radar's frame-provider: at whichever of these you want.
+  # radar tiles - one plugin per service, neither needs a key.  Point a
+  # radar's frame-provider: at whichever you prefer.
   rainviewer: {plugin: PiClock3.RainViewer}
   librewxr:   {plugin: PiClock3.LibreWXR}
 

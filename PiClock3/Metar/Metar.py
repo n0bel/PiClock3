@@ -92,145 +92,40 @@ class Metar(Plugin):
         self.wxcommon = piclock.plugins['weather-common']
         self.wxconfig = self.wxcommon.config
 
-    def fontCalc(self, size):
-        return "%dpx" % (float(size) * self.region.frameRect().height())
+    def part(self, name, align=True):
+        """one labelled part of this region, placed by the plugin's layout.
+
+        The geometry keys are the ones a page layout uses, resolved against
+        this region rather than a page, so nothing about where these sit or
+        how big they are is written in the code.
+        """
+        spec = self.config['layout'][name]
+        rr = self.region.frameRect()
+        label = QLabel(self.region)
+        label.setObjectName(name)
+        style = 'background-color: transparent;'
+        if 'font-size' in spec:
+            props = self.piclock.scaleFont({'font-size': spec['font-size']},
+                                           rr.height())
+            style += ' color: %s; font-size: %s;' % (
+                self.piclock.expand(self.wxconfig.color), props['font-size'])
+        label.setStyleSheet('#%s { %s }' % (name, style))
+        if align:
+            label.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        label.setGeometry(self.piclock._regionRect(rr.width(), rr.height(),
+                                                   spec))
+        return label
 
     def start(self):
 
-        self.wxicon = QLabel(self.region)
-        self.wxicon.setObjectName("wxicon")
-
-        rr = self.region.frameRect()
-        w = int(rr.width() * .6)
-        h = int(rr.height() * .6)
-        x = rr.left() + int((rr.width() - w) / 2)
-        y = rr.top() - int(rr.height() * .1)
-        self.wxicon.setGeometry(x, y, w, h)
-        self.wxicon.setStyleSheet("#wxicon { background-color transparent; }")
-
-        self.wxdesc = QLabel(self.region)
-        self.wxdesc.setObjectName('wxdesc')
-        self.wxdesc.setStyleSheet("#wxdesc { background-color: transparent; color: " +
-                                  self.piclock.expand(self.wxconfig.color) +
-                                  "; font-size: " +
-                                  self.fontCalc(.1) +
-                                  "; " +
-                                  # Config.fontattr +
-                                  "}")
-        self.wxdesc.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        w = rr.width()
-        h = int(rr.height() * .6)
-        x = rr.left()
-        y = rr.top() + int(rr.height() * .4)
-        self.wxdesc.setGeometry(x, y, w, h)
-
-        self.temper = QLabel(self.region)
-        self.temper.setObjectName('temper')
-        self.temper.setStyleSheet("#temper { background-color: transparent; color: " +
-                                  self.piclock.expand(self.wxconfig.color) +
-                                  "; font-size: " +
-                                  self.fontCalc(.2) +
-                                  "; " +
-                                  # Config.fontattr +
-                                  "}")
-        self.temper.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        w = rr.width()
-        h = int(rr.height() * .6)
-        x = rr.left()
-        y = rr.top() + int(rr.height() * .45)
-        self.temper.setGeometry(x, y, w, h)
-
-        self.pressure = QLabel(self.region)
-        self.pressure.setObjectName('pressure')
-        self.pressure.setStyleSheet("#pressure { background-color: transparent; color: " +
-                                    self.piclock.expand(self.wxconfig.color) +
-                                    "; font-size: " +
-                                    self.fontCalc(.1) +
-                                    "; " +
-                                    # Config.fontattr +
-                                    "}")
-        self.pressure.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        w = rr.width()
-        h = int(rr.height() * .6)
-        x = rr.left()
-        y = rr.top() + int(rr.height() * .65)
-        self.pressure.setGeometry(x, y, w, h)
-
-        self.humidity = QLabel(self.region)
-        self.humidity.setObjectName('humidity')
-        self.humidity.setStyleSheet("#humidity { background-color: transparent; color: " +
-                                    self.piclock.expand(self.wxconfig.color) +
-                                    "; font-size: " +
-                                    self.fontCalc(.07) +
-                                    "; " +
-                                    # Config.fontattr +
-                                    "}")
-        self.humidity.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        w = rr.width()
-        h = int(rr.height() * .6)
-        x = rr.left()
-        y = rr.top() + int(rr.height() * .75)
-        self.humidity.setGeometry(x, y, w, h)
-
-        self.wind = QLabel(self.region)
-        self.wind.setObjectName('wind')
-        self.wind.setStyleSheet("#wind { background-color: transparent; color: " +
-                                self.piclock.expand(self.wxconfig.color) +
-                                "; font-size: " +
-                                self.fontCalc(.07) +
-                                "; " +
-                                # Config.fontattr +
-                                "}")
-        self.wind.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        w = rr.width()
-        h = int(rr.height() * .6)
-        x = rr.left()
-        y = rr.top() + int(rr.height() * .82)
-        self.wind.setGeometry(x, y, w, h)
-
-        self.feelslike = QLabel(self.region)
-        self.feelslike.setObjectName('feelslike')
-        self.feelslike.setStyleSheet("#feelslike { background-color: transparent; color: " +
-                                     self.piclock.expand(self.wxconfig.color) +
-                                     "; font-size: " +
-                                     self.fontCalc(.05) +
-                                     "; " +
-                                     # Config.fontattr +
-                                     "}")
-        self.feelslike.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        w = rr.width()
-        h = int(rr.height() * .6)
-        x = rr.left()
-        y = rr.top() + int(rr.height() * .89)
-        self.feelslike.setGeometry(x, y, w, h)
-
-        self.wdate = QLabel(self.region)
-        self.wdate.setObjectName('wdate')
-        self.wdate.setStyleSheet("#wdate { background-color: transparent; color: " +
-                                 self.piclock.expand(self.wxconfig.color) +
-                                 "; font-size: " +
-                                 self.fontCalc(.05) +
-                                 "; " +
-                                 # Config.fontattr +
-                                 "}")
-        self.wdate.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        w = rr.width()
-        h = int(rr.height() * .6)
-        x = rr.left()
-        y = rr.top() + int(rr.height() * .95)
-        self.wdate.setGeometry(x, y, w, h)
-
-        # self.clockrect = self.region.frameRect()
-        # self.w.setGeometry(self.clockrect)
-        # self.w.setStyleSheet(
-        #    "#w { background-color: transparent; " +
-        #    " font-family:sans-serif;" +
-        #    " font-weight: light;" +
-        #    " background-color: transparent;" +
-        #    " font-size: " + self.fontCalc(0.3) +
-        #    "}")
-        #
-        # self.wx
+        self.wxicon = self.part('wxicon', align=False)
+        self.wxdesc = self.part('wxdesc')
+        self.temper = self.part('temper')
+        self.pressure = self.part('pressure')
+        self.humidity = self.part('humidity')
+        self.wind = self.part('wind')
+        self.feelslike = self.part('feelslike')
+        self.wdate = self.part('wdate')
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.getMetar)
