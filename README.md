@@ -1,6 +1,6 @@
 # PiClock3
 
-> **23 August 2026 - the configuration format changed and older configs will
+> **August 23, 2026 - the configuration format changed and older configs will
 > not load.**  Pages now name a layout and a theme instead of including a tree
 > of blocks, and block names changed with it.  PiClock3 will tell you if it
 > sees an older config.  This only affects configurations written before that
@@ -27,7 +27,7 @@ and it is worth knowing what you are getting:
   handful of clocks they were written on.
 - **Things will keep moving.**  Plugin, layout and theme formats are settling
   but are not frozen, and a change that breaks configurations is still
-  possible - the one on 23 August 2026 was such a change.
+  possible - the one on August 23, 2026 was such a change.
 
 If you want a clock to simply rely on today, use the original PiClock
 (https://github.com/n0bel/PiClock) or this fork of it

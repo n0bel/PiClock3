@@ -1,9 +1,9 @@
-# Breaking configuration change - 23 August 2026
+# Breaking configuration change - August 23, 2026
 
 ## Does this apply to you?
 
 **Only if you already had a working PiClock3 configuration from before
-23 August 2026.**  If you are setting PiClock3 up for the first time, or you
+August 23, 2026.**  If you are setting PiClock3 up for the first time, or you
 started from the shipped `Config-Example.yaml` on or after that date, there is
 nothing here for you - use the README.
 
