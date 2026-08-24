@@ -54,6 +54,26 @@ python3 -m pip install --upgrade pip
 python3 -m pip install -r requirements.txt
 cp Config-Example.yaml Config.yaml
 cp ApiKeys-Example.yaml ApiKeys.yaml
+```
+
+**Now edit `ApiKeys.yaml`**, because what you just copied holds the word
+`'MAPBOXAPIKEY'` rather than a key.  The base map under a radar is the only
+thing that needs one, and either of these will do:
+
+  - Mapbox - https://account.mapbox.com - goes in `mbapi`
+  - Google Static Maps - https://console.cloud.google.com - goes in `googleapi`
+
+The example points its radars at Mapbox; if you got a Google key instead,
+change `base-provider: mapbox` to `base-provider: googlemaps` in
+`Config.yaml`.  Skip this and everything still runs - the radar simply
+animates over bare background with no map beneath it.
+
+Nothing else wants a key.  Radar frames are free from both RainViewer and
+LibreWXR, and so is the METAR.
+
+Then:
+
+```
 python3 PyQtPiClock3.py
 ```
 
@@ -66,28 +86,10 @@ Raspberry Pi OS should be fine and `requirements.txt` already resolves the
 right package versions for it by itself, but it has had less use, so say so
 if something breaks.
 
-### What you will see on that first run, and what to fix
-
-It will start, and the clock, the date, the almanac, the current conditions
-and the radar will all work.  Two things will be wrong until you fix them.
-
-**It thinks it is somewhere else.**  The example sits at 45, -93 with KLVN
-for its METAR, because it has to say something.  Set your own latitude and
-longitude and your nearest METAR station in `Config.yaml`.
-
-**There is no map under the radar.**  `ApiKeys-Example.yaml` carries
-placeholders, not keys, so copying it gives you `'MAPBOXAPIKEY'` and the map
-request is refused - the radar still animates, over bare background.  Get a
-key from one of
-
-  - Mapbox - https://account.mapbox.com  (`mbapi`)
-  - Google Static Maps - https://console.cloud.google.com  (`googleapi`)
-
-put it in `ApiKeys.yaml`, and point your radars at whichever you chose with
-`base-provider:`.  One of the two is enough.
-
-Nothing else wants a key.  The radar frames are free from both RainViewer
-and LibreWXR, and so is the METAR.
+The clock, the date, the almanac, the current conditions and the radar all
+work at this point - but it thinks it is somewhere else.  The example sits at
+45, -93 with KLVN for its METAR, because it has to say something.  Set your
+own latitude and longitude and your nearest METAR station in `Config.yaml`.
 
 ### The example configurations
 
