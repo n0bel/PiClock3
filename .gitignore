@@ -137,11 +137,10 @@ PyQtPiClock3.log*
 # the shells that put a toolchain on PATH here.  Local: the paths in them are
 # wherever this tree happens to live, which is nobody else's business.
 env*.bat
-ApiKeys.yaml*
-# a config of your own stays here and is never committed.  only the shipped
-# examples are, and they say so in the name.
+# your keys, and a config of your own.  Anchored, so the copies under
+# examples/ are not swept up with them.
+/ApiKeys.yaml*
 /Config*.yaml
-!/Config-Example*.yaml
 
 # installed plugins
 /plugins/*

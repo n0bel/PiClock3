@@ -1,6 +1,6 @@
 # PiClock3 - London.
 #
-# The same clock as Config-Example.yaml, set up somewhere else: London
+# The same clock as default.yaml, set up somewhere else: London
 # coordinates, Heathrow for the METAR, and metric units throughout.  It is
 # here to show what changes when you move - the location, the station and
 # the units - and what does not.

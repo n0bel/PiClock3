@@ -49,8 +49,8 @@ sudo apt update
 sudo apt install python3-pyqt5 python3-yaml
 python3 -m pip install --upgrade pip
 python3 -m pip install -r requirements.txt
-cp Config-Example.yaml Config.yaml
-cp ApiKeys-Example.yaml ApiKeys.yaml
+cp examples/default.yaml Config.yaml
+cp examples/ApiKeys.yaml ApiKeys.yaml
 ```
 
 **Now edit `ApiKeys.yaml`**, because what you just copied holds the word
@@ -90,30 +90,35 @@ own latitude and longitude and your nearest METAR station in `Config.yaml`.
 
 ### The example configurations
 
-`Config-Example.yaml` is the one to start from.  Most of the rest are the
-same clock wearing a different theme, so you can see what a theme changes
-without editing anything - run one directly rather than copying it:
+Everything under `examples/` is there to be read and copied, never loaded
+by itself.  `examples/default.yaml` is the one to start from; most of the
+rest are the same clock wearing a different theme, so you can see what a
+theme changes without editing anything - run one directly rather than
+copying it:
 
 ```
-python3 PyQtPiClock3.py Config-Example-Meadow.yaml
+python3 PyQtPiClock3.py examples/meadow.yaml
 ```
 
 | | |
 |---|---|
-| `Config-Example.yaml` | two pages, two themes - `circuit` for the clock, `stag` for the maps |
-| `Config-Example-Circuit.yaml` | orange circuitry on black, light-blue clock |
-| `Config-Example-Stag.yaml` | a stag at sunset |
-| `Config-Example-Archer.yaml` | an archer against an orange sky |
-| `Config-Example-Meadow.yaml` | butterflies over a bright meadow, dark-blue clock |
-| `Config-Example-Hairline.yaml` | the stag background with thin, hard-edged frames |
-| `Config-Example-London.yaml` | the Thames at night - and the same clock somewhere else: London, metric, its own timezone |
+| `examples/default.yaml` | two pages, two themes - `circuit` for the clock, `stag` for the maps |
+| `examples/circuit.yaml` | orange circuitry on black, light-blue clock |
+| `examples/stag.yaml` | a stag at sunset |
+| `examples/archer.yaml` | an archer against an orange sky |
+| `examples/meadow.yaml` | butterflies over a bright meadow, dark-blue clock |
+| `examples/hairline.yaml` | the stag background with thin, hard-edged frames |
+| `examples/london.yaml` | the Thames at night - and the same clock somewhere else: London, metric, its own timezone |
+| `examples/ApiKeys.yaml` | the keys file to copy, with links to where to get one |
 
 A theme is one line of a page: `maps-page: {order: 1, layout: bigmaps, theme:
 stag}`.  Writing your own is
 [PiClock3/themes/FRAME-ART.md](PiClock3/themes/FRAME-ART.md).
 
-Any config of your own is ignored by git, so it stays yours - only
-`Config-Example*.yaml` is tracked.
+`Config.yaml` and `ApiKeys.yaml` are ignored by git, so what you write
+stays yours.  A plugin can ship an `examples/` folder of its own, along with
+`themes/`, `layouts/` and `units/`, so it arrives complete rather than as
+code with a list of things to fetch separately.
 
 ### Plugins that ship and work
 

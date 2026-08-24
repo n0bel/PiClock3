@@ -4,12 +4,12 @@
 
 **Only if you already had a working PiClock3 configuration from before
 August 23, 2026.**  If you are setting PiClock3 up for the first time, or you
-started from the shipped `Config-Example.yaml` on or after that date, there is
+started from the shipped `examples/default.yaml` on or after that date, there is
 nothing here for you - use the README.
 
 ## Start over.  Do not convert.
 
-Copy `Config-Example.yaml` over your `Config.yaml` and set it up again.
+Copy `examples/default.yaml` to `Config.yaml` and set it up again.
 
 Do not try to migrate the old file.  Pages no longer carry a tree of blocks,
 the regions have different names, layouts and themes did not exist as files,
@@ -36,7 +36,7 @@ replaced rather than moved.
 
 ## Then change one thing at a time
 
-`Config-Example.yaml` ships two pages, two layouts and five themes that
+`examples/default.yaml` ships two pages, two layouts and five themes that
 already work together.  Get that running unmodified first, then edit.
 
 To pick a different look, change a page's `theme:`:
@@ -95,7 +95,7 @@ widgets:
     forecast-provider: openmeteo
 ```
 
-Starting again from `Config-Example.yaml` gets all of this already wired.
+Starting again from `examples/default.yaml` gets all of this already wired.
 
 For writing your own theme, or drawing frame art, see
 `PiClock3/themes/FRAME-ART.md`.

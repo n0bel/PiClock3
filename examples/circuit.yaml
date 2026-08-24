@@ -1,15 +1,13 @@
-# PiClock3 - the hairline theme on both pages.
+# PiClock3 - the circuit theme on both pages.
 #
-# Thin hard-edged frames rather than a glow, over the stag
-# background.  Sets inset: 1.0, because a hard edge has no fade
-# for content to sit back from.
+# Orange circuitry on black.  Light-blue clock and icons.
 #
-# Identical to Config-Example.yaml apart from the two theme: names
+# Identical to default.yaml apart from the two theme: names
 # below.  Set your own location: and METAR: KLVN using it.
 
 pages:
-  clock-page: {order: 0, layout: classic, theme: hairline}
-  maps-page:  {order: 1, layout: bigmaps, theme: hairline}
+  clock-page: {order: 0, layout: classic, theme: circuit}
+  maps-page:  {order: 1, layout: bigmaps, theme: circuit}
 
 language: !include PiClock3/Language-en.yaml
 locale:

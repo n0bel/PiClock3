@@ -125,7 +125,7 @@ class PiClock3(QWidget):
                 "each one names its plugin rather than including its file:\n\n"
                 "  widgets:\n"
                 "    radar1: {plugin: PiClock3.MapLoop, region: maps.1}\n\n"
-                "Start again from Config-Example.yaml rather than converting\n"
+                "Start again from examples/default.yaml rather than converting\n"
                 "this one.  See\n"
                 "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n")
         for pageName in self.config.pages:
@@ -137,7 +137,7 @@ class PiClock3(QWidget):
                     "and styling.  They now name a layout and a theme:\n\n"
                     "  pages:\n"
                     "    clock-page: {order: 0, layout: classic, theme: circuit}\n\n"
-                    "Start again from Config-Example.yaml rather than\n"
+                    "Start again from examples/default.yaml rather than\n"
                     "converting this one.  See\n"
                     "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n"
                     % pageName)

@@ -245,10 +245,10 @@ Themes in `PiClock3/themes/` are the shipped ones; a file of the same name in
 anything that ships.
 
 The top level is yours and is not committed - `themes/`, `layouts/` and
-`plugins/` are all in `.gitignore`, along with any `Config*.yaml` that is not
-a `Config-Example*.yaml`.  So a theme you are only trying out, or one carrying
+`plugins/` are all in `.gitignore`, along with `Config.yaml` and
+`ApiKeys.yaml` at the top level.  So a theme you are only trying out, or one carrying
 your own photographs, can sit there and stay off the repository.  The other
-side of that: anything a shipped `Config-Example*.yaml` names has to live under
+side of that: anything a shipped example names has to live under
 `PiClock3/`, or the example arrives at somebody else's clone with its theme
 missing.
 
