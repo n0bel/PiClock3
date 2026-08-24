@@ -43,11 +43,12 @@ To pick a different look, change a page's `theme:`:
 
 ```yaml
 pages:
-  clock-page: {order: 0, layout: classic, theme: kevin}
-  maps-page:  {order: 1, layout: bigmaps, theme: chris}
+  clock-page: {order: 0, layout: classic, theme: circuit}
+  maps-page:  {order: 1, layout: bigmaps, theme: stag}
 ```
 
-The shipped themes are `kevin`, `chris`, `jean`, `kelly` and `hairline`.
+The shipped themes are `circuit`, `stag`, `meadow`, `archer`, `london`
+and `hairline`.
 
 For writing your own theme, or drawing frame art, see
 `PiClock3/themes/FRAME-ART.md`.

@@ -1,5 +1,5 @@
-name: Kevin
-description: Orange traces on black
+name: Stag
+description: A stag at sunset, light-blue clock
 
 background: 'background.png'
 
@@ -29,6 +29,7 @@ borders:
 
 styles:
   centered:
+    font-size: 0.6
     qproperty-alignment: AlignCenter
   date:
     font-size: 0.75

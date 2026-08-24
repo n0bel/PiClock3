@@ -6,12 +6,12 @@ whatever box it is framing.  One file frames a box of any size, on any screen.
 
 Every theme is a folder holding its own art:
 
-    PiClock3/themes/jean/theme.yaml
-    PiClock3/themes/jean/background.png
-    PiClock3/themes/jean/frame.png
+    PiClock3/themes/meadow/theme.yaml
+    PiClock3/themes/meadow/background.png
+    PiClock3/themes/meadow/frame.png
 
-Four frames ship across the five themes.  `kevin`, `chris` and `kelly` carry
-the same soft-edged amber drawing, `jean` carries it in blue, and each is
+Four frames ship across the five themes.  `circuit`, `stag` and `archer` carry
+the same soft-edged amber drawing, `meadow` carries it in blue, and each is
 60x60, so 20x20 cells.  `hairline` carries a different drawing entirely - a
 solid hard-edged line, 24x24, so 8x8 cells - and the two kinds want different
 settings, which the rest of this explains.  `frame-green.png` sits beside this
@@ -22,8 +22,8 @@ file as a spare that no theme currently uses.
 A theme is a folder with a `theme.yaml` and whatever art it uses:
 
 ```yaml
-name: Jean
-description: The jean background
+name: Meadow
+description: The meadow background
 
 background: 'background.png'
 
@@ -204,10 +204,10 @@ the alpha channel:
 
 | file | color | where it came from |
 |---|---|---|
-| `kevin`, `chris`, `kelly` | `#fda400` | the original frame art; PiClock v1's kevin |
-| `jean` | `#11237e` | PiClock v1's jean |
+| `circuit`, `stag`, `archer` | `#fda400` | the original frame art; PiClock v1's circuit |
+| `meadow` | `#11237e` | PiClock v1's meadow |
 | `frame-green.png`, unused | `#1c5721` | PiClock v1's bedside and night configs |
-| `hairline` | `#ff8019` | the chris background's own sunset hue, at full strength |
+| `hairline` | `#ff8019` | the stag background's own sunset hue, at full strength |
 
 The three color frames are the same alpha with a different RGB, which is the
 whole point of building art that way: a new color costs nothing and loses
@@ -243,6 +243,14 @@ works with any layout.
 Themes in `PiClock3/themes/` are the shipped ones; a file of the same name in
 `themes/` at the top level wins, so you can try a frame without editing
 anything that ships.
+
+The top level is yours and is not committed - `themes/`, `layouts/` and
+`plugins/` are all in `.gitignore`, along with any `Config*.yaml` that is not
+a `Config-Example*.yaml`.  So a theme you are only trying out, or one carrying
+your own photographs, can sit there and stay off the repository.  The other
+side of that: anything a shipped `Config-Example*.yaml` names has to live under
+`PiClock3/`, or the example arrives at somebody else's clone with its theme
+missing.
 
 A theme can be a file or a folder.  All of these are found:
 

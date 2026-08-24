@@ -1,19 +1,17 @@
-name: Jean
-description: The jean background
+name: Archer
+description: An archer against an orange sky, light-blue clock
 
 background: 'background.png'
 
 # art sets the plugins ship; a theme picks which
-clock-art:     darkblue
-weather-icons: icons-darkblue
+clock-art:     lightblue
+weather-icons: icons-lightblue
 
 default:
   font-size: 0.02        # a fraction of the screen height
   font-family: Arial
   background-color: transparent
-  # v1's Config-Jean.py used #042299 against this bright background;
-  # #bef is for the dark ones and gives 1.7:1 here, which is unreadable
-  color: '#042299'
+  color: '#bef'
 
 borders:
   # a 3x3 sheet, so the slice is a third of it - the art describes its own
@@ -31,6 +29,7 @@ borders:
 
 styles:
   centered:
+    font-size: 0.6
     qproperty-alignment: AlignCenter
   date:
     font-size: 0.75

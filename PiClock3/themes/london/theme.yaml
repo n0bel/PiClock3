@@ -1,6 +1,13 @@
-name: Chris
-description: The chris background
+name: London
+description: The Thames at night, light-blue clock
 
+# The background is "London Skyline" by Sushant Sakhalkar, from Wikimedia
+# Commons, released under CC0 1.0 Universal - a public domain dedication, so
+# nothing here needs crediting and nothing is owed.  It is recorded anyway,
+# because knowing where a file came from is worth more than the licence
+# demands:
+#   https://commons.wikimedia.org/wiki/File:London_Skyline_(199638369).jpeg
+# Cropped from 2048x1365 to 1440x900; nothing else was changed.
 background: 'background.png'
 
 # art sets the plugins ship; a theme picks which
@@ -29,6 +36,7 @@ borders:
 
 styles:
   centered:
+    font-size: 0.6
     qproperty-alignment: AlignCenter
   date:
     font-size: 0.75
