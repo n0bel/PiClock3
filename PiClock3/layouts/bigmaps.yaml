@@ -5,5 +5,6 @@ provides: [radars, caption]
 
 regions:
   radars:  {left: 0.05, top: 0.05, width: 0.9,  height: 0.8,
+            border: radar,
             repeat: {count: 2, direction: across, gap: 0.1111}}
   caption: {left: 0.0,  bottom: 0.0, width: 1.0, height: 0.05, style: centered}

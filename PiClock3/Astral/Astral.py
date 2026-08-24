@@ -35,18 +35,28 @@ class Astral(Plugin):
 
     def doAstral(self):
 
-        now = datetime.datetime.today()
+        now = self.piclock.now()
         if now.day != self.lastDay:
             self.lastDay = now.day
         else:
             return
 
         locationInfo = LocationInfo('here', 'here',
-                                    tzlocal.get_localzone_name(),
+                                    self.piclock.timezone().key,
                                     self.piclock.expand(
                                         self.config.location.lattitude),
                                     self.piclock.expand(self.config.location.longitude))
-        s = sun(locationInfo.observer, date=now, tzinfo=locationInfo.timezone)
+        try:
+            s = sun(locationInfo.observer, date=now, tzinfo=locationInfo.timezone)
+        except ValueError as e:
+            # astral looks for the event inside the given day in the given
+            # zone, so a location far east or west of that zone - or one
+            # inside a polar summer or winter - has no sunrise to find.
+            # The moon below still does, so say so and carry on.
+            logger.warning("no sun times for %s,%s in %s: %s",
+                           locationInfo.latitude, locationInfo.longitude,
+                           locationInfo.timezone, e)
+            s = {}
 
         for key, value in s.items():
             logger.info("sun info %s %s", key, value)
@@ -56,7 +66,11 @@ class Astral(Plugin):
             self.phaseWords(m))
         self.pluginData['moonage'] = m
         # self.pluginData['sunrise'] = s['sunrise']
-        ds = self.piclock.expand(self.config.format)
+        try:
+            ds = self.piclock.expand(self.config.format)
+        except (KeyError, ValueError, TypeError) as e:
+            logger.warning("almanac format %r: %s", self.config.format, e)
+            ds = ''
         self.region.setText(ds)
 
     def phaseWords(self, phase):

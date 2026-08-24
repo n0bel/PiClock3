@@ -82,7 +82,7 @@ class Plugin(Plugin):
         return
 
     def tick(self):
-        time_now = datetime.datetime.now()
+        time_now = self.piclock.now()
         if 'locale' in self.config:
             try:
                 locale.setlocale(locale.LC_TIME, self.config.locale)

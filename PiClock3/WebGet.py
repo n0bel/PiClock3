@@ -13,6 +13,12 @@ def safeurl(url):
 
 class WebGet(QObject):
     webGets = []
+    # one manager for the whole application.  A manager per request means a
+    # fresh connection pool per request, and a page of large radars asks for
+    # dozens at once - enough of them to stall the gui thread for twenty
+    # seconds before anything is painted.  Shared, Qt keeps its own pool and
+    # queues the rest.
+    sharedManager = None
     
     def __init__(self, url, callback, params=None, manager=None):
         super().__init__()
@@ -22,7 +28,9 @@ class WebGet(QObject):
         self.callback = callback
         self.params = params if params is not None else {}
         if self.manager == None:
-            self.manager = QtNetwork.QNetworkAccessManager(self)
+            if WebGet.sharedManager is None:
+                WebGet.sharedManager = QtNetwork.QNetworkAccessManager()
+            self.manager = WebGet.sharedManager
         self.request = QNetworkRequest(QUrl(self.url))
         self.reply = self.manager.get(self.request)
         self.reply.finished.connect(self.finished)

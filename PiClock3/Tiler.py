@@ -43,27 +43,41 @@ class TileFetcher():
         self.xTiles = len(list(self.tiles.values())[0])
         logger.debug("tiler %dx%d tiles for %dx%d px at zoom %d",
                      self.xTiles, self.yTiles, width, height, zoom)
-        self.getNextNeededTile()
+        self.getTiles()
 
-    def getNextNeededTile(self):
-        for y in self.tiles:
-            for x in self.tiles[y]:
-                if 'image' not in self.tiles[y][x]:
-                    WebGet(self.tileurl(self.zoom, x, y),
-                           self.gotNextNeededTile, {'x': x, 'y': y})
-                    return
-        pixmap = self.combineTiles()
-        TileFetcher.fetchers.remove(self)
-        self.callback(pixmap, self.params)
+    def getTiles(self):
+        """ask for every tile of this frame at once.
 
-    def gotNextNeededTile(self, error, data, params):
+        The tiles are independent of each other and only the finished set
+        is of any use, so waiting for one before asking for the next just
+        multiplies the round trip by the size of the grid - six deep on a
+        typical radar, and each frame of the loop pays it again.
+        """
+        wanted = [(y, x) for y in self.tiles for x in self.tiles[y]]
+        self.pending = len(wanted)
+        if not self.pending:
+            self.finish()
+            return
+        for y, x in wanted:
+            WebGet(self.tileurl(self.zoom, x, y),
+                   self.gotTile, {'x': x, 'y': y})
+
+    def gotTile(self, error, data, params):
         i = QImage()
         if error == QNetworkReply.NoError:
             i.loadFromData(data)
         else:
             logger.debug("tile %d,%d failed: %s", params['x'], params['y'], error)
         self.tiles[params['y']][params['x']]['image'] = i
-        self.getNextNeededTile()
+        self.pending -= 1
+        if self.pending < 1:
+            self.finish()
+
+    def finish(self):
+        pixmap = self.combineTiles()
+        if self in TileFetcher.fetchers:
+            TileFetcher.fetchers.remove(self)
+        self.callback(pixmap, self.params)
 
     def combineTiles(self):
         ts = self.tilesize
@@ -75,8 +89,8 @@ class TileFetcher():
         for y in self.tiles:
             xp = 0
             for x in self.tiles[y]:
-                tile = self.tiles[y][x]['image']
-                if not tile.isNull():
+                tile = self.tiles[y][x].get('image')
+                if tile is not None and not tile.isNull():
                     painter.drawImage(xp, yp, tile)
                 xp += ts
             yp += ts

@@ -36,7 +36,7 @@ class Date(Plugin):
             except BaseException:
                 pass
 
-        now = datetime.datetime.now()
+        now = self.piclock.now()
         if now.day != self.lastDay:
             self.lastDay = now.day
         else:

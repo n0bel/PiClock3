@@ -39,7 +39,7 @@ class DigitalClock(Plugin):
             " font-weight: light; color: " +
             lcolor +
             "; background-color: transparent; font-size: " +
-            self.fontCalc(0.3) +
+            self.fontCalc(self.config['font-size']) +
             extraAttributes +
             "}")
         logging.info(self.clockface.styleSheet())
@@ -60,12 +60,13 @@ class DigitalClock(Plugin):
         return
 
     def tick(self):
-        now = datetime.datetime.now()
+        now = self.piclock.now()
         self.pluginData.now = now
         timestr = self.piclock.expand(self.config.format)
         if self.config.format.find("%I") > -1:
             if timestr[0] == '0':
                 timestr = timestr[1:99]
         if self.lasttimestr != timestr:
-            self.clockface.setText(timestr.lower())
+            self.clockface.setText(
+                timestr.lower() if self.config['lowercase'] else timestr)
         self.lasttimestr = timestr

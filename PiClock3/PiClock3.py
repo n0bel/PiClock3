@@ -1,9 +1,12 @@
+import datetime
 import importlib
 import inspect
 import logging
 import logging.handlers
 import os
+import zoneinfo
 
+import tzlocal
 import yaml
 
 from PyQt5 import (QtNetwork)
@@ -133,7 +136,7 @@ class PiClock3(QWidget):
                     "Pages used to include a tree of blocks mixing geometry\n"
                     "and styling.  They now name a layout and a theme:\n\n"
                     "  pages:\n"
-                    "    clock-page: {order: 0, layout: classic, theme: kevin}\n\n"
+                    "    clock-page: {order: 0, layout: classic, theme: circuit}\n\n"
                     "Start again from Config-Example.yaml rather than\n"
                     "converting this one.  See\n"
                     "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n"
@@ -321,6 +324,17 @@ class PiClock3(QWidget):
                                  region, theme)
             return
 
+        # a repeat whose cells are held apart is a row of separate boxes, so
+        # each one is framed on its own.  Only cells that butt together
+        # share a frame, with a rule drawn where they meet - putting a gap
+        # inside a single frame leaves a hole in the middle of the box with
+        # a rule floating in it.
+        if rep and self._repeatPad(rect, rep):
+            for i, cell in enumerate(self._cellRects(rect, rep, 0)):
+                self._framedBox(parent, '%s.%d' % (name, i + 1), cell,
+                                region, theme, border)
+            return
+
         # the frame goes on top of the content, so the glow falls across it
         # the way a light does.  content under the frame would cut the tube
         # in half and make a fading edge look like a drop-off one.
@@ -355,6 +369,24 @@ class PiClock3(QWidget):
                     self._makeDivider(container, '%s.%d-rule' % (name, i + 1),
                                       border, cell, across, bw, pad,
                                       parent.height())
+
+    def _framedBox(self, parent, name, rect, region, theme, border):
+        """one region inside a frame of its own"""
+        container = QWidget(parent)
+        container.setObjectName(self.qtName(name) + '-group')
+        container.setGeometry(rect)
+
+        bw = self.borderWidth(border, parent.height())
+        pull = self.borderPull(border, bw)
+        area = QRect(bw, bw, rect.width() - bw * 2, rect.height() - bw * 2)
+        self._makeRegion(container, name,
+                         area.adjusted(-pull, -pull, pull, pull), region, theme)
+
+        qt = self.qtName(name) + '-frame'
+        frame = QLabel(container)
+        frame.setObjectName(qt)
+        frame.setGeometry(0, 0, rect.width(), rect.height())
+        frame.setStyleSheet(self.borderStyle(qt, border, parent.height()))
 
     def _repeatPad(self, area, rep):
         across = rep.get('direction') == 'across'
@@ -570,6 +602,33 @@ class PiClock3(QWidget):
         for element in style:
             styleString += ' ' + element + ': ' + str(style[element]) + ';'
         return styleString
+
+    def timezone(self):
+        """the zone of the location: this clock is pointed at.
+
+        A clock standing where it is pointed needs nothing here - the
+        machine's own zone is right.  One showing somewhere else has to say
+        so, or it would draw that city's sunrise beside this city's time.
+        """
+        raw = None
+        if 'location' in self.config and 'timezone' in self.config.location:
+            raw = self.config.location.timezone
+        name = raw.strip() if isinstance(raw, str) else ''
+        if name:
+            try:
+                return zoneinfo.ZoneInfo(name)
+            except Exception as e:
+                logger.warning("timezone %r unknown, using this machine's: %s",
+                               name, e)
+        return zoneinfo.ZoneInfo(tzlocal.get_localzone_name())
+
+    def now(self):
+        """the current time where the clock is pointed"""
+        return datetime.datetime.now(self.timezone())
+
+    def localtime(self, stamp):
+        """a unix timestamp as a time where the clock is pointed"""
+        return datetime.datetime.fromtimestamp(stamp, self.timezone())
 
     def language(self, s):
         s = s.replace(' ', '_').lower()

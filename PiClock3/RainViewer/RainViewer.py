@@ -96,8 +96,10 @@ class RainViewer(Plugin):
         def tileurl(z, x, y):
             return tail % (z, x, y)
 
+        # the radar frame is stamped in the clock's zone, so a London
+        # config reads London time on the radar too
         caption = "{0:%H:%M} ".format(
-            datetime.datetime.fromtimestamp(timeSlot)) + ATTRIBUTION
+            self.piclock.localtime(timeSlot)) + ATTRIBUTION
         TileFetcher(view.center, view.zoom,
                     view.rect.width(), view.rect.height(),
                     tileurl, callback, caption=caption, params=timeSlot)

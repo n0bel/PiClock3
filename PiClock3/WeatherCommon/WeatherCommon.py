@@ -18,7 +18,7 @@ class WeatherCommon(Plugin):
         return
 
     def daytime(self):
-        hour = datetime.datetime.now().hour
+        hour = self.piclock.now().hour
         if hour >= 18 or hour < 6:
             return False
         return True
