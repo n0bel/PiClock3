@@ -1,14 +1,68 @@
-# Drawing a frame for PiClock3
+# Themes and frame art
 
 A frame is **one PNG holding a 3x3 grid of cells**.  PiClock3 slices it into
 nine pieces, keeps the corners as corners, and stretches the edges along
 whatever box it is framing.  One file frames a box of any size, on any screen.
 
-Four frames ship.  `frame-amber.png`, `frame-blue.png` and `frame-green.png`
-are one soft-edged drawing in three colors, 60x60, so 20x20 cells.
-`frame-hairline.png` is a different drawing entirely - a solid hard-edged
-line, 24x24, so 8x8 cells - and the two kinds want different settings, which
-the rest of this explains.
+Every theme is a folder holding its own art:
+
+    PiClock3/themes/jean/theme.yaml
+    PiClock3/themes/jean/background.png
+    PiClock3/themes/jean/frame.png
+
+Four frames ship across the five themes.  `kevin`, `chris` and `kelly` carry
+the same soft-edged amber drawing, `jean` carries it in blue, and each is
+60x60, so 20x20 cells.  `hairline` carries a different drawing entirely - a
+solid hard-edged line, 24x24, so 8x8 cells - and the two kinds want different
+settings, which the rest of this explains.  `frame-green.png` sits beside this
+file as a spare that no theme currently uses.
+
+## Writing a theme
+
+A theme is a folder with a `theme.yaml` and whatever art it uses:
+
+```yaml
+name: Jean
+description: The jean background
+
+background: 'background.png'
+
+default:                     # cascades to everything on the page
+  font-size: 0.02            # a fraction of the screen height
+  font-family: Arial
+  background-color: transparent
+  color: '#042299'
+
+borders:
+  default:
+    art: 'frame.png'
+    width: 0.012             # frame weight, a fraction of screen height
+    inset: 0.5               # where content lands, a fraction of width
+  radar:
+    art: 'frame.png'
+    width: 0.012
+    inset: 0.5
+
+styles:                      # named, raw Qt stylesheet properties
+  date:
+    font-size: 0.75          # a bare number is a fraction of region height
+    qproperty-alignment: AlignCenter
+  bottom:
+    font-size: 0.5
+    qproperty-alignment: AlignCenter
+```
+
+`default:` sets the page-wide cascade, so pick `color:` against your
+background - a pale blue reads well on the dark ones and is close to
+invisible on a bright one.
+
+`styles:` are named sets of raw Qt stylesheet properties.  A layout region
+asks for one by name with `style: date`; a name a theme does not define is
+simply not applied.
+
+`borders:` are named frames.  A layout asks for `border: true` to get
+`default`, or `border: radar` for a named one, and an unknown name falls back
+to `default` so any theme works with any layout.
 
 ## The sheet
 
@@ -51,7 +105,7 @@ The theme says how heavy the frame is, as a fraction of **screen height**:
 ```yaml
 borders:
   default:
-    art: '{folders.image}/frame-amber.png'
+    art: 'frame.png'
     width: 0.012      # about 13px on a 1080p screen
 ```
 
@@ -104,7 +158,7 @@ The frame is drawn **over** the content, so at `0.5` the glow falls across
 the map the way a light would.  If content were drawn on top instead it
 would slice the tube in half and turn your fading edge into a drop-off one.
 
-`frame-hairline.png` is the first kind, and shows what that changes.  Every
+The `hairline` theme's frame is the first kind, and shows what that changes.  Every
 cell but the center is solid, so the line has no falloff at all - at any
 width it is N pixels of flat color and then content.  Its theme sets
 `inset: 1.0`, because there is no fade to pull content back out of; content
@@ -150,10 +204,10 @@ the alpha channel:
 
 | file | color | where it came from |
 |---|---|---|
-| `frame-amber.png` | `#fda400` | the original frame art; PiClock v1's kevin |
-| `frame-blue.png` | `#11237e` | PiClock v1's jean |
-| `frame-green.png` | `#1c5721` | PiClock v1's bedside and night configs |
-| `frame-hairline.png` | `#ff8019` | the chris background's own sunset hue, at full strength |
+| `kevin`, `chris`, `kelly` | `#fda400` | the original frame art; PiClock v1's kevin |
+| `jean` | `#11237e` | PiClock v1's jean |
+| `frame-green.png`, unused | `#1c5721` | PiClock v1's bedside and night configs |
+| `hairline` | `#ff8019` | the chris background's own sunset hue, at full strength |
 
 The three color frames are the same alpha with a different RGB, which is the
 whole point of building art that way: a new color costs nothing and loses
@@ -173,11 +227,11 @@ Drop the PNG next to the others and point a theme at it:
 ```yaml
 borders:
   default:
-    art: '{folders.image}/my-frame.png'
+    art: 'frame.png'
     width: 0.012
     inset: 0.5
   radar:
-    art: '{folders.image}/my-frame-heavy.png'
+    art: 'frame-heavy.png'
     width: 0.02
     inset: 0.75
 ```
@@ -203,8 +257,8 @@ someone else published works as a checkout with nothing to unpack.
 is relative to the folder the theme was loaded from, so write `art:
 'myframe.png'` and put the PNG beside the `.yaml`.  The theme never has to
 know where it was installed.  A path containing a `{placeholder}` is left
-alone - that is how the shipped themes reach the common image directory
-with `'{folders.image}/frame-amber.png'`.
+alone, so a theme can still reach something outside its own folder if it
+has to.
 
 ## Checking your work
 

@@ -1,11 +1,7 @@
-name: Kevin
-description: Orange traces on black
+name: Chris
+description: The chris background
 
-background: '{folders.image}/clockbackground-kevin.png'
-
-values:
-  icons: icons-lightblue
-  clockface: lightblue
+background: 'background.png'
 
 default:
   font-size: 0.02        # a fraction of the screen height
@@ -19,11 +15,11 @@ borders:
   # screen height, so a frame is the same weight on a small box as on a big
   # one, and the same at 800x600 as at 1920x1080.
   default:
-    art: '{folders.image}/frame-amber.png'
+    art: 'frame.png'
     width: 0.012
     inset: 0.5
   radar:
-    art: '{folders.image}/frame-amber.png'
+    art: 'frame.png'
     width: 0.012
     inset: 0.5
 

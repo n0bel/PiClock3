@@ -1,17 +1,15 @@
-name: Kelly
-description: The kelly background
+name: Jean
+description: The jean background
 
-background: '{folders.image}/clockbackground-kelly.png'
-
-values:
-  icons: icons-lightblue
-  clockface: lightblue
+background: 'background.png'
 
 default:
   font-size: 0.02        # a fraction of the screen height
   font-family: Arial
   background-color: transparent
-  color: '#bef'
+  # v1's Config-Jean.py used #042299 against this bright background;
+  # #bef is for the dark ones and gives 1.7:1 here, which is unreadable
+  color: '#042299'
 
 borders:
   # a 3x3 sheet, so the slice is a third of it - the art describes its own
@@ -19,11 +17,11 @@ borders:
   # screen height, so a frame is the same weight on a small box as on a big
   # one, and the same at 800x600 as at 1920x1080.
   default:
-    art: '{folders.image}/frame-amber.png'
+    art: 'frame.png'
     width: 0.012
     inset: 0.5
   radar:
-    art: '{folders.image}/frame-amber.png'
+    art: 'frame.png'
     width: 0.012
     inset: 0.5
 

@@ -1,11 +1,7 @@
 name: Hairline
 description: The chris background with thin, hard-edged frames
 
-background: '{folders.image}/clockbackground-chris.png'
-
-values:
-  icons: icons-lightblue
-  clockface: lightblue
+background: 'background.png'
 
 default:
   font-size: 0.02        # a fraction of the screen height
@@ -21,11 +17,11 @@ borders:
   # width is a fraction of screen height, so this stays a hairline on every
   # screen: 2px at 800x600, 3px at 1080p, 6px at 4k.
   default:
-    art: '{folders.image}/frame-hairline.png'
+    art: 'frame.png'
     width: 0.003
     inset: 1.0
   radar:
-    art: '{folders.image}/frame-hairline.png'
+    art: 'frame.png'
     width: 0.003
     inset: 1.0
 
