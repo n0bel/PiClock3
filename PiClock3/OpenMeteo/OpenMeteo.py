@@ -14,6 +14,7 @@ import datetime
 import json
 import logging
 
+from .. import Weather
 from ..Plugin import Plugin
 from ..WebGet import WebGet
 
@@ -116,10 +117,10 @@ class OpenMeteo(Plugin):
         # both grids in one request: the near hours in detail, then the days
         return (
             '%s?latitude=%s&longitude=%s'
-            '&current=weather_code,temperature_2m,relative_humidity_2m,'
+            '&current=weather_code,is_day,temperature_2m,relative_humidity_2m,'
             'apparent_temperature,pressure_msl,wind_speed_10m,'
             'wind_direction_10m,wind_gusts_10m'
-            '&hourly=weather_code,temperature_2m,precipitation_probability,'
+            '&hourly=weather_code,is_day,temperature_2m,precipitation_probability,'
             'precipitation'
             '&daily=weather_code,temperature_2m_max,temperature_2m_min,'
             'precipitation_probability_max,precipitation_sum'
@@ -171,7 +172,7 @@ class OpenMeteo(Plugin):
             icon, words = WMO.get(code, ('cloudy', ''))
             self.now = {
                 'when': datetime.datetime.fromisoformat(now['time']),
-                'icon': icon,
+                'icon': Weather.variant(icon, now.get('is_day')),
                 'description': words,
                 'temp': now.get('temperature_2m'),
                 'dew': None,
@@ -191,7 +192,7 @@ class OpenMeteo(Plugin):
             hours.append({
                 'when': datetime.datetime.fromisoformat(when),
                 'code': code,
-                'icon': icon,
+                'icon': Weather.variant(icon, self.at(hourly, 'is_day', i)),
                 'description': words,
                 'temp': self.at(hourly, 'temperature_2m', i),
                 'precip': self.at(hourly, 'precipitation_probability', i),

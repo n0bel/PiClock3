@@ -1,0 +1,53 @@
+# Named sets: a quantity, and which of its units to show.
+#
+# A set says only what it wants; anything it leaves out falls back to the
+# quantity's own base, so a set that has never heard of a quantity a plugin
+# added still works.  An unknown set name falls back to default.
+#
+# Named sets rather than a metric/imperial switch, because real preference is
+# not two-valued: nautical wants knots and nautical miles but Celsius, and a
+# US reader wants Fahrenheit and inches but often km/h for wind.
+
+sets:
+  default:
+    temperature: F
+    pressure: inHg
+    altimeter: inHg
+    speed: mph
+    direction: dir
+    depth: in
+    rate: in/h
+    distance: mi
+    altitude: ft
+    height: ft
+
+  metric:
+    temperature: C
+    pressure: hPa
+    altimeter: hPa
+    speed: kph
+    direction: dir
+    depth: mm
+    rate: mm/h
+    distance: km
+    altitude: m
+    height: m
+
+  SI:
+    temperature: K
+    pressure: Pa
+    altimeter: Pa
+    speed: mps
+    direction: rad
+    depth: mm
+    rate: mm/h
+    distance: m
+    altitude: m
+    height: m
+
+  nautical:
+    temperature: C
+    altimeter: inHg
+    speed: kt
+    distance: nmi
+    altitude: ft

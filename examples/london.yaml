@@ -21,16 +21,12 @@ location:
   # so the sunrise and sunset have to be London's
   timezone: Europe/London
 
+# what to show things in.  The sets ship in PiClock3/units; a units/ folder
+# of your own, or a plugin's, can add more.
+units: metric
+
 # Providers supply data and occupy no region.
 providers:
-  weather-common:
-    plugin: PiClock3.WeatherCommon
-    units:
-      temperature: C
-      length: mm
-      speed: kph
-      rate: mm/hr
-      pressure: mb
 
   # the daily forecast.  No key: Open-Meteo asks for none.
   openmeteo: {plugin: PiClock3.OpenMeteo}

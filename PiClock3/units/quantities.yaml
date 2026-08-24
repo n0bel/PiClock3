@@ -1,0 +1,107 @@
+# The conversion table, and the configuration for units at the same time.
+#
+# Each quantity names a base unit; every other unit is a factor and an offset
+# relative to it, so converting is two steps through the base rather than a
+# pair of rules for every combination.  Adding a unit is one line and it
+# converts to and from everything else for free.
+#
+#   value_in_base   = (value - offset) / factor
+#   value_in_target = value_in_base * factor + offset
+#
+# prefix and suffix belong to the unit, because a currency wants its symbol
+# in front and a temperature wants it behind.  precision is the default
+# number of decimals; a plugin or an instance can say otherwise.
+#
+# via: names a function registered in Units.py, for the conversions that are
+# lookups rather than arithmetic.
+#
+# Quantities are named for what wants a different unit, not for dimension.
+# depth, distance, altitude and height are all length and none of them want
+# the same one.
+
+temperature:
+  base: C
+  units:
+    C: {factor: 1,   offset: 0,      suffix: '°C', precision: 1}
+    F: {factor: 1.8, offset: 32,     suffix: '°F', precision: 1}
+    K: {factor: 1,   offset: 273.15, suffix: 'K',  precision: 1}
+
+# station pressure, as a barometer reads it
+pressure:
+  base: hPa
+  units:
+    hPa:  {factor: 1,          suffix: 'hPa',  precision: 1}
+    mb:   {factor: 1,          suffix: 'mb',   precision: 1}
+    Pa:   {factor: 100,        suffix: 'Pa',   precision: 0}
+    kPa:  {factor: 0.1,        suffix: 'kPa',  precision: 1}
+    inHg: {factor: 0.02952998, suffix: 'inHg', precision: 2}
+    mmHg: {factor: 0.7500617,  suffix: 'mmHg', precision: 0}
+
+# the same dimension, deliberately not the same quantity: an altimeter
+# setting is corrected to sea level, and mixing the two silently is how a
+# reading comes out 38mb wrong
+altimeter:
+  base: hPa
+  units:
+    hPa:  {factor: 1,          suffix: 'hPa',  precision: 1}
+    mb:   {factor: 1,          suffix: 'mb',   precision: 1}
+    Pa:   {factor: 100,        suffix: 'Pa',   precision: 0}
+    inHg: {factor: 0.02952998, suffix: 'inHg', precision: 2}
+    mmHg: {factor: 0.7500617,  suffix: 'mmHg', precision: 0}
+
+speed:
+  base: mps
+  units:
+    mps: {factor: 1,        suffix: 'm/s',  precision: 1}
+    kph: {factor: 3.6,      suffix: 'km/h', precision: 1}
+    mph: {factor: 2.236936, suffix: 'mph',  precision: 1}
+    kt:  {factor: 1.943844, suffix: 'kt',   precision: 0}
+
+direction:
+  base: deg
+  units:
+    deg: {factor: 1,          suffix: '°', precision: 0}
+    rad: {factor: 0.01745329, suffix: 'rad', precision: 2}
+    dir: {via: compass}
+
+# precipitation that has fallen
+depth:
+  base: mm
+  units:
+    mm: {factor: 1,          suffix: 'mm', precision: 1}
+    cm: {factor: 0.1,        suffix: 'cm', precision: 1}
+    in: {factor: 0.03937008, suffix: 'in', precision: 2}
+
+# precipitation while it falls
+rate:
+  base: mm/h
+  units:
+    mm/h: {factor: 1,          suffix: 'mm/hr', precision: 1}
+    cm/h: {factor: 0.1,        suffix: 'cm/hr', precision: 1}
+    in/h: {factor: 0.03937008, suffix: 'in/hr', precision: 2}
+
+# how far you can see
+distance:
+  base: m
+  units:
+    m:   {factor: 1,             suffix: 'm',   precision: 0}
+    km:  {factor: 0.001,         suffix: 'km',  precision: 1}
+    mi:  {factor: 0.0006213712,  suffix: 'mi',  precision: 1}
+    nmi: {factor: 0.0005399568,  suffix: 'nmi', precision: 1}
+    ft:  {factor: 3.280840,      suffix: 'ft',  precision: 0}
+
+# how high something is - cloud base, elevation
+altitude:
+  base: m
+  units:
+    m:  {factor: 1,       suffix: 'm',  precision: 0}
+    ft: {factor: 3.280840, suffix: 'ft', precision: 0}
+
+# how deep or how tall - tide, snow lying
+height:
+  base: m
+  units:
+    m:  {factor: 1,        suffix: 'm',  precision: 2}
+    cm: {factor: 100,      suffix: 'cm', precision: 0}
+    ft: {factor: 3.280840, suffix: 'ft', precision: 1}
+    in: {factor: 39.37008, suffix: 'in', precision: 0}

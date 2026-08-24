@@ -25,7 +25,6 @@ class CurrentConditions(Plugin):
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
         self.provider = piclock.plugins[self.config['conditions-provider']]
-        self.wxcommon = piclock.plugins['weather-common']
         self.parts = {}
 
     def start(self):
@@ -62,8 +61,7 @@ class CurrentConditions(Plugin):
         L = self.piclock.language
         temp, dew, wind = c.get('temp'), c.get('dew'), c.get('wind')
 
-        p = QtGui.QPixmap(self.wxcommon.icon(c.get('icon') or 'cloudy',
-                                             self.config['icons-folder']))
+        p = QtGui.QPixmap(self.icon(c.get('icon') or 'cloudy'))
         icon = self.parts['wxicon']
         icon.setPixmap(p.scaled(icon.width(), icon.height(),
                                 Qt.KeepAspectRatio, Qt.SmoothTransformation))
@@ -71,13 +69,13 @@ class CurrentConditions(Plugin):
 
         self.parts['temper'].setText(
             '' if temp is None
-            else self.wxcommon.units('temperature', 'C', temp))
+            else self.units('temperature', 'C', temp))
 
         press = c.get('pressure')
         self.parts['pressure'].setText(
             '' if press is None
             else '%s %s' % (L('pressure'),
-                            self.wxcommon.units('pressure', 'mb', press)))
+                            self.units('altimeter', 'mb', press)))
 
         self.parts['humidity'].setText(self.humidity(c, temp, dew))
         self.parts['wind'].setText(self.wind(c, wind))
@@ -91,12 +89,9 @@ class CurrentConditions(Plugin):
 
     def humidity(self, c, temp, dew):
         given = c.get('humidity')
-        if given is not None:
-            return '%s %.0f%%' % (self.piclock.language('humidity'), given)
-        if temp is None or dew is None:
+        if given is None:
             return ''
-        return '%s %s' % (self.piclock.language('humidity'),
-                          self.wxcommon.humidity(temp, dew))
+        return '%s %.0f%%' % (self.piclock.language('humidity'), given)
 
     def wind(self, c, speed):
         if speed is None:
@@ -104,20 +99,16 @@ class CurrentConditions(Plugin):
         L = self.piclock.language
         s = L('wind')
         if c.get('wind-dir') is not None:
-            s += ' ' + self.wxcommon.units('direction', 'deg', c['wind-dir'])
-        s += ' ' + self.wxcommon.units('speed', 'kph', speed)
+            s += ' ' + self.units('direction', 'deg', c['wind-dir'])
+        s += ' ' + self.units('speed', 'kph', speed)
         if c.get('gust') is not None:
             s += ' %s %s' % (L('gusting'),
-                             self.wxcommon.units('speed', 'kph', c['gust']))
+                             self.units('speed', 'kph', c['gust']))
         return s
 
     def feels(self, c, temp, dew, wind):
-        L = self.piclock.language
         given = c.get('feels-like')
-        if given is not None:
-            return '%s %s' % (L('feels_like'),
-                              self.wxcommon.units('temperature', 'C', given))
-        if temp is None or dew is None or wind is None:
+        if given is None:
             return ''
-        return '%s %s' % (L('feels_like'),
-                          self.wxcommon.feelsLike(temp, dew, wind))
+        return '%s %s' % (self.piclock.language('feels_like'),
+                          self.units('temperature', 'C', given))

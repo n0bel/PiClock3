@@ -32,7 +32,6 @@ class Forecast(Plugin):
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
         self.provider = piclock.plugins[self.config['forecast-provider']]
-        self.wxcommon = piclock.plugins['weather-common']
         self.cells = []
 
     def start(self):
@@ -108,8 +107,7 @@ class Forecast(Plugin):
                     cell[key].clear()
 
     def fill(self, cell, entry, when, figures):
-        p = QtGui.QPixmap(self.wxcommon.icon(entry['icon'],
-                                             self.config['icons-folder']))
+        p = QtGui.QPixmap(self.icon(entry['icon']))
         cell['icon'].setPixmap(p.scaled(
             cell['icon'].width(), cell['icon'].height(),
             Qt.KeepAspectRatio, Qt.SmoothTransformation))
@@ -138,7 +136,7 @@ class Forecast(Plugin):
         mm = entry.get('accum')
         if not mm:
             return ''
-        shown = self.wxcommon.units('length', 'mm', mm, decimals=1)
+        shown = self.units('depth', 'mm', mm)
         if float(''.join(c for c in shown if c.isdigit() or c == '.')) == 0:
             return ''
         word = self.piclock.language(
@@ -149,5 +147,5 @@ class Forecast(Plugin):
         """Celsius from the provider, in whole degrees"""
         if c is None:
             return ''
-        t = self.wxcommon.units('temperature', 'C', c, decimals=0)
+        t = self.units('temperature', 'C', c)
         return t if unit else t.rstrip('CF').rstrip('°')

@@ -21,7 +21,6 @@ location:
 
 # Providers supply data and occupy no region.
 providers:
-  weather-common: {plugin: PiClock3.WeatherCommon}
 
   # the daily forecast.  No key: Open-Meteo asks for none.
   openmeteo: {plugin: PiClock3.OpenMeteo}

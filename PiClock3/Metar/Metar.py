@@ -18,6 +18,7 @@ import random
 from PyQt5.QtCore import QTimer
 from metar import Metar as MetarModule
 
+from .. import Weather
 from ..Plugin import Plugin
 from ..WebGet import WebGet
 
@@ -151,24 +152,38 @@ class Metar(Plugin):
 
         f = MetarModule.Metar(line, strict=False)
         weather, icon = self.conditions(f)
+        when = f.time.replace(tzinfo=TimeZoneUTC()).astimezone(
+            self.piclock.timezone())
+        temp = f.temp.value('C') if f.temp else None
+        dew = f.dewpt.value('C') if f.dewpt else None
+        wind = f.wind_speed.value('KMH') if f.wind_speed else None
+
         self.observation = {
-            'when': f.time.replace(tzinfo=TimeZoneUTC()).astimezone(
-                self.piclock.timezone()),
+            'when': when,
             'station': self.config.METAR,
-            'icon': icon,
+            'icon': Weather.variant(icon, self.daytime(when)),
             'description': weather,
-            'temp': f.temp.value('C') if f.temp else None,
-            'dew': f.dewpt.value('C') if f.dewpt else None,
+            'temp': temp,
+            'dew': dew,
             'pressure': f.press.value('MB') if f.press else None,
-            'wind': f.wind_speed.value('KMH') if f.wind_speed else None,
+            'wind': wind,
             'wind-dir': f.wind_dir.value() if f.wind_dir else None,
             'gust': f.wind_gust.value('KMH') if f.wind_gust else None,
-            # a station reports temperature and dew point; the rest is derived
-            'humidity': None,
-            'feels-like': None,
+            # a station reports temperature and dew point and leaves the rest
+            # to the reader; the reader should not have to be a widget
+            'humidity': Weather.humidity(temp, dew),
+            'feels-like': Weather.feelsLike(temp, dew, wind),
         }
         for fn in self.listeners:
             fn()
+
+    def daytime(self, when):
+        """was the sun up over the station when it reported"""
+        return Weather.daytime(
+            when,
+            self.piclock.expand(self.piclock.config.location.lattitude),
+            self.piclock.expand(self.piclock.config.location.longitude),
+            self.piclock.timezone().key)
 
     def conditions(self, f):
         """the worst thing the report mentions, as words and an icon name"""

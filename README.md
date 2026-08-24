@@ -140,7 +140,11 @@ widgets and occupies no region of its own.
 | `OpenMeteo` | conditions and forecast from a model.  No key |
 | `Mapbox`, `GoogleMaps` | the base map under a radar - each needs a key |
 | `RainViewer`, `LibreWXR` | radar frames.  Neither needs a key |
-| `WeatherCommon` | units, day/night and icon selection |
+
+Units are core rather than a weather feature.  `units: metric` in a config
+picks a set - `default`, `metric`, `SI` or `nautical` ship - and the table
+behind it lives in `PiClock3/units/`, found the way themes and layouts are
+found, so a `units/` folder of your own or a plugin's merges over it.
 
 `CurrentConditions` and `Forecast` do not care which source they are given.
 A weather provider answers three questions - what it is doing now, the next

@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
 from .DottedDict import DottedDict
 from .Plugin import Plugin
+from .Units import Units
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,8 @@ class PiClock3(QWidget):
         super().__init__()
         self.screen = QApplication.desktop().screenGeometry()
         logging.info("%s" % self.screen)
+        self.units = Units(self)
+        self.units.load()
         self.initData()
         self.initWidgets()
         self.showFullScreen()
