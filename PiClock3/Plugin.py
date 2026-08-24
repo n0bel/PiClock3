@@ -14,7 +14,10 @@ class Plugin(QObject):
         self.pluginData = piclock.pluginData[name]
         if 'region' in config:
             self.regionName = config['region']
-            self.region = piclock.regions[self.regionName]
+            # always a list; a plugin that only understands one cell uses
+            # self.region and ignores the rest
+            self.regions = piclock.regionList(self.regionName)
+            self.region = self.regions[0]
 
     def start(self):
         return

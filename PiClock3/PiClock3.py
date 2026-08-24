@@ -433,6 +433,33 @@ class PiClock3(QWidget):
         self.config._merge(entry, config)
         return config
 
+    def regionList(self, name):
+        """every region a widget's region: refers to, in order.
+
+        a plain name is one region.  the name of a repeat gathers its cells,
+        which is unambiguous because a repeat registers only name.1 .. name.N
+        and never the bare name.  a list names them explicitly.
+        """
+        if isinstance(name, list):
+            missing = [n for n in name if n not in self.regions]
+            if missing:
+                raise SystemExit("no region named %s\n" % ", ".join(missing))
+            return [self.regions[n] for n in name]
+
+        if name in self.regions:
+            return [self.regions[name]]
+
+        head = name + '.'
+        cells = [k for k in self.regions
+                 if k.startswith(head) and k[len(head):].isdigit()]
+        if cells:
+            return [self.regions[k]
+                    for k in sorted(cells, key=lambda k: int(k.split('.')[-1]))]
+
+        raise SystemExit(
+            "no region or repeat named '%s'.  the layout defines: %s\n"
+            % (name, ', '.join(sorted(self.regions)) or 'nothing'))
+
     def loadModule(self, name, entry):
         if 'plugin' not in entry:
             raise SystemExit("%s does not say which plugin it is.  Add"
