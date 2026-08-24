@@ -1,2 +1,2 @@
-module: PiClock3.GoogleMaps
+kind: basemap
 apikey: '{apikeys.googleapi}'

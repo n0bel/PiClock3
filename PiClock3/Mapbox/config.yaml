@@ -1,2 +1,2 @@
-module: PiClock3.Mapbox
+kind: basemap
 apikey: '{apikeys.mbapi}'

@@ -104,10 +104,25 @@ class PiClock3(QWidget):
                 pageFrame.setVisible(True)
             pageFrame.pageNumber = i
 
-        for module in self.config.plugins:
-            self.loadModule(module, self.config.plugins[module])
+        # providers first: a widget names the providers it draws with, and
+        # they have to exist by the time it does
+        for section in ('providers', 'widgets'):
+            if section not in self.config:
+                continue
+            for name in self.config[section]:
+                self.loadModule(name, self.config[section][name])
 
     def _requireLayoutConfig(self):
+        if 'plugins' in self.config:
+            raise SystemExit(
+                "\nConfig.yaml still has a plugins: section.\n\n"
+                "Instances are now split into providers: and widgets:, and\n"
+                "each one names its plugin rather than including its file:\n\n"
+                "  widgets:\n"
+                "    radar1: {plugin: PiClock3.MapLoop, region: maps.1}\n\n"
+                "Start again from Config-Example.yaml rather than converting\n"
+                "this one.  See\n"
+                "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n")
         for pageName in self.config.pages:
             page = self.config.pages[pageName]
             if 'blocks' in page or 'layout' not in page:
@@ -400,8 +415,30 @@ class PiClock3(QWidget):
         self.regions[name] = w
         logging.debug("Region %s %s", name, rect)
 
-    def loadModule(self, name, moduleConfig):
-        mod = importlib.import_module(moduleConfig.module)
+    def pluginConfig(self, mod, entry):
+        """the plugin's own defaults with this instance merged over them.
+
+        the defaults live beside the plugin's code, so they are found from
+        the imported module rather than from a path anybody has to write
+        down - which is what makes a third-party plugin work the moment it
+        is cloned into plugins/.
+        """
+        config = DottedDict()
+        path = os.path.join(os.path.dirname(os.path.abspath(mod.__file__)),
+                            'config.yaml')
+        if os.path.isfile(path):
+            with open(path, encoding='utf-8') as fh:
+                defaults = yaml.safe_load(fh) or {}
+            self.config._merge(defaults, config)
+        self.config._merge(entry, config)
+        return config
+
+    def loadModule(self, name, entry):
+        if 'plugin' not in entry:
+            raise SystemExit("%s does not say which plugin it is.  Add"
+                             " plugin: <module>\n" % name)
+        mod = importlib.import_module(entry['plugin'])
+        moduleConfig = self.pluginConfig(mod, entry)
         logging.info('loading %s %s', mod, name)
         self.pluginData[name] = DottedDict()
         cls = None
@@ -414,7 +451,7 @@ class PiClock3(QWidget):
             cls = obj
             clsName = cname
         if cls is None:
-            raise TypeError('%s defines no Plugin subclass' % moduleConfig.module)
+            raise TypeError('%s defines no Plugin subclass' % entry['plugin'])
         logger.debug('found %s %s', cls, clsName)
         instance = cls(self, name, moduleConfig)
         self.plugins[name] = instance

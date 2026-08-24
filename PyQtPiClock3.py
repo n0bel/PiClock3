@@ -61,8 +61,14 @@ if __name__ == '__main__':
             sys.exit(1)
         ex = PiClock3(config)
         sys.exit(app.exec_())
-    except SystemExit:
-        pass
+    except SystemExit as e:
+        # sys.exit(app.exec_()) arrives here with an int, and that is a
+        # normal quit.  a SystemExit carrying a message is a config problem
+        # somebody needs to read, so say it and fail.
+        if isinstance(e.code, str):
+            sys.stderr.write(e.code)
+            logging.error('%s', e.code)
+            sys.exit(1)
     except Exception as e:
         logging.exception('Unhandled Error Caught at outermost level:')
         QMessageBox.critical(None, "Unhandled Error",

@@ -1,4 +1,4 @@
-module: PiClock3.WeatherCommon
+kind: weather
 refresh: 10
 icons-base-folder: '{plugin-folder}'
 icons-folder: 'icons-lightblue'

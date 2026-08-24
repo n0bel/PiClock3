@@ -87,8 +87,10 @@ class Metar(Plugin):
         self.temper = None
         self.wxdesc = None
         self.wxicon = None
-        self.wxconfig = self.piclock.config.plugins['weather-common']
+        # the merged config lives on the instance now, not in the config
+        # section, which holds only what the entry itself said
         self.wxcommon = piclock.plugins['weather-common']
+        self.wxconfig = self.wxcommon.config
 
     def fontCalc(self, size):
         return "%dpx" % (float(size) * self.region.frameRect().height())
@@ -236,7 +238,7 @@ class Metar(Plugin):
                              60 + random.uniform(1000, 10000)))
 
         self.getMetar()
-        logging.info("startup finished %s %s", self.name, self.module)
+        logging.info("startup finished %s %s", self.name, self.plugin)
 
     def pageChange(self):
         return

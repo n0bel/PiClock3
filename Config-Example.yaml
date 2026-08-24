@@ -1,35 +1,43 @@
 pages:
   clock-page: {order: 0, layout: classic, theme: kevin}
   maps-page:  {order: 1, layout: bigmaps, theme: chris}
+
 language: !include PiClock3/Language-en.yaml
 locale:
+
 location:
   lattitude: 45
   longitude: -93
 
-plugins:
-  clock: !include PiClock3/AnalogClock/config.yaml
-#  clock: !include PiClock3/DigitalClock/config.yaml
-  astral: !include PiClock3/Astral/config.yaml
-  weather-common: !include PiClock3/WeatherCommon/config.yaml
-  current-conditions: !include PiClock3/Metar/config.yaml
-  current-conditions--:
-    METAR: KLVN
-  date: !include PiClock3/Date/config.yaml
+# Providers supply data and occupy no region.
+providers:
+  weather-common: {plugin: PiClock3.WeatherCommon}
 
   # base map under the radar - needs a key in ApiKeys.yaml
-  mapbox: !include PiClock3/Mapbox/config.yaml
-  googlemaps: !include PiClock3/GoogleMaps/config.yaml
+  mapbox:     {plugin: PiClock3.Mapbox}
+  googlemaps: {plugin: PiClock3.GoogleMaps}
 
   # radar tiles.  librewxr needs no key and has no zoom cap;
   # rainviewer is the same plugin pointed at a different index.
-  librewxr: !include PiClock3/RainViewer/config.yaml
-  librewxr--:
+  rainviewer: {plugin: PiClock3.RainViewer}
+  librewxr:
+    plugin: PiClock3.RainViewer
     index: https://api.librewxr.net/public/weather-maps.json
-  rainviewer: !include PiClock3/RainViewer/config.yaml
 
-  radar1: !include PiClock3/MapLoop/config.yaml
-  radar1--:
+# Widgets occupy a region named by the page's layout, and draw in it.
+widgets:
+  clock:  {plugin: PiClock3.AnalogClock, region: clock}
+# clock:  {plugin: PiClock3.DigitalClock, region: clock}
+  date:   {plugin: PiClock3.Date,   region: date}
+  astral: {plugin: PiClock3.Astral, region: bottom}
+
+  current-conditions:
+    plugin: PiClock3.Metar
+    region: current
+    METAR: KLVN
+
+  radar1:
+    plugin: PiClock3.MapLoop
     region: maps.1
     base-provider: mapbox
     frame-provider: librewxr
@@ -45,8 +53,8 @@ plugins:
         size: large
         image: teardrop-home
 
-  radar2: !include PiClock3/MapLoop/config.yaml
-  radar2--:
+  radar2:
+    plugin: PiClock3.MapLoop
     region: maps.2
     base-provider: mapbox
     frame-provider: librewxr
@@ -62,8 +70,8 @@ plugins:
         size: medium
         image: teardrop-home
 
-  radar3: !include PiClock3/MapLoop/config.yaml
-  radar3--:
+  radar3:
+    plugin: PiClock3.MapLoop
     region: radars.1
     base-provider: mapbox
     frame-provider: librewxr
@@ -72,8 +80,8 @@ plugins:
       lattitude: '{location.lattitude}'
       longitude: '{location.longitude}'
 
-  radar4: !include PiClock3/MapLoop/config.yaml
-  radar4--:
+  radar4:
+    plugin: PiClock3.MapLoop
     region: radars.2
     base-provider: mapbox
     frame-provider: librewxr

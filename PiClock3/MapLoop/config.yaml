@@ -1,4 +1,4 @@
-module: PiClock3.MapLoop
+kind: radar
 interval: 10
 frames: 7
 dwell: 200

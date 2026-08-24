@@ -10,7 +10,7 @@ class Plugin(QObject):
         self.name = name
         self.piclock = piclock
         self.config = config
-        self.module = config.module
+        self.plugin = config['plugin'] if 'plugin' in config else None
         self.pluginData = piclock.pluginData[name]
         if 'region' in config:
             self.regionName = config['region']

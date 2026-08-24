@@ -1,4 +1,4 @@
-module: PiClock3.RainViewer
+kind: radar-frames
 index: https://api.rainviewer.com/public/weather-maps.json
 color: 6
 smooth: 1

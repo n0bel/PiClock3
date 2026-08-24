@@ -1,3 +1,2 @@
-module: PiClock3.Date
-region: date
+kind: date
 format: "{plugin-data.now:%A %B} {plugin-data.now.day}<sup>{plugin-data.sup}</sup> {plugin-data.now.year}"
