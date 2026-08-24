@@ -29,14 +29,13 @@ class GoogleMaps(Plugin):
     def pageChange(self):
         return
 
-    def getMapPixmap(self, radarConfig, frameRect, callback):
+    def getMapPixmap(self, view, radarConfig, callback):
+        frameRect = view.rect
         urlp = []
         if 'apikey' in self.config and len(self.config.apikey) > 0:
             urlp.append('key=' + self.piclock.expand(self.config.apikey))
-        urlp.append(
-            'center=' + str(self.piclock.expand(radarConfig.center.lattitude) +
-            ',' + str(self.piclock.expand(radarConfig.center.longitude))))
-        zoom = int(self.piclock.expand(str(radarConfig.zoom)))
+        urlp.append('center=%s,%s' % (view.center.lat, view.center.lng))
+        zoom = view.zoom
         rsize = frameRect.size()
         if rsize.width() > 640 or rsize.height() > 640:
             rsize = QSize(rsize.width() / 2, rsize.height() / 2)

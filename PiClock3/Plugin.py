@@ -25,5 +25,17 @@ class Plugin(QObject):
     def pageChange(self):
         return
 
+    def setting(self, name, provider, default):
+        """this instance, then the provider it is asking, then the default.
+
+        The provider tier is what lets a service that knows its own coverage
+        supply a sensible center or zoom for any widget that does not say.
+        """
+        if name in self.config:
+            return self.config[name]
+        if provider is not None and name in provider.config:
+            return provider.config[name]
+        return default
+
     def expand(self, s):
         return self.piclock.expand(s)

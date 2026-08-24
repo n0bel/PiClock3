@@ -13,9 +13,15 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QMessageBox, QListWidget,
                              QGridLayout, QListWidgetItem, QTableWidgetItem,
                              QLineEdit, QFrame)
 
-from ..Projection import (getCorners, getPoint, getTileXY, LatLng)
+from ..Projection import (getCorners, getPoint, getTileXY, LatLng,
+                          MapView)
 
 logger = logging.getLogger(__name__)
+
+# no data source has an opinion about where you live
+DEFAULT_CENTER = {'lattitude': '{location.lattitude}',
+                  'longitude': '{location.longitude}'}
+DEFAULT_ZOOM = 7
 
 class MapLoop(Plugin):
 
@@ -23,10 +29,21 @@ class MapLoop(Plugin):
         super().__init__(piclock, name, config)
         self.baseProvider = self.piclock.plugins[self.config['base-provider']]
         self.frameProvider = self.piclock.plugins[self.config['frame-provider']]
+        self.view = None
         self.mapPixmap = None
         self.markerPixmap = None
         self.framePixmaps = dict()
         self.frame = 0
+
+    def mapView(self):
+        """the one view every layer of this map uses"""
+        c = self.setting('center', self.frameProvider, DEFAULT_CENTER)
+        zoom = self.setting('zoom', self.frameProvider, DEFAULT_ZOOM)
+        return MapView(
+            LatLng(float(self.piclock.expand(str(c['lattitude']))),
+                   float(self.piclock.expand(str(c['longitude'])))),
+            int(self.piclock.expand(str(zoom))),
+            self.region.contentsRect())
 
     def start(self):
         self.baseLabel = QLabel(self.region)
@@ -48,7 +65,9 @@ class MapLoop(Plugin):
         self.markerLabel.setStyleSheet("#markerLabel { background-color: transparent; }")
 
         logger.debug("maploop get map pixmap")        
-        self.baseProvider.getMapPixmap(self.config, self.region.contentsRect(), self.gotMapPixmap)
+        self.view = self.mapView()
+        logger.debug('maploop view %s', self.view)
+        self.baseProvider.getMapPixmap(self.view, self.config, self.gotMapPixmap)
         self.interval = 60 * self.config.interval
         self.frameCount = self.config.frames
         self.intervalTimer = QTimer()
@@ -107,17 +126,13 @@ class MapLoop(Plugin):
         painter.begin(self.markerPixmap)
         #painter.fillRect(0, 0, self.mkpixmap.width(),
         #                 self.mkpixmap.height(), br)
-        center = LatLng(float(self.piclock.expand(self.config.center.lattitude)),
-                float(self.piclock.expand(self.config.center.longitude)))
         markers = self.config.markers if 'markers' in self.config else []
         for marker in markers:
             if 'visible' not in marker or marker['visible'] == 1:
                 loc = LatLng(float(self.piclock.expand(marker["location"]["lattitude"])),
                              float(self.piclock.expand(marker["location"]["longitude"])))
                 pt = getPoint(
-                    loc,
-                    center,
-                    int(self.piclock.expand(str(self.config.zoom))),
+                    loc, self.view.center, self.view.zoom,
                     self.mapPixmap.width(), self.mapPixmap.height())
                 mk2 = QImage()
                 mkfile = 'teardrop'
@@ -172,7 +187,7 @@ class MapLoop(Plugin):
                 logger.debug("maploop next needed frame %s",
                              time.asctime(time.localtime(t)))
                 self.frameProvider.getFramePixmap(
-                    t, self.config, self.region.contentsRect(), self.gotFramePixmap)
+                    t, self.view, self.config, self.gotFramePixmap)
                 return
 
     def gotFramePixmap(self, pixmap, timeSlot):

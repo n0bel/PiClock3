@@ -30,7 +30,8 @@ class MapBox(Plugin):
         return
 
 
-    def getMapPixmap(self, radarConfig, frameRect, callback):
+    def getMapPixmap(self, view, radarConfig, callback):
+        frameRect = view.rect
         logger.debug("mapbox getpixmap")
         #  note we're using google maps zoom factor.
         #  Mapbox equivilant zoom is one less
@@ -41,15 +42,15 @@ class MapBox(Plugin):
         if 'style' in radarConfig:
             style = radarConfig['style']
         rsize = frameRect.size()
-        zoom = int(self.piclock.expand(str(radarConfig.zoom))) - 1
+        zoom = view.zoom - 1
         if rsize.width() > 640 or rsize.height() > 640:
             rsize = QSize(rsize.width() / 2, rsize.height() / 2)
             zoom -= 1        
         mapUrl = 'https://api.mapbox.com/styles/v1/' + \
                style + \
                '/static/' + \
-               str(self.piclock.expand(radarConfig.center.longitude)) + ',' + \
-               str(self.piclock.expand(radarConfig.center.lattitude)) + ',' + \
+               str(view.center.lng) + ',' + \
+               str(view.center.lat) + ',' + \
                str(zoom) + ',0,0/' + \
                str(rsize.width()) + 'x' + str(rsize.height()) + \
                '?access_token=' + self.piclock.expand(self.config.apikey)

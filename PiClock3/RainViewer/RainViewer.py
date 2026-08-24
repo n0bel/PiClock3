@@ -81,7 +81,7 @@ class RainViewer(Plugin):
         snow = setting('snow', 1)
         return "/256/%%d/%%d/%%d/%d/%d_%d.png" % (color, smooth, snow)
 
-    def getFramePixmap(self, timeSlot, layerConfig, frameRect, callback):
+    def getFramePixmap(self, timeSlot, view, layerConfig, callback):
         self.freshen()
         path = self.frames.get(timeSlot)
         if path is None:
@@ -93,12 +93,8 @@ class RainViewer(Plugin):
         def tileurl(z, x, y):
             return tail % (z, x, y)
 
-        center = LatLng(
-            float(self.piclock.expand(layerConfig.center["lattitude"])),
-            float(self.piclock.expand(layerConfig.center["longitude"])))
         caption = "{0:%H:%M} ".format(
             datetime.datetime.fromtimestamp(timeSlot)) + self.attribution()
-        TileFetcher(center,
-                    int(self.piclock.expand(str(layerConfig.zoom))),
-                    frameRect.width(), frameRect.height(),
+        TileFetcher(view.center, view.zoom,
+                    view.rect.width(), view.rect.height(),
                     tileurl, callback, caption=caption, params=timeSlot)

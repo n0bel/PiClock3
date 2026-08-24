@@ -32,6 +32,25 @@ class Point:
         return "(x=%d,y=%d)" % (self.x, self.y)
 
 
+class MapView:
+    """where a map is looking, and how big it is drawn.
+
+    center, zoom and the rectangle are one thing: the base map, the radar
+    frames and the markers must all use the same values or they disagree.
+    The widget resolves them once and hands this over, so no layer is able
+    to hold a different answer.
+    """
+
+    def __init__(self, center, zoom, rect):
+        self.center = center
+        self.zoom = zoom
+        self.rect = rect
+
+    def __repr__(self):
+        return "MapView(%s, zoom %d, %dx%d)" % (
+            self.center, self.zoom, self.rect.width(), self.rect.height())
+
+
 class LatLng:
     def __init__(self, lt, ln):
         self.lat = lt
