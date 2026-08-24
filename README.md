@@ -66,13 +66,28 @@ Raspberry Pi OS should be fine and `requirements.txt` already resolves the
 right package versions for it by itself, but it has had less use, so say so
 if something breaks.
 
-Then set your own latitude and longitude, and your nearest METAR station, in
-`Config.yaml`.  Everything else in it already works.
+### What you will see on that first run, and what to fix
 
-A key is only needed for the base map under a radar - Mapbox or Google, one
-is enough - and `ApiKeys-Example.yaml` says where to get one.  The radar
-itself is free either way: neither RainViewer nor LibreWXR wants a key, and
-neither does the METAR.
+It will start, and the clock, the date, the almanac, the current conditions
+and the radar will all work.  Two things will be wrong until you fix them.
+
+**It thinks it is somewhere else.**  The example sits at 45, -93 with KLVN
+for its METAR, because it has to say something.  Set your own latitude and
+longitude and your nearest METAR station in `Config.yaml`.
+
+**There is no map under the radar.**  `ApiKeys-Example.yaml` carries
+placeholders, not keys, so copying it gives you `'MAPBOXAPIKEY'` and the map
+request is refused - the radar still animates, over bare background.  Get a
+key from one of
+
+  - Mapbox - https://account.mapbox.com  (`mbapi`)
+  - Google Static Maps - https://console.cloud.google.com  (`googleapi`)
+
+put it in `ApiKeys.yaml`, and point your radars at whichever you chose with
+`base-provider:`.  One of the two is enough.
+
+Nothing else wants a key.  The radar frames are free from both RainViewer
+and LibreWXR, and so is the METAR.
 
 ### The example configurations
 
