@@ -3,14 +3,10 @@ color: "#50CBEB"
 extra-font-attributes: ""
 format: "{plugin-data.now:%I:%M\n%S %p}"  # The format of the time
 
-# the clock face reads better as "10:24 pm" than "10:24 PM", but a
-# caption carrying a date does not - "sun aug 23" is not how a date
-# is written
+# a clock face reads better lowercased; a date does not
 lowercase: true
 
-# a fraction of the height of the region it sits in.  The clock face
-# fills its own region, so it is large; a caption sharing a thin strip
-# along the bottom of a page needs most of that strip instead.
+# a fraction of the height of the region it sits in
 font-size: 0.3
 
 from-theme:

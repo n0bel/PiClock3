@@ -1,0 +1,30 @@
+kind: current-conditions
+
+# Where the parts sit inside the region, as fractions of it - the same
+# geometry keys a page layout uses, against this region instead of a page.
+# A bare-number font-size is a fraction of the height it sits in.
+#
+# Sizes follow PiClock v1's conditions block.  The rows below the
+# temperature are set close, and the temperature closer still because
+# digits carry no descender.  The wind line is held back from the rest
+# because a provider that reports gusts writes the longest line here.
+# The icon keeps its aspect, so its height sets its drawn size; it
+# bleeds off the top of the region and the condition runs across it.
+layout:
+  wxicon:    {horizontal-center: 0.0, top: -0.10, width: 0.55, height: 0.537}
+  wxdesc:    {left: 0.0, top: 0.342, width: 1.0, height: 0.135, font-size: 0.090}
+  temper:    {left: 0.0, top: 0.414, width: 1.0, height: 0.360, font-size: 0.240}
+  pressure:  {left: 0.0, top: 0.644, width: 1.0, height: 0.158, font-size: 0.105}
+  humidity:  {left: 0.0, top: 0.737, width: 1.0, height: 0.158, font-size: 0.105}
+  wind:      {left: 0.0, top: 0.829, width: 1.0, height: 0.102, font-size: 0.068}
+  feelslike: {left: 0.0, top: 0.889, width: 1.0, height: 0.093, font-size: 0.062}
+  wdate:     {left: 0.0, top: 0.944, width: 1.0, height: 0.084, font-size: 0.056}
+
+# strftime, followed by whatever the source calls itself
+observed-format: '%H:%M'
+
+color: '#bef'
+icons-folder: icons-lightblue
+from-theme:
+  color: default.color
+  icons-folder: weather-icons

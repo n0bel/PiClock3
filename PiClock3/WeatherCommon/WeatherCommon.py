@@ -38,14 +38,15 @@ class WeatherCommon(Plugin):
             (folder or self.config['icons-folder']) + '/')
         return self.piclock.expand(iconsFolder + icon + ".png")
 
-    def units(self, utype, uin, data):
+    def units(self, utype, uin, data, decimals=1):
+        """a value converted into the units the config asked for"""
         uout = self.config.units[utype]
         if utype == 'temperature':
             if uin == 'F' and uout == 'C':
                 data = (data - 32.0) / 1.8
             elif uin == 'C' and uout == 'F':
                 data = data * 1.8 + 32.0
-            return '%.1f' % data + u'°' + uout
+            return ('%%.%df' % decimals) % data + u'°' + uout
         if utype == 'pressure':
             if uin == 'mb' and uout == 'in':
                 data = data / 33.863886666667
@@ -72,6 +73,21 @@ class WeatherCommon(Plugin):
                 return Compass.findHeading(data, 3).abbr
             else:
                 return str(data) + u'°'
+        if utype == 'length':
+            if uin == 'mm' and uout == 'in':
+                data = data / 25.4
+            elif uin == 'mm' and uout == 'cm':
+                data = data / 10.0
+            elif uin == 'in' and uout == 'mm':
+                data = data * 25.4
+            elif uin == 'in' and uout == 'cm':
+                data = data * 2.54
+            elif uin == 'cm' and uout == 'mm':
+                data = data * 10.0
+            elif uin == 'cm' and uout == 'in':
+                data = data / 2.54
+            return ('%%.%df' % decimals) % data + uout
+
         if utype == 'speed':
             if uin == 'mph' and (uout == 'kph' or uout == 'km/h'):
                 data = data * 1.609344

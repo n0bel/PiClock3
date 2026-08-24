@@ -44,7 +44,8 @@ class MapBox(Plugin):
         rsize = frameRect.size()
         zoom = view.zoom - 1
         if rsize.width() > 640 or rsize.height() > 640:
-            rsize = QSize(rsize.width() / 2, rsize.height() / 2)
+            # QSize takes ints
+            rsize = QSize(rsize.width() // 2, rsize.height() // 2)
             zoom -= 1        
         mapUrl = 'https://api.mapbox.com/styles/v1/' + \
                style + \

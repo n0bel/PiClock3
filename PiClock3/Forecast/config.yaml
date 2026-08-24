@@ -1,0 +1,36 @@
+kind: forecast
+
+# How many cells show what.  The near hours come first, because what the
+# weather does this afternoon matters more than what Thursday looks like.
+# These two should add up to the number of cells the region has - the classic
+# layout's forecast column has nine.
+hourly: 3
+daily: 6
+
+# hours between the hourly cells
+hourly-step: 3
+
+# strftime for the corner of a cell
+hour-format: '%A %I:%M%p'
+day-format: '%A'
+
+# Where the parts sit inside one cell, as fractions of it - the same geometry
+# keys a page layout uses, against the cell instead of a page.  A bare-number
+# font-size is a fraction of the height it sits in.
+layout:
+  icon: {left: 0.00, top: 0.00, width: 0.32, height: 1.00}
+  wx:   {left: 0.32, top: 0.02, width: 0.68, height: 0.74,
+         font-size: 0.20, align: left-top, wrap: true}
+  day:  {left: 0.32, bottom: 0.02, width: 0.68, height: 0.26,
+         font-size: 0.17, align: right-bottom}
+
+  # drawn once, in the last cell.  Removing it draws no credit, which
+  # Open-Meteo's licence does not allow.
+  attribution: {left: 0.0, bottom: 0.0, width: 1.0, height: 0.22,
+                font-size: 0.15, align: center}
+
+color: '#bef'
+icons-folder: icons-lightblue
+from-theme:
+  color: default.color
+  icons-folder: weather-icons

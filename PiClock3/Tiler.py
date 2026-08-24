@@ -46,13 +46,7 @@ class TileFetcher():
         self.getTiles()
 
     def getTiles(self):
-        """ask for every tile of this frame at once.
-
-        The tiles are independent of each other and only the finished set
-        is of any use, so waiting for one before asking for the next just
-        multiplies the round trip by the size of the grid - six deep on a
-        typical radar, and each frame of the loop pays it again.
-        """
+        """ask for every tile of this frame at once"""
         wanted = [(y, x) for y in self.tiles for x in self.tiles[y]]
         self.pending = len(wanted)
         if not self.pending:

@@ -7,12 +7,10 @@ from ..Tiler import TileFetcher
 HOST = 'https://api.librewxr.net'
 ATTRIBUTION = 'LibreWXR'
 
-# LibreWXR stamps every frame on a ten minute grid and names each one after
-# its own timestamp, so the frame list is arithmetic rather than something
-# to be fetched.  The current slot is always used: until the radar for it
-# lands the service answers with its nowcast for that minute, so the frame
-# is real either way, and a slot outside the window 404s rather than
-# pretending.  This is the same slot v1 asked for.
+# Every frame is named after its own timestamp on a ten minute grid, so the
+# frame list is arithmetic and needs no index.  The current slot always
+# answers: until its radar lands the service serves its nowcast for that
+# minute, and a slot outside the window 404s.
 INTERVAL = 600
 
 

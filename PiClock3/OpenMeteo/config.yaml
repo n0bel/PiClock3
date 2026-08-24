@@ -1,0 +1,14 @@
+kind: forecast-source
+
+# minutes.  A daily forecast does not change quickly, and the free tier is
+# meant to be treated gently.
+refresh: 30
+
+# how many days to ask for.  Open-Meteo will give up to 16; the classic
+# layout has room for 9.
+forecast-days: 9
+
+# the place the clock is pointed at
+location:
+    lattitude: "{location.lattitude}"
+    longitude: "{location.longitude}"

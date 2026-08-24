@@ -11,9 +11,7 @@ logger = logging.getLogger(__name__)
 
 INDEX_REFRESH = 300
 
-# facts about the service, not settings: there is no other index this plugin
-# could sensibly be pointed at, and the attribution names who supplied the
-# data rather than whatever host the url happened to have
+# facts about the service, not settings
 INDEX = 'https://api.rainviewer.com/public/weather-maps.json'
 ATTRIBUTION = 'RainViewer'
 

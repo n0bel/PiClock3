@@ -49,10 +49,8 @@ class Astral(Plugin):
         try:
             s = sun(locationInfo.observer, date=now, tzinfo=locationInfo.timezone)
         except ValueError as e:
-            # astral looks for the event inside the given day in the given
-            # zone, so a location far east or west of that zone - or one
-            # inside a polar summer or winter - has no sunrise to find.
-            # The moon below still does, so say so and carry on.
+            # astral looks for the event inside the given day in the
+            # given zone, so a far-off zone or a polar summer finds none
             logger.warning("no sun times for %s,%s in %s: %s",
                            locationInfo.latitude, locationInfo.longitude,
                            locationInfo.timezone, e)

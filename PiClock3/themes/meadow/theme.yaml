@@ -11,7 +11,7 @@ default:
   font-size: 0.02        # a fraction of the screen height
   font-family: Arial
   background-color: transparent
-  # the v1 config for this background used #042299;
+  # this background is bright, so the clock is dark:
   # #bef is for the dark ones and gives 1.7:1 here, which is unreadable
   color: '#042299'
 
@@ -37,5 +37,6 @@ styles:
     font-size: 0.75
     qproperty-alignment: AlignCenter
   bottom:
-    font-size: 0.5
+    # stays narrow enough to pass under the forecast column
+    font-size: 0.36
     qproperty-alignment: AlignCenter

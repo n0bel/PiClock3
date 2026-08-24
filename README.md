@@ -1,7 +1,7 @@
 # PiClock3
 
-> **August 23, 2026 - the configuration format changed and older configs will
-> not load.**  Pages now name a layout and a theme instead of including a tree
+> **August 23 and 24, 2026 - the configuration format changed and older
+> configs will not load.**  Pages now name a layout and a theme instead of including a tree
 > of blocks, and block names changed with it.  PiClock3 will tell you if it
 > sees an older config.  This only affects configurations written before that
 > date - see
@@ -20,9 +20,6 @@ finished.  It does work** - it has been running on real clocks throughout,
 and the shipped example configurations run as they are.  But it is not done,
 and it is worth knowing what you are getting:
 
-- **There is no forecast plugin yet.**  The `classic` layout reserves a
-  nine-cell column down the right hand side for it, so on that layout you
-  get nine empty framed boxes.  Everything else on the page works.
 - **There will be bugs.**  Whole areas have had little use outside the
   handful of clocks they were written on.
 - **Things will keep moving.**  Plugin, layout and theme formats are settling
@@ -128,23 +125,38 @@ widgets and occupies no region of its own.
 | `AnalogClock`, `DigitalClock` | the clock face, and any ticking line of text |
 | `Date` | the date across the top |
 | `Astral` | sunrise, sunset and moon phase |
-| `Metar` | current conditions, from a METAR station |
+| `CurrentConditions` | what the weather is doing now |
+| `Forecast` | the next few hours, then the next few days |
 | `MapLoop` | an animated radar over a base map |
 
 | provider | |
 |---|---|
+| `Metar` | an observation from an airfield.  No key, no forecast |
+| `OpenMeteo` | conditions and forecast from a model.  No key |
 | `Mapbox`, `GoogleMaps` | the base map under a radar - each needs a key |
 | `RainViewer`, `LibreWXR` | radar frames.  Neither needs a key |
 | `WeatherCommon` | units, day/night and icon selection |
+
+`CurrentConditions` and `Forecast` do not care which source they are given.
+A weather provider answers three questions - what it is doing now, the next
+hours, the next days - and answers empty for what it cannot know: a station
+has no forecast, so pointing `Forecast` at one draws nothing.  Point them at
+different sources if you like: a real observation from the field down the
+road, beside a model's forecast.
+
+Open-Meteo needs no key, but its data is CC-BY, so `Forecast` prints its
+name at the foot of the column.  A station's credit is the station id, which
+is what the conditions block shows beside the observation time.
 
 RainViewer stopped serving tiles above zoom 7 and returns a "Zoom Level Not
 Supported" image instead of an error, so a close radar wants `librewxr`.
 
 ### Not written yet
 
-* **A forecast plugin.**  This is the big one - `classic` reserves nine cells
-  for it and they stand empty until it exists.  Open-Meteo, OpenWeatherMap.
-* A current-conditions plugin that is not METAR - the same sources.
+* An OpenWeatherMap provider.  The widgets are ready for one - it only has to
+  answer the same three questions `OpenMeteo` does.
+* Wind and humidity in the forecast column; the provider already carries
+  them.
 
 
 I'll welcome any contributions.

@@ -16,6 +16,12 @@ location:
 providers:
   weather-common: {plugin: PiClock3.WeatherCommon}
 
+  # the daily forecast.  No key: Open-Meteo asks for none.
+  openmeteo: {plugin: PiClock3.OpenMeteo}
+
+  # an actual observation from a nearby field
+  metar: {plugin: PiClock3.Metar, METAR: KLVN}
+
   # base map under the radar - needs a key in ApiKeys.yaml
   mapbox:     {plugin: PiClock3.Mapbox}
   googlemaps: {plugin: PiClock3.GoogleMaps}
@@ -32,6 +38,12 @@ widgets:
   date:   {plugin: PiClock3.Date,   region: date}
   astral: {plugin: PiClock3.Astral, region: bottom}
 
+  # one day in each cell of the layout's forecast column
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+
   # the strip along the bottom of the maps page
   maps-caption:
     plugin: PiClock3.DigitalClock
@@ -41,9 +53,9 @@ widgets:
     font-size: 0.75
 
   current-conditions:
-    plugin: PiClock3.Metar
+    plugin: PiClock3.CurrentConditions
     region: current
-    METAR: KLVN
+    conditions-provider: metar
 
   radar1:
     plugin: PiClock3.MapLoop

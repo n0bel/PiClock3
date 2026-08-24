@@ -182,9 +182,8 @@ class MapLoop(Plugin):
         if not times:
             QTimer.singleShot(2000, self.getNextNeededFrame)
             return
-        # newest first, so the radar on screen is current within one
-        # request instead of after the whole loop has been filled in.
-        # The animation still runs oldest to newest - it sorts what it has.
+        # newest first, so the picture on screen is current within one
+        # request.  The animation sorts what it has, so order here is free.
         for t in reversed(times):
             if t not in self.framePixmaps:
                 logger.debug("maploop next needed frame %s",

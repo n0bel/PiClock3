@@ -50,5 +50,52 @@ pages:
 The shipped themes are `circuit`, `stag`, `meadow`, `archer`, `london`
 and `hairline`.
 
+## August 24, 2026 - conditions come from a provider
+
+A day later, and one more change of the same kind.  Reading the weather and
+drawing it are now separate, the way the radar already worked: a provider
+fetches, a widget draws, and the widget names the provider it wants.
+
+Where a config said this:
+
+```yaml
+widgets:
+  current-conditions:
+    plugin: PiClock3.Metar
+    region: current
+    METAR: KLVN
+```
+
+it now says this:
+
+```yaml
+providers:
+  metar: {plugin: PiClock3.Metar, METAR: KLVN}
+
+widgets:
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    conditions-provider: metar
+```
+
+What that buys is a choice.  `conditions-provider: openmeteo` draws the same
+block from a model instead of a station - useful where there is no airfield
+nearby - and the new `Forecast` widget fills the column `classic` has always
+reserved for it:
+
+```yaml
+providers:
+  openmeteo: {plugin: PiClock3.OpenMeteo}
+
+widgets:
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+```
+
+Starting again from `Config-Example.yaml` gets all of this already wired.
+
 For writing your own theme, or drawing frame art, see
 `PiClock3/themes/FRAME-ART.md`.

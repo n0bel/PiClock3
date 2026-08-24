@@ -13,11 +13,8 @@ def safeurl(url):
 
 class WebGet(QObject):
     webGets = []
-    # one manager for the whole application.  A manager per request means a
-    # fresh connection pool per request, and a page of large radars asks for
-    # dozens at once - enough of them to stall the gui thread for twenty
-    # seconds before anything is painted.  Shared, Qt keeps its own pool and
-    # queues the rest.
+    # one manager for the whole application - a manager per request is a
+    # connection pool per request
     sharedManager = None
     
     def __init__(self, url, callback, params=None, manager=None):

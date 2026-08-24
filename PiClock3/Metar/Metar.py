@@ -1,17 +1,29 @@
+"""A METAR station report, as a weather source.
+
+METAR is an hourly observation from an airfield: what the sky is actually
+doing at one point on the ground, rather than what a model expects.  It has
+no forecast of any kind, so hourly() and daily() answer empty and a widget
+asking for them gets nothing rather than a guess.
+
+Reports come from the NWS text feed, one file per station:
+    https://tgftp.nws.noaa.gov/data/observations/metar/stations/KLVN.TXT
+
+Everything handed out is in Celsius, millibars, km/h and degrees; formatting
+belongs to whatever draws it.
+"""
 import datetime
 import logging
 import random
 
-import tzlocal
-from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QUrl, QTimer
-from PyQt5.QtNetwork import QNetworkRequest
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtCore import QTimer
 from metar import Metar as MetarModule
 
 from ..Plugin import Plugin
+from ..WebGet import WebGet
 
 logger = logging.getLogger(__name__)
+
+FEED = 'https://tgftp.nws.noaa.gov/data/observations/metar/stations/%s.TXT'
 
 
 class TimeZoneUTC(datetime.tzinfo):
@@ -20,6 +32,9 @@ class TimeZoneUTC(datetime.tzinfo):
 
 
 class Metar(Plugin):
+    # sky and weather groups, in worsening order: the highest priority match
+    # in a report wins.  Columns are group, modifier, intensity, words, icon,
+    # priority.
     metar_cond = [
         ('CLR', '', '', 'Clear', 'clear-day', 0),
         ('NSC', '', '', 'Clear', 'clear-day', 0),
@@ -77,152 +92,105 @@ class Metar(Plugin):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
-        self.metarreply = None
+        self.observation = None
+        self.listeners = []
         self.timer = None
-        self.wdate = None
-        self.feelslike = None
-        self.wind = None
-        self.humidity = None
-        self.pressure = None
-        self.temper = None
-        self.wxdesc = None
-        self.wxicon = None
-        # the merged config lives on the instance now, not in the config
-        # section, which holds only what the entry itself said
-        self.wxcommon = piclock.plugins['weather-common']
-        self.wxconfig = self.wxcommon.config
-
-    def part(self, name, align=True):
-        """one labelled part of this region, placed by the plugin's layout.
-
-        The geometry keys are the ones a page layout uses, resolved against
-        this region rather than a page, so nothing about where these sit or
-        how big they are is written in the code.
-        """
-        spec = self.config['layout'][name]
-        rr = self.region.frameRect()
-        label = QLabel(self.region)
-        label.setObjectName(name)
-        style = 'background-color: transparent;'
-        if 'font-size' in spec:
-            props = self.piclock.scaleFont({'font-size': spec['font-size']},
-                                           rr.height())
-            style += ' color: %s; font-size: %s;' % (
-                self.piclock.expand(self.config['color']), props['font-size'])
-        label.setStyleSheet('#%s { %s }' % (name, style))
-        if align:
-            label.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        label.setGeometry(self.piclock._regionRect(rr.width(), rr.height(),
-                                                   spec))
-        return label
+        # what a reading from here should be credited to
+        self.attribution = config['METAR']
 
     def start(self):
-
-        self.wxicon = self.part('wxicon', align=False)
-        self.wxdesc = self.part('wxdesc')
-        self.temper = self.part('temper')
-        self.pressure = self.part('pressure')
-        self.humidity = self.part('humidity')
-        self.wind = self.part('wind')
-        self.feelslike = self.part('feelslike')
-        self.wdate = self.part('wdate')
-
         self.timer = QTimer()
         self.timer.timeout.connect(self.getMetar)
-        self.timer.start(int(1000 * self.wxconfig['refresh'] *
-                             60 + random.uniform(1000, 10000)))
-
+        self.timer.start(int(60000 * self.config['refresh'] +
+                             random.uniform(1000, 10000)))
         self.getMetar()
-        logging.info("startup finished %s %s", self.name, self.plugin)
 
     def pageChange(self):
         return
 
+    # ---------------------------------------------------------------- api
+
+    def subscribe(self, fn):
+        """call fn() whenever a new observation lands"""
+        self.listeners.append(fn)
+        if self.observation:
+            fn()
+
+    def current(self):
+        """the latest observation, or None before the first one arrives"""
+        return self.observation
+
+    def hourly(self, count, step):
+        """a station reports what is happening, not what will"""
+        return []
+
+    def daily(self, count):
+        """a station reports what is happening, not what will"""
+        return []
+
+    # ------------------------------------------------------------ fetching
+
     def getMetar(self):
-        logging.info("getMetar")
-        metarurl = "https://tgftp.nws.noaa.gov/data/observations/metar/stations/" + \
-                   self.config.METAR + ".TXT"
-        logging.info("metar url %s", metarurl)
-        r = QUrl(metarurl)
-        r = QNetworkRequest(r)
-        self.metarreply = self.piclock.net.get(r)
-        self.metarreply.finished.connect(self.gotMetar)
+        url = FEED % self.config.METAR
+        logger.info('metar url %s', url)
+        WebGet(url, self.gotMetar)
 
-    def gotMetar(self):
-        logging.info("gotMetar")
-        wxstr = str(self.metarreply.readAll(), 'utf-8')
-        for wxline in wxstr.splitlines():
-            if wxline.startswith(self.config.METAR):
-                wxstr = wxline
-        logging.info('wxmetar: %s', wxstr)
-        f = MetarModule.Metar(wxstr, strict=False)
-        logging.info("metardata %s", f)
-        dt = f.time.replace(
-            tzinfo=TimeZoneUTC()).astimezone(
-            tzlocal.get_localzone())
+    def gotMetar(self, error, data, params):
+        if error:
+            logger.warning('metar %s failed: %s', self.config.METAR, error)
+            return
+        text = bytes(data).decode('utf-8', 'replace')
+        line = ''
+        for candidate in text.splitlines():
+            if candidate.startswith(self.config.METAR):
+                line = candidate
+        if not line:
+            logger.warning('metar %s: no report in the feed', self.config.METAR)
+            return
+        logger.info('wxmetar: %s', line)
 
-        daytime = True
+        f = MetarModule.Metar(line, strict=False)
+        weather, icon = self.conditions(f)
+        self.observation = {
+            'when': f.time.replace(tzinfo=TimeZoneUTC()).astimezone(
+                self.piclock.timezone()),
+            'station': self.config.METAR,
+            'icon': icon,
+            'description': weather,
+            'temp': f.temp.value('C') if f.temp else None,
+            'dew': f.dewpt.value('C') if f.dewpt else None,
+            'pressure': f.press.value('MB') if f.press else None,
+            'wind': f.wind_speed.value('KMH') if f.wind_speed else None,
+            'wind-dir': f.wind_dir.value() if f.wind_dir else None,
+            'gust': f.wind_gust.value('KMH') if f.wind_gust else None,
+            # a station reports temperature and dew point; the rest is derived
+            'humidity': None,
+            'feels-like': None,
+        }
+        for fn in self.listeners:
+            fn()
 
-        pri = -1
-        weather = ''
-        icon = ''
-        logging.info(repr(f.sky))
+    def conditions(self, f):
+        """the worst thing the report mentions, as words and an icon name"""
+        pri, weather, icon = -1, '', ''
         for s in f.sky:
             for c in self.metar_cond:
-                if s[0] == c[0]:
-                    if c[5] > pri:
-                        pri = c[5]
-                        weather = c[3]
-                        icon = c[4]
+                if s[0] == c[0] and c[5] > pri:
+                    pri, weather, icon = c[5], c[3], c[4]
         for w in f.weather:
             for c in self.metar_cond:
-                if w[2] == c[0]:
-                    if c[1] > '':
-                        if w[1] == c[1]:
-                            if c[2] > '':
-                                if w[0][0:1] == c[2]:
-                                    if c[5] > pri:
-                                        pri = c[5]
-                                        weather = c[3]
-                                        icon = c[4]
-                    else:
-                        if c[2] > '':
-                            if w[0][0:1] == c[2]:
-                                if c[5] > pri:
-                                    pri = c[5]
-                                    weather = c[3]
-                                    icon = c[4]
-                        else:
-                            if c[5] > pri:
-                                pri = c[5]
-                                weather = c[3]
-                                icon = c[4]
+                if w[2] != c[0]:
+                    continue
+                if c[1] > '' and w[1] != c[1]:
+                    continue
+                if c[2] > '' and w[0][0:1] != c[2]:
+                    continue
+                if c[5] > pri:
+                    pri, weather, icon = c[5], c[3], c[4]
 
-        p = QtGui.QPixmap(self.wxcommon.icon(icon,
-                                     self.config['icons-folder']))
-        self.wxicon.setPixmap(p.scaled(
-            self.wxicon.width(), self.wxicon.height(), Qt.IgnoreAspectRatio,
-            Qt.SmoothTransformation))
-        self.wxdesc.setText(weather)
-        self.temper.setText(
-            self.wxcommon.units(
-                'temperature',
-                'C',
-                f.temp.value('C')))
-        if f.press:
-            self.pressure.setText(self.piclock.language('pressure') + ' ' +
-                                  self.wxcommon.units('pressure', 'mb', f.press.value('MB')))
-        self.humidity.setText(self.piclock.language('humidity') + ' ' +
-                              self.wxcommon.humidity(f.temp.value('C'), f.dewpt.value('C')))
-        ws = self.piclock.language('wind')
-        if f.wind_dir:
-            ws += ' ' + self.wxcommon.units('direction', 'deg', f.wind_dir.value())
-        ws += ' ' + self.wxcommon.units('speed', 'kph', f.wind_speed.value('KMH'))
-        if f.wind_gust:
-            ws += (' ' + self.piclock.language('gusting') + ' ' +
-                   self.wxcommon.units('speed', 'kph', f.wind_speed.value('KMH')))
-        self.wind.setText(ws)
-        self.feelslike.setText(self.piclock.language('feels_like') + ' ' +
-                               self.wxcommon.feelsLike(f.temp.value('C'),
-                                                       f.dewpt.value('C'), f.wind_speed.value('KMH')))
-        self.wdate.setText("{0:%H:%M} {1}".format(dt, self.config.METAR))
+        if pri < 0:
+            # no sky group at all.  Read it from the visibility instead: the
+            # word and the picture have to agree, whichever way it goes
+            murk = f.vis is not None and f.vis.value('SM') < 6
+            return ('Obscured', 'fog') if murk else ('Clear', 'clear-day')
+        return weather, icon

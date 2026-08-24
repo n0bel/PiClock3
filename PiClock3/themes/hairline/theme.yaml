@@ -37,5 +37,6 @@ styles:
     font-size: 0.75
     qproperty-alignment: AlignCenter
   bottom:
-    font-size: 0.5
+    # stays narrow enough to pass under the forecast column
+    font-size: 0.36
     qproperty-alignment: AlignCenter

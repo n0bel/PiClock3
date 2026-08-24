@@ -133,6 +133,10 @@ PyQtPiClock3.log*
 
 # syncthing's half-written copies, which carry their own prefix
 ~syncthing~*
+
+# the shells that put a toolchain on PATH here.  Local: the paths in them are
+# wherever this tree happens to live, which is nobody else's business.
+env*.bat
 ApiKeys.yaml*
 # a config of your own stays here and is never committed.  only the shipped
 # examples are, and they say so in the name.

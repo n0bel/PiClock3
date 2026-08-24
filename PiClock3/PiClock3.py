@@ -324,11 +324,8 @@ class PiClock3(QWidget):
                                  region, theme)
             return
 
-        # a repeat whose cells are held apart is a row of separate boxes, so
-        # each one is framed on its own.  Only cells that butt together
-        # share a frame, with a rule drawn where they meet - putting a gap
-        # inside a single frame leaves a hole in the middle of the box with
-        # a rule floating in it.
+        # cells held apart are separate boxes, each framed on its own;
+        # only cells that butt together share a frame with a rule between
         if rep and self._repeatPad(rect, rep):
             for i, cell in enumerate(self._cellRects(rect, rep, 0)):
                 self._framedBox(parent, '%s.%d' % (name, i + 1), cell,
@@ -606,9 +603,8 @@ class PiClock3(QWidget):
     def timezone(self):
         """the zone of the location: this clock is pointed at.
 
-        A clock standing where it is pointed needs nothing here - the
-        machine's own zone is right.  One showing somewhere else has to say
-        so, or it would draw that city's sunrise beside this city's time.
+        Blank means the machine's own, which is right for a clock standing
+        where it is pointed.
         """
         raw = None
         if 'location' in self.config and 'timezone' in self.config.location:
