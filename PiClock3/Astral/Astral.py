@@ -57,7 +57,7 @@ class Astral(Plugin):
         self.pluginData['moonage'] = m
         # self.pluginData['sunrise'] = s['sunrise']
         ds = self.piclock.expand(self.config.format)
-        self.block.setText(ds)
+        self.region.setText(ds)
 
     def phaseWords(self, phase):
         f = phase / 28.0

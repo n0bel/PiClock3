@@ -30,7 +30,7 @@ plugins:
 
   radar1: !include PiClock3/MapLoop/config.yaml
   radar1--:
-    block: maps.1
+    region: maps.1
     base-provider: mapbox
     frame-provider: librewxr
     zoom: 7
@@ -47,7 +47,7 @@ plugins:
 
   radar2: !include PiClock3/MapLoop/config.yaml
   radar2--:
-    block: maps.2
+    region: maps.2
     base-provider: mapbox
     frame-provider: librewxr
     zoom: 11
@@ -64,7 +64,7 @@ plugins:
 
   radar3: !include PiClock3/MapLoop/config.yaml
   radar3--:
-    block: radars.1
+    region: radars.1
     base-provider: mapbox
     frame-provider: librewxr
     zoom: 7
@@ -74,7 +74,7 @@ plugins:
 
   radar4: !include PiClock3/MapLoop/config.yaml
   radar4--:
-    block: radars.2
+    region: radars.2
     base-provider: mapbox
     frame-provider: librewxr
     zoom: 11

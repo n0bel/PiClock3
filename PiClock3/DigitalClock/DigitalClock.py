@@ -21,12 +21,12 @@ class DigitalClock(Plugin):
         self.clockface = None
 
     def fontCalc(self, size):
-        return "%dpx" % (float(size) * self.block.frameRect().height())
+        return "%dpx" % (float(size) * self.region.frameRect().height())
 
     def start(self):
-        self.clockface = QLabel(self.block)
+        self.clockface = QLabel(self.region)
         self.clockface.setObjectName("clockface")
-        self.clockrect = self.block.frameRect()
+        self.clockrect = self.region.frameRect()
         self.clockface.setGeometry(self.clockrect)
         dcolor = QColor(self.config.color).darker(0).name()
         lcolor = QColor(self.config.color).lighter(120).name()

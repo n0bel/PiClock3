@@ -1,2 +1,2 @@
 module: PiClock3.Metar
-block: current
+region: current

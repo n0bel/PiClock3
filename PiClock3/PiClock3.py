@@ -23,14 +23,14 @@ class PiClock3(QWidget):
     pages = DottedDict()
     # a plain dict: region names contain dots (maps.1) and DottedDict would
     # read those as a path
-    blocks = {}
+    regions = {}
     # intrinsic size of each frame image, so the inset can be derived
     artSizes = {}
     styles = DottedDict()
     plugins = DottedDict()
     pluginData = DottedDict()
 
-    blockName = 'PiClock3'
+    regionName = 'PiClock3'
     net = QtNetwork.QNetworkAccessManager()
 
     def __init__(self, config):
@@ -80,7 +80,7 @@ class PiClock3(QWidget):
                 pageFrame.setStyleSheet(self._buildStyleString(
                     self.scaleFont(theme['default'], self.screen.height())))
             pageFrame.order = page['order'] if 'order' in page else 0
-            pageFrame.blockName = pageName
+            pageFrame.regionName = pageName
             self.pages[pageName] = pageFrame
             unsortedPages.append(pageFrame)
 
@@ -103,7 +103,6 @@ class PiClock3(QWidget):
             if i == 0:
                 pageFrame.setVisible(True)
             pageFrame.pageNumber = i
-            self.pages[pageFrame.blockName] = pageFrame
 
         for module in self.config.plugins:
             self.loadModule(module, self.config.plugins[module])
@@ -118,8 +117,8 @@ class PiClock3(QWidget):
                     "and styling.  They now name a layout and a theme:\n\n"
                     "  pages:\n"
                     "    clock-page: {order: 0, layout: classic, theme: kevin}\n\n"
-                    "Block names changed with it, so every plugin's block:\n"
-                    "needs updating too.  See\n"
+                    "Start again from Config-Example.yaml rather than\n"
+                    "converting this one.  See\n"
                     "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n"
                     % pageName)
 
@@ -394,12 +393,11 @@ class PiClock3(QWidget):
         if style:
             w.setStyleSheet(style)
 
-        w.blockName = name
-        w.blockType = 'label'
-        if name in self.blocks:
+        w.regionName = name
+        if name in self.regions:
             logging.warning('region %s is defined by more than one layout in '
                             'use - the later page wins', name)
-        self.blocks[name] = w
+        self.regions[name] = w
         logging.debug("Region %s %s", name, rect)
 
     def loadModule(self, name, moduleConfig):
@@ -446,10 +444,9 @@ class PiClock3(QWidget):
             plugin = self.plugins[pluginName]
             plugin.pageChange()
             logger.debug("call pageChange %s", pluginName)
-            if hasattr(plugin, 'block'):
-                block = getattr(plugin, 'block')
-                if block != None:
-                    logger.debug(" plugin block visible: %s", block.isVisible())            
+            region = getattr(plugin, 'region', None)
+            if region is not None:
+                logger.debug(' plugin region visible: %s', region.isVisible())
 
     def _buildStyleString(self, style):
         styleString = ''

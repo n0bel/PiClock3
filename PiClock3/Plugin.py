@@ -12,9 +12,9 @@ class Plugin(QObject):
         self.config = config
         self.module = config.module
         self.pluginData = piclock.pluginData[name]
-        if 'block' in config:
-            self.blockName = config['block']
-            self.block = piclock.blocks[self.blockName]
+        if 'region' in config:
+            self.regionName = config['region']
+            self.region = piclock.regions[self.regionName]
 
     def start(self):
         return

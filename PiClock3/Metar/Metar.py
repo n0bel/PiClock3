@@ -91,14 +91,14 @@ class Metar(Plugin):
         self.wxcommon = piclock.plugins['weather-common']
 
     def fontCalc(self, size):
-        return "%dpx" % (float(size) * self.block.frameRect().height())
+        return "%dpx" % (float(size) * self.region.frameRect().height())
 
     def start(self):
 
-        self.wxicon = QLabel(self.block)
+        self.wxicon = QLabel(self.region)
         self.wxicon.setObjectName("wxicon")
 
-        rr = self.block.frameRect()
+        rr = self.region.frameRect()
         w = int(rr.width() * .6)
         h = int(rr.height() * .6)
         x = rr.left() + int((rr.width() - w) / 2)
@@ -106,7 +106,7 @@ class Metar(Plugin):
         self.wxicon.setGeometry(x, y, w, h)
         self.wxicon.setStyleSheet("#wxicon { background-color transparent; }")
 
-        self.wxdesc = QLabel(self.block)
+        self.wxdesc = QLabel(self.region)
         self.wxdesc.setObjectName('wxdesc')
         self.wxdesc.setStyleSheet("#wxdesc { background-color: transparent; color: " +
                                   self.piclock.expand(self.wxconfig.color) +
@@ -122,7 +122,7 @@ class Metar(Plugin):
         y = rr.top() + int(rr.height() * .4)
         self.wxdesc.setGeometry(x, y, w, h)
 
-        self.temper = QLabel(self.block)
+        self.temper = QLabel(self.region)
         self.temper.setObjectName('temper')
         self.temper.setStyleSheet("#temper { background-color: transparent; color: " +
                                   self.piclock.expand(self.wxconfig.color) +
@@ -138,7 +138,7 @@ class Metar(Plugin):
         y = rr.top() + int(rr.height() * .45)
         self.temper.setGeometry(x, y, w, h)
 
-        self.pressure = QLabel(self.block)
+        self.pressure = QLabel(self.region)
         self.pressure.setObjectName('pressure')
         self.pressure.setStyleSheet("#pressure { background-color: transparent; color: " +
                                     self.piclock.expand(self.wxconfig.color) +
@@ -154,7 +154,7 @@ class Metar(Plugin):
         y = rr.top() + int(rr.height() * .65)
         self.pressure.setGeometry(x, y, w, h)
 
-        self.humidity = QLabel(self.block)
+        self.humidity = QLabel(self.region)
         self.humidity.setObjectName('humidity')
         self.humidity.setStyleSheet("#humidity { background-color: transparent; color: " +
                                     self.piclock.expand(self.wxconfig.color) +
@@ -170,7 +170,7 @@ class Metar(Plugin):
         y = rr.top() + int(rr.height() * .75)
         self.humidity.setGeometry(x, y, w, h)
 
-        self.wind = QLabel(self.block)
+        self.wind = QLabel(self.region)
         self.wind.setObjectName('wind')
         self.wind.setStyleSheet("#wind { background-color: transparent; color: " +
                                 self.piclock.expand(self.wxconfig.color) +
@@ -186,7 +186,7 @@ class Metar(Plugin):
         y = rr.top() + int(rr.height() * .82)
         self.wind.setGeometry(x, y, w, h)
 
-        self.feelslike = QLabel(self.block)
+        self.feelslike = QLabel(self.region)
         self.feelslike.setObjectName('feelslike')
         self.feelslike.setStyleSheet("#feelslike { background-color: transparent; color: " +
                                      self.piclock.expand(self.wxconfig.color) +
@@ -202,7 +202,7 @@ class Metar(Plugin):
         y = rr.top() + int(rr.height() * .89)
         self.feelslike.setGeometry(x, y, w, h)
 
-        self.wdate = QLabel(self.block)
+        self.wdate = QLabel(self.region)
         self.wdate.setObjectName('wdate')
         self.wdate.setStyleSheet("#wdate { background-color: transparent; color: " +
                                  self.piclock.expand(self.wxconfig.color) +
@@ -218,7 +218,7 @@ class Metar(Plugin):
         y = rr.top() + int(rr.height() * .95)
         self.wdate.setGeometry(x, y, w, h)
 
-        # self.clockrect = self.block.frameRect()
+        # self.clockrect = self.region.frameRect()
         # self.w.setGeometry(self.clockrect)
         # self.w.setStyleSheet(
         #    "#w { background-color: transparent; " +

@@ -30,9 +30,9 @@ class Plugin(Plugin):
         self.clockface = None
 
     def start(self):
-        self.clockface = QFrame(self.block)
+        self.clockface = QFrame(self.region)
         self.clockface.setObjectName("analogclockface")
-        self.clockrect = self.block.frameRect()
+        self.clockrect = self.region.frameRect()
         self.clockface.setGeometry(self.clockrect)
         imagesFolder = self.piclock.expand(
             self.config['clock-images-base-folder'] +
@@ -51,17 +51,17 @@ class Plugin(Plugin):
             ") 0 0 0 0 stretch stretch;}")
         logger.info(self.clockface.styleSheet())
 
-        self.hourhand = QLabel(self.block)
+        self.hourhand = QLabel(self.region)
         self.hourhand.setObjectName("hourhand")
         self.hourhand.setStyleSheet(
             "#hourhand { background-color: transparent; }")
 
-        self.minhand = QLabel(self.block)
+        self.minhand = QLabel(self.region)
         self.minhand.setObjectName("minhand")
         self.minhand.setStyleSheet(
             "#minhand { background-color: transparent; }")
 
-        self.sechand = QLabel(self.block)
+        self.sechand = QLabel(self.region)
         self.sechand.setObjectName("sechand")
         self.sechand.setStyleSheet(
             "#sechand { background-color: transparent; }")

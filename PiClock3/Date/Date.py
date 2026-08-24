@@ -55,4 +55,4 @@ class Date(Plugin):
         self.pluginData.sup = sup
         self.pluginData.now = now
         ds = self.piclock.expand(self.config.format)
-        self.block.setText(ds)
+        self.region.setText(ds)

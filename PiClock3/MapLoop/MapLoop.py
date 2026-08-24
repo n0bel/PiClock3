@@ -29,9 +29,9 @@ class MapLoop(Plugin):
         self.frame = 0
 
     def start(self):
-        self.baseLabel = QLabel(self.block)
+        self.baseLabel = QLabel(self.region)
         self.baseLabel.setObjectName("baseLabel")
-        rr = self.block.contentsRect()
+        rr = self.region.contentsRect()
         self.baseLabel.setGeometry(rr)
         self.baseLabel.setStyleSheet("#baseLabel { background-color: transparent; }")
         self.baseLabel.setAlignment(Qt.AlignCenter)
@@ -48,7 +48,7 @@ class MapLoop(Plugin):
         self.markerLabel.setStyleSheet("#markerLabel { background-color: transparent; }")
 
         logger.debug("maploop get map pixmap")        
-        self.baseProvider.getMapPixmap(self.config, self.block.contentsRect(), self.gotMapPixmap)
+        self.baseProvider.getMapPixmap(self.config, self.region.contentsRect(), self.gotMapPixmap)
         self.interval = 60 * self.config.interval
         self.frameCount = self.config.frames
         self.intervalTimer = QTimer()
@@ -70,8 +70,8 @@ class MapLoop(Plugin):
         return
 
     def intervalTick(self):
-        logger.debug("tick %s %s", self.name, self.block.isVisible())
-        if not self.block.isVisible():
+        logger.debug("tick %s %s", self.name, self.region.isVisible())
+        if not self.region.isVisible():
             return
         wanted = self.frameProvider.frameTimes(self.frameCount)
         for t in list(self.framePixmaps):
@@ -80,7 +80,7 @@ class MapLoop(Plugin):
         self.getNextNeededFrame()
 
     def animationTick(self):
-        if not self.block.isVisible():
+        if not self.region.isVisible():
             return;
         frameTimes = sorted(self.framePixmaps)
         if len(frameTimes) < 1: return
@@ -161,7 +161,7 @@ class MapLoop(Plugin):
         self.markerLabel.setPixmap(self.markerPixmap)
 
     def getNextNeededFrame(self):
-        if not self.block.isVisible():
+        if not self.region.isVisible():
             return
         times = self.frameProvider.frameTimes(self.frameCount)
         if not times:
@@ -172,7 +172,7 @@ class MapLoop(Plugin):
                 logger.debug("maploop next needed frame %s",
                              time.asctime(time.localtime(t)))
                 self.frameProvider.getFramePixmap(
-                    t, self.config, self.block.contentsRect(), self.gotFramePixmap)
+                    t, self.config, self.region.contentsRect(), self.gotFramePixmap)
                 return
 
     def gotFramePixmap(self, pixmap, timeSlot):
