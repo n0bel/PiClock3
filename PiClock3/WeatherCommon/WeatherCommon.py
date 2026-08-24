@@ -23,14 +23,19 @@ class WeatherCommon(Plugin):
             return False
         return True
 
-    def icon(self, icon):
+    def icon(self, icon, folder=None):
+        """the path to a weather icon.
+
+        The set is chosen by the caller, because this is a provider: it has
+        no region, so no theme reaches it, and which icons suit a page is a
+        thing the page's theme decides.
+        """
         if not self.daytime():
             icon = icon.replace('-day', '-night')
 
         iconsFolder = self.piclock.expand(
-            self.config['icons-base-folder'] +
-            '/' +
-            self.config['icons-folder'] + '/')
+            self.config['icons-base-folder'] + '/' +
+            (folder or self.config['icons-folder']) + '/')
         return self.piclock.expand(iconsFolder + icon + ".png")
 
     def units(self, utype, uin, data):

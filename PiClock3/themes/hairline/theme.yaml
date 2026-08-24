@@ -3,6 +3,10 @@ description: The chris background with thin, hard-edged frames
 
 background: 'background.png'
 
+# art sets the plugins ship; a theme picks which
+clock-art:     lightblue
+weather-icons: icons-lightblue
+
 default:
   font-size: 0.02        # a fraction of the screen height
   font-family: Arial

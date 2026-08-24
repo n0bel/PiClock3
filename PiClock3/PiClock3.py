@@ -26,6 +26,8 @@ class PiClock3(QWidget):
     regions = {}
     # intrinsic size of each frame image, so the inset can be derived
     artSizes = {}
+    # which theme each region was built with, so a widget in it can be told
+    regionTheme = {}
     styles = DottedDict()
     plugins = DottedDict()
     pluginData = DottedDict()
@@ -413,6 +415,7 @@ class PiClock3(QWidget):
             logging.warning('region %s is defined by more than one layout in '
                             'use - the later page wins', name)
         self.regions[name] = w
+        self.regionTheme[name] = theme
         logging.debug("Region %s %s", name, rect)
 
     def pluginConfig(self, mod, entry):
@@ -424,14 +427,64 @@ class PiClock3(QWidget):
         is cloned into plugins/.
         """
         config = DottedDict()
+        defaults = {}
         path = os.path.join(os.path.dirname(os.path.abspath(mod.__file__)),
                             'config.yaml')
         if os.path.isfile(path):
             with open(path, encoding='utf-8') as fh:
                 defaults = yaml.safe_load(fh) or {}
             self.config._merge(defaults, config)
+
+        # the theme of the page this instance draws on, if it draws at all.
+        # a provider occupies no region, so no theme reaches it - which is
+        # why anything a theme should be able to say belongs on a widget.
+        theme = self.instanceTheme(entry)
+        if theme:
+            self.config._merge(self.themeAsks(defaults, theme), config)
+            kind = defaults.get('kind')
+            if isinstance(theme.get(kind), dict):
+                self.config._merge(theme[kind], config)
+
         self.config._merge(entry, config)
         return config
+
+    def instanceTheme(self, entry):
+        """the theme of the page an instance draws on"""
+        name = entry.get('region')
+        if isinstance(name, list):
+            name = name[0] if name else None
+        if not name:
+            return None
+        if name in self.regionTheme:
+            return self.regionTheme[name]
+        head = name + '.'                      # a repeat: its cells share a page
+        for key in self.regionTheme:
+            if key.startswith(head):
+                return self.regionTheme[key]
+        return None
+
+    @staticmethod
+    def themeAsks(defaults, theme):
+        """the theme values a plugin said it wanted, under its own key names.
+
+        A plugin declares the mapping itself, so the loader knows nothing
+        about any particular plugin and a third-party one can ask for the
+        same things:
+
+            from-theme:
+              clock-images-folder: clock-art
+        """
+        out = {}
+        for mine, theirs in (defaults.get('from-theme') or {}).items():
+            value = theme
+            for part in str(theirs).split('.'):
+                if not isinstance(value, dict) or part not in value:
+                    value = None
+                    break
+                value = value[part]
+            if value is not None:
+                out[mine] = value
+        return out
 
     def regionList(self, name):
         """every region a widget's region: refers to, in order.

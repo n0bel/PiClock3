@@ -1,3 +1,7 @@
 kind: clock
 clock-images-folder: lightblue
 clock-images-base-folder: '{plugin-folder}'
+
+# the theme picks the art set; lightblue is the fallback
+from-theme:
+  clock-images-folder: clock-art

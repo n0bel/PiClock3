@@ -12,3 +12,10 @@ layout:
   wind:      {left: 0.0, top: 0.82, width: 1.0, height: 0.6, font-size: 0.07}
   feelslike: {left: 0.0, top: 0.89, width: 1.0, height: 0.6, font-size: 0.05}
   wdate:     {left: 0.0, top: 0.95, width: 1.0, height: 0.6, font-size: 0.05}
+
+# these used to live on weather-common, which no theme can reach
+color: '#bef'
+icons-folder: icons-lightblue
+from-theme:
+  color: default.color
+  icons-folder: weather-icons

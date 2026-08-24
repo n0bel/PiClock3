@@ -3,6 +3,10 @@ description: The jean background
 
 background: 'background.png'
 
+# art sets the plugins ship; a theme picks which
+clock-art:     darkblue
+weather-icons: icons-darkblue
+
 default:
   font-size: 0.02        # a fraction of the screen height
   font-family: Arial

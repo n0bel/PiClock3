@@ -108,7 +108,7 @@ class Metar(Plugin):
             props = self.piclock.scaleFont({'font-size': spec['font-size']},
                                            rr.height())
             style += ' color: %s; font-size: %s;' % (
-                self.piclock.expand(self.wxconfig.color), props['font-size'])
+                self.piclock.expand(self.config['color']), props['font-size'])
         label.setStyleSheet('#%s { %s }' % (name, style))
         if align:
             label.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
@@ -198,7 +198,8 @@ class Metar(Plugin):
                                 weather = c[3]
                                 icon = c[4]
 
-        p = QtGui.QPixmap(self.wxcommon.icon(icon))
+        p = QtGui.QPixmap(self.wxcommon.icon(icon,
+                                     self.config['icons-folder']))
         self.wxicon.setPixmap(p.scaled(
             self.wxicon.width(), self.wxicon.height(), Qt.IgnoreAspectRatio,
             Qt.SmoothTransformation))
