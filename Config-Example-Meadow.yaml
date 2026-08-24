@@ -1,6 +1,15 @@
+# PiClock3 - the meadow theme on both pages.
+#
+# Butterflies over a bright meadow.  Blue frames, navy text and a
+# dark-blue clock - chosen for a light background, where the pale
+# blue the other themes use is unreadable.
+#
+# Identical to Config-Example.yaml apart from the two theme: names
+# below.  Set your own location: and METAR: before using it.
+
 pages:
-  clock-page: {order: 0, layout: classic, theme: circuit}
-  maps-page:  {order: 1, layout: bigmaps, theme: stag}
+  clock-page: {order: 0, layout: classic, theme: meadow}
+  maps-page:  {order: 1, layout: bigmaps, theme: meadow}
 
 language: !include PiClock3/Language-en.yaml
 locale:

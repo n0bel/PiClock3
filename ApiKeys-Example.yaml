@@ -1,7 +1,10 @@
+# Copy this to ApiKeys.yaml and fill in what you need.  ApiKeys.yaml is
+# ignored by git, so your keys stay on your machine.
+#
+# A key is only needed for the base map under a radar, and only for the
+# provider a radar actually points at - one of these two is enough.  The
+# radar frames themselves are free: neither RainViewer nor LibreWXR wants a
+# key, and neither does the METAR.
 
-googleapi: 'GOOGLEAPIKEY'
-#dsapi: 'DARKSKYAPIKEY'
-mbapi: 'MAPBOXAPIKEY'
-owmapi: 'OPENWEATHERMAPAPIKEY'
-#ccapi: 'CLIMACELLV4APIKEY'
-
+mbapi:     'MAPBOXAPIKEY'      # https://account.mapbox.com
+googleapi: 'GOOGLEAPIKEY'      # https://console.cloud.google.com  (Static Maps)

@@ -1,27 +1,45 @@
+# PiClock3 - London.
+#
+# The same clock as Config-Example.yaml, set up somewhere else: London
+# coordinates, Heathrow for the METAR, and metric units throughout.  It is
+# here to show what changes when you move - the location, the station and
+# the units - and what does not.
+#
+# The coordinates are King's Cross, not anybody's house.  Change them.
+
 pages:
-  clock-page: {order: 0, layout: classic, theme: circuit}
-  maps-page:  {order: 1, layout: bigmaps, theme: stag}
+  clock-page: {order: 0, layout: classic, theme: london}
+  maps-page:  {order: 1, layout: bigmaps, theme: london}
 
 language: !include PiClock3/Language-en.yaml
 locale:
 
 location:
-  lattitude: 45
-  longitude: -93
-  # Blank means the machine's own zone, which is right when the clock
-  # sits where it is pointed.  Name a zone when it does not.
-  timezone:
+  lattitude: 51.5286416
+  longitude: -0.1015987
+  # this config describes London, not wherever it is running,
+  # so the sunrise and sunset have to be London's
+  timezone: Europe/London
 
 # Providers supply data and occupy no region.
 providers:
-  weather-common: {plugin: PiClock3.WeatherCommon}
+  weather-common:
+    plugin: PiClock3.WeatherCommon
+    units:
+      temperature: C
+      length: mm
+      speed: kph
+      rate: mm/hr
+      pressure: mb
 
   # base map under the radar - needs a key in ApiKeys.yaml
   mapbox:     {plugin: PiClock3.Mapbox}
   googlemaps: {plugin: PiClock3.GoogleMaps}
 
-  # radar tiles - one plugin per service, neither needs a key.  Point a
-  # radar's frame-provider: at whichever you prefer.
+  # radar tiles - one plugin per service, neither needs a key.  RainViewer
+  # stopped serving tiles above zoom 7 and returns a "Zoom Level Not
+  # Supported" card instead; LibreWXR still serves every zoom, so the
+  # close-in radars below point at it.
   rainviewer: {plugin: PiClock3.RainViewer}
   librewxr:   {plugin: PiClock3.LibreWXR}
 
@@ -43,7 +61,7 @@ widgets:
   current-conditions:
     plugin: PiClock3.Metar
     region: current
-    METAR: KLVN
+    METAR: EGLL          # London Heathrow
 
   radar1:
     plugin: PiClock3.MapLoop
