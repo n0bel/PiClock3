@@ -17,12 +17,10 @@ providers:
   mapbox:     {plugin: PiClock3.Mapbox}
   googlemaps: {plugin: PiClock3.GoogleMaps}
 
-  # radar tiles.  librewxr needs no key and has no zoom cap;
-  # rainviewer is the same plugin pointed at a different index.
+  # radar tiles, one plugin per service.  Neither needs a key.  Point a
+  # radar's frame-provider: at whichever of these you want.
   rainviewer: {plugin: PiClock3.RainViewer}
-  librewxr:
-    plugin: PiClock3.RainViewer
-    index: https://api.librewxr.net/public/weather-maps.json
+  librewxr:   {plugin: PiClock3.LibreWXR}
 
 # Widgets occupy a region named by the page's layout, and draw in it.
 widgets:

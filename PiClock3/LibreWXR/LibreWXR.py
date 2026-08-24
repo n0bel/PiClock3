@@ -14,17 +14,17 @@ INDEX_REFRESH = 300
 # facts about the service, not settings: there is no other index this plugin
 # could sensibly be pointed at, and the attribution names who supplied the
 # data rather than whatever host the url happened to have
-INDEX = 'https://api.rainviewer.com/public/weather-maps.json'
-ATTRIBUTION = 'RainViewer'
+INDEX = 'https://api.librewxr.net/public/weather-maps.json'
+ATTRIBUTION = 'LibreWXR'
 
 
-class RainViewer(Plugin):
-    """RainViewer's radar tiles.
+class LibreWXR(Plugin):
+    """LibreWXR's radar tiles.
 
-    LibreWXR serves an index of the same shape and has a plugin of its own.
-    The reading code is duplicated there on purpose - neither service owes
-    the other compatibility, and a shared base would absorb every divergence
-    as a conditional.
+    The index is the same shape RainViewer serves, and RainViewer has a
+    plugin of its own.  The reading code is duplicated on purpose - neither
+    service owes the other compatibility, and LibreWXR already returns a
+    colorSchemes key and populates nowcast where RainViewer does neither.
     """
 
     def __init__(self, piclock, name, config):
