@@ -5,9 +5,6 @@ them; a theme says what they look like.  The three are separate on purpose,
 so any theme works with any layout and a layout can be swapped without
 rewriting the widgets.
 
-Layouts are found the way themes are: a `layouts` folder of your own first,
-then `PiClock3/layouts`.
-
 ```yaml
 name: Classic
 description: Conditions and two radars left, clock center, forecast right
@@ -30,6 +27,49 @@ regions:
   date:     {left: 0.0,  top: 0.0,    width: 1.0, height: 0.1, style: date}
   bottom:   {left: 0.0,  bottom: 0.0, width: 1.0, height: 0.1, style: bottom}
 ```
+
+## Where a layout goes
+
+There is a `layouts` folder beside `Config.yaml`, at the top of the checkout,
+and that one is yours.  It is searched before `PiClock3/layouts`, so a layout
+of your own named `classic` is used instead of the shipped one without
+touching what ships.  It is in `.gitignore`, so `git pull` never has anything
+of yours to conflict with.
+
+    PiClock3/layouts/       shipped with the project
+    layouts/                yours, and searched first
+
+Somebody else's is a git repository, cloned straight in, and named in a page:
+
+```
+git clone https://github.com/someone/piclock3-layout-tall layouts/tall
+```
+
+```yaml
+pages:
+  clock-page: {order: 0, layout: tall, theme: circuit}
+```
+
+A layout is usually one file, `layouts/tall.yaml`, because a layout has no
+art - it is geometry.  A folder works too, `layouts/tall/layout.yaml` or
+`layouts/tall/tall.yaml`, which is what a repository named after itself looks
+like when it is cloned.
+
+**If you mean to contribute the layout to PiClock3 itself**, put it in
+`PiClock3/layouts/` and open a pull request - being inside the package is
+what makes it ship for everybody.  See [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+## Say which themes it was drawn against
+
+A layout and a theme are separate, but they are not indifferent to each
+other: a layout that leaves the middle of the page empty needs a background
+with something in the middle, and one that stands nine forecast cells in a
+column needs frames narrow enough to hold them.  Both ways round, the pairing
+is a real constraint.
+
+So name the themes you drew it against in the `description`, and if you
+publish it, in the README.  It saves the next person discovering the pairing
+by looking at something that overlaps.
 
 ## Everything is a fraction
 

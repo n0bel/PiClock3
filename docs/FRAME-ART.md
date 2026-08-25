@@ -200,33 +200,14 @@ A layout asks for `border: true` to get `default`, or `border: radar` for a
 named one.  An unknown name falls back to `default`, so any theme still
 works with any layout.
 
-Themes in `PiClock3/themes/` are the shipped ones; a file of the same name in
-`themes/` at the top level wins, so you can try a frame without editing
-anything that ships.
+**Ship your art with your theme.**  A plain relative path is relative to the
+folder the theme was loaded from, so write `art: 'myframe.png'` and put the
+PNG beside the `.yaml`.  The theme never has to know where it was installed.
+A path containing a `{placeholder}` is left alone, so a theme can still reach
+something outside its own folder when it has to.
 
-The top level is yours and is not committed - `themes/`, `layouts/` and
-`plugins/` are all in `.gitignore`, along with `Config.yaml` and
-`ApiKeys.yaml` at the top level.  So a theme you are only trying out, or one carrying
-your own photographs, can sit there and stay off the repository.  The other
-side of that: anything a shipped example names has to live under
-`PiClock3/`, or the example arrives at somebody else's clone with its theme
-missing.
-
-A theme can be a file or a folder.  All of these are found:
-
-    themes/mine.yaml            a file you dropped in
-    themes/mine/theme.yaml      a folder, canonical name
-    themes/mine/mine.yaml       a folder named after itself
-
-The last two are what `git clone <repo> themes/mine` gives you, so a theme
-someone else published works as a checkout with nothing to unpack.
-
-**Inside a folder, ship your art with your theme.**  A plain relative path
-is relative to the folder the theme was loaded from, so write `art:
-'myframe.png'` and put the PNG beside the `.yaml`.  The theme never has to
-know where it was installed.  A path containing a `{placeholder}` is left
-alone, so a theme can still reach something outside its own folder if it
-has to.
+Where the folder itself goes, and how somebody else's theme is installed, is
+[Where a theme goes](WRITING-A-THEME.md#where-a-theme-goes).
 
 ## Checking your work
 

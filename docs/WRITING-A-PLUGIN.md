@@ -9,6 +9,74 @@ They come in two sorts.  A **widget** draws in a region a layout named.  A
 which is why no theme reaches a provider, and why anything a theme should be
 able to say belongs on a widget.
 
+## Where a plugin goes
+
+There is a `plugins` folder beside `Config.yaml`, at the top of the checkout,
+and that one is yours.  It is in `.gitignore`, so `git pull` never has
+anything of yours to conflict with.
+
+    PiClock3/<Name>/        the core plugins, shipped with the project
+    plugins/<name>/         yours and everybody else's
+
+Somebody else's is a git repository, cloned straight in:
+
+```
+cd PiClock3
+git clone https://github.com/someone/piclock3-tides plugins/tides
+```
+
+Then name it in a config, and give the instance a region to draw in:
+
+```yaml
+widgets:
+  tides:
+    plugin: plugins.tides
+    region: bottom
+```
+
+`plugin:` names the **folder**, not the file - the same shape as the core
+plugins, which are named `PiClock3.Astral` rather than
+`PiClock3.Astral.Astral`.  So the folder needs an `__init__.py` that lifts
+the class into it:
+
+```python
+from .Tides import *
+```
+
+The loader imports that name and finds the `Plugin` subclass inside by
+inspection, so the class can be called whatever suits.  `plugins` itself
+needs no `__init__.py`.
+
+Nothing is registered anywhere.  The `config.yaml` next to your code is found
+from the imported module rather than from a path anybody writes down - which
+is what makes a clone work the moment it lands.
+
+A plugin brings its own `languages/` and `units/` folders with it if it has
+them, and both are merged rather than first-wins, so a plugin adds words and
+quantities without editing the shipped tables:
+
+    plugins/tides/languages/en.yaml      merged over the shipped English
+    plugins/tides/units/quantities.yaml  merged over the shipped quantities
+
+**If you mean to contribute the plugin to PiClock3 itself**, that is the
+other folder: put it in `PiClock3/Tides/` alongside the core plugins, name it
+`PiClock3.Tides.Tides` in the config, and open a pull request.  Being inside
+the package is what makes it ship for everybody, and it is why the two
+locations exist rather than one.  See [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+### What a plugin repository holds
+
+    __init__.py         from .Tides import *
+    Tides.py            the module, holding a Plugin subclass
+    config.yaml         its defaults, and the list of what a theme may set
+    README.md           what it does, and any key it needs
+    languages/en.yaml   optional, words of its own
+    units/*.yaml        optional, quantities of its own
+
+Ship a `README` that says which service it talks to and whether that needs an
+account.  A key belongs in the user's `ApiKeys.yaml`, never in your
+`config.yaml` - see [Two rules](#two-rules-worth-reading-before-you-publish).
+
 ## Weather providers say what the sky is doing, not what to call it
 
 A weather provider answers `current()`, `hourly(count, step)` and

@@ -9,12 +9,80 @@ purpose, so any theme works with any layout.
     PiClock3/themes/meadow/background.png
     PiClock3/themes/meadow/frame.png
 
-Themes are found the way layouts, units and languages are found: a `themes`
-folder of your own first, then `PiClock3/themes`.  Either a file or a folder
-will do, so `themes/mine.yaml` and `themes/mine/theme.yaml` both work - a
-folder being what a checkout of somebody else's theme looks like.
-
 Drawing the frames themselves is [FRAME-ART.md](FRAME-ART.md).
+
+## Where a theme goes
+
+There is a `themes` folder beside `Config.yaml`, at the top of the checkout,
+and that one is yours.  It is searched before `PiClock3/themes`, so a theme
+of your own named `circuit` is used instead of the shipped one without
+touching what ships - and `git pull` never has anything of yours to conflict
+with.  It is in `.gitignore` for the same reason.
+
+    PiClock3/themes/        shipped with the project
+    themes/                 yours, and searched first
+
+Somebody else's theme is a git repository, cloned straight in:
+
+```
+cd PiClock3
+git clone https://github.com/someone/piclock3-theme-nightshift themes/nightshift
+```
+
+Then name it, in any page of your config:
+
+```yaml
+pages:
+  clock-page: {order: 0, layout: classic, theme: nightshift}
+```
+
+Nothing is registered and nothing is installed - the folder being there is
+the whole of it.  To stop using one, name a different theme; to be rid of it,
+delete the folder.
+
+**If you mean to contribute the theme to PiClock3 itself**, that is the other
+folder: put it in `PiClock3/themes/yours/` and open a pull request.  Being
+inside the package is what makes it ship for everybody, and it is why the two
+folders exist rather than one.  See
+[CONTRIBUTING.md](../CONTRIBUTING.md).
+
+That cuts both ways, and it is the one trap here: **anything a shipped
+example names has to live under `PiClock3/`.**  An example pointing at a
+theme in the top-level `themes/` works perfectly on the machine it was
+written on and arrives at everybody else's clone with its theme missing,
+because that folder is not committed.
+
+### A file or a folder, and what a repository should be called
+
+A theme with no art of its own can be a single file, `themes/mine.yaml`.  One
+that ships pictures wants a folder, so the pictures travel with it.  Inside a
+folder either name works:
+
+    themes/nightshift/theme.yaml        the plain name
+    themes/nightshift/nightshift.yaml   the repository named after itself
+
+The second exists because a repository called `piclock3-theme-nightshift`
+usually holds a file called `nightshift.yaml`, and cloning it should simply
+work.  If you are publishing one, prefer `theme.yaml` - it survives somebody
+cloning into a folder they named something else.
+
+Inside a folder, a plain relative path is relative to **that folder**, so a
+published theme never has to know where it was installed:
+
+```yaml
+background: background.png      # themes/nightshift/background.png
+```
+
+`{this-folder}/background.png` says the same thing explicitly, and is what to
+write in a file that might be `!include`d from somewhere else.
+
+### Publishing one
+
+A theme repository needs nothing but the yaml and the art.  Worth adding: a
+README with a screenshot, a line saying which layouts it was drawn against
+(see [WRITING-A-LAYOUT.md](WRITING-A-LAYOUT.md)), and a license for the
+images - a theme is mostly pictures, and the license on those is the part
+somebody actually has to check.
 
 ## The file
 

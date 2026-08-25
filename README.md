@@ -247,13 +247,14 @@ Supported" image instead of an error, so a close radar needs `librewxr`.
 
 ### Extending it
 
-Four guides, each answering one question:
+Five guides, each answering one question:
 
 | | |
 |---|---|
 | [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md) | what a page looks like - colors, fonts, frames, backgrounds, which art the widgets use |
 | [docs/WRITING-A-LAYOUT.md](docs/WRITING-A-LAYOUT.md) | where things go - regions, fractions, repeats |
 | [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md) | a widget that draws or a provider that fetches, and what a theme can reach in it |
+| [docs/WRITING-A-LANGUAGE.md](docs/WRITING-A-LANGUAGE.md) | a translation - one yaml file, no code |
 | [docs/FRAME-ART.md](docs/FRAME-ART.md) | drawing the nine-slice sheets a frame is made of |
 
 A theme, a layout and a plugin are separate on purpose: any theme works with
