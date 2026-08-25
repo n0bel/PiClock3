@@ -10,12 +10,16 @@ Every theme is a folder holding its own art:
     PiClock3/themes/meadow/background.png
     PiClock3/themes/meadow/frame.png
 
-Four frames ship across the five themes.  `circuit`, `stag` and `archer` carry
-the same soft-edged amber drawing, `meadow` carries it in blue, and each is
-60x60, so 20x20 cells.  `hairline` carries a different drawing entirely - a
-solid hard-edged line, 24x24, so 8x8 cells - and the two kinds want different
-settings, which the rest of this explains.  `frame-green.png` sits beside this
-file as a spare that no theme currently uses.
+Three drawings ship across the six themes that carry a frame.  `circuit`,
+`stag`, `archer` and `london` share the same soft-edged amber one, `meadow`
+carries it in blue, and each is 60x60, so 20x20 cells.  `hairline` carries a
+different drawing entirely - a solid hard-edged line, 24x24, so 8x8 cells -
+and the two kinds want different settings, which the rest of this explains.
+`frame-green.png` sits beside this file as a spare that no theme uses.
+
+`gallery` is the exception to a theme holding its own art: it has only a
+`theme.yaml` and reaches its neighbors' pictures with `../`, which is worth
+knowing is allowed.
 
 ## Writing a theme
 
@@ -63,6 +67,60 @@ simply not applied.
 `borders:` are named frames.  A layout asks for `border: true` to get
 `default`, or `border: radar` for a named one, and an unknown name falls back
 to `default` so any theme works with any layout.
+
+## A background that changes
+
+`background:` takes a folder instead of a picture, and works through it:
+
+```yaml
+background:
+  folder: 'slides'           # inside the theme, or any path you like
+  interval: 305              # seconds on each picture
+  fit: contain               # or cover
+  color: '#000'              # behind contain, where the picture does not reach
+  order: shuffle             # or sorted
+```
+
+Only `folder:` is needed; the rest are the defaults above.
+
+`files:` takes its place when the pictures are named one by one rather than
+gathered in a folder:
+
+```yaml
+background:
+  files:
+    - '../stag/background.png'
+    - '../meadow/background.png'
+  interval: 20
+  fit: cover
+```
+
+A folder is listed again whenever something is put in it; a named set is
+fixed.  `examples/gallery.yaml` uses the second form to work through every
+background the shipped themes have, which cannot be a folder because each one
+lives in its own theme and they all answer to `background.png`.
+
+A relative path, in either form, is inside the theme, the same as any other
+art - so a theme can ship its pictures, and `../` reaches a neighboring
+theme's.  An absolute path is left alone, which is what your own photographs
+want: they are not theme art and do not belong in the theme folder.
+
+`contain` fits the whole picture in and fills what is left with `color:`.
+`cover` fills the screen and crops what overhangs, taking the middle rather
+than a corner.  Photographs of mixed shapes look better under `cover` on a
+small screen, where letterbox bars cost real space.
+
+`shuffle` is a running order dealt once, not a fresh pick each turn, so
+stepping back goes to the picture you actually just saw.
+
+Which pages run one follows from which theme they name: give the clock page a
+theme with a folder and the maps page one with a picture, and only the clock
+changes.  A page nobody is looking at stops until it is showing again.
+
+**F6** steps back, **F7** forward, and **F8** holds on the picture showing.
+Pictures are read when they are shown rather than all at once, and the folder
+is listed again only when something in it changes - so a photograph dropped in
+appears without restarting the clock.
 
 ## The sheet
 

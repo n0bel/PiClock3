@@ -112,11 +112,16 @@ python3 PyQtPiClock3.py examples/meadow.yaml
 | `examples/hairline.yaml` | the stag background with thin, hard-edged frames |
 | `examples/london.yaml` | the Thames at night - and the same clock somewhere else: London, metric, its own timezone |
 | `examples/berlin.yaml` | the same clock in German - `language: de`, metric, Berlin's timezone |
+| `examples/gallery.yaml` | the clock page works through every shipped background in turn; the maps page holds one |
 | `examples/ApiKeys.yaml` | the keys file to copy, with links to where to get one |
 
 A theme is one line of a page: `maps-page: {order: 1, layout: bigmaps, theme:
 stag}`.  Writing your own is
 [PiClock3/themes/FRAME-ART.md](PiClock3/themes/FRAME-ART.md).
+
+A theme's `background:` can be a folder of pictures rather than one picture,
+and the clock works through them - F6 and F7 step, F8 holds.  Which pages do
+it follows from which theme they name.
 
 `Config.yaml` and `ApiKeys.yaml` are ignored by git, so what you write
 stays yours.  A plugin can ship an `examples/` folder of its own, along with
@@ -183,8 +188,6 @@ Supported" image instead of an error, so a close radar needs `librewxr`.
 * A Tomorrow.io provider.  v1 has one, and it already asks for current,
   hourly and daily separately - the same three questions a provider answers
   here - so it maps across without rethinking.  Needs a key.
-* A background slideshow.  A theme names one `background:` image today; a
-  clock that sits in a room all day could work through a folder of them.
 
 ### Investigating
 

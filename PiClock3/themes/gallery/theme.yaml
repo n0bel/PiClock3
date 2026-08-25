@@ -1,0 +1,62 @@
+name: Gallery
+description: Every shipped background in turn, behind the circuit clock
+
+# A background is usually a folder, and the clock works through whatever is
+# in it:
+#
+#   background:
+#     folder: 'slides'      # inside the theme, or any path you like
+#     interval: 305
+#     fit: cover
+#
+# These are named one by one instead because the shipped backgrounds each
+# live in their own theme folder and all answer to background.png, so no one
+# folder holds them.  Either form takes the same interval, fit, color and
+# order.
+background:
+  files:
+    - '../stag/background.png'
+    - '../meadow/background.png'
+    - '../archer/background.png'
+    - '../london/background.png'
+    - '../hairline/background.png'
+    - '../circuit/background.png'
+  interval: 20
+  fit: cover
+  order: sorted
+
+# art sets the plugins ship; a theme picks which
+clock-art:     lightblue
+weather-icons: icons-lightblue
+
+default:
+  font-size: 0.02        # a fraction of the screen height
+  font-family: Arial
+  background-color: transparent
+  color: '#bef'
+
+borders:
+  # a 3x3 sheet, so the slice is a third of it - the art describes its own
+  # geometry and this file cannot disagree with it.  width is a fraction of
+  # screen height, so a frame is the same weight on a small box as on a big
+  # one, and the same at 800x600 as at 1920x1080.
+  default:
+    art: '../circuit/frame.png'
+    width: 0.012
+    inset: 0.5
+  radar:
+    art: '../circuit/frame.png'
+    width: 0.012
+    inset: 0.5
+
+styles:
+  centered:
+    font-size: 0.6
+    qproperty-alignment: AlignCenter
+  date:
+    font-size: 0.75
+    qproperty-alignment: AlignCenter
+  bottom:
+    # stays narrow enough to pass under the forecast column
+    font-size: 0.36
+    qproperty-alignment: AlignCenter

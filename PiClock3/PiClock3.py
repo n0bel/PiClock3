@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 from .DottedDict import DottedDict
 from .Languages import Languages
 from .Plugin import Plugin
+from .Slideshow import Slideshow
 from .Units import Units
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ class PiClock3(QWidget):
     styles = DottedDict()
     plugins = DottedDict()
     pluginData = DottedDict()
+    slideshows = []
 
     regionName = 'PiClock3'
     net = QtNetwork.QNetworkAccessManager()
@@ -68,6 +70,23 @@ class PiClock3(QWidget):
             self.close()
         if event.key() == Qt.Key_Space:
             self.nextPage(1)
+        # F6, F7 and F8 are the keys PiClock v1 used for these
+        show = self.showing()
+        if show is None:
+            return
+        if event.key() == Qt.Key_F6:
+            show.step(-1)
+        if event.key() == Qt.Key_F7:
+            show.step(1)
+        if event.key() == Qt.Key_F8:
+            logging.info('slideshow %s', 'held' if show.hold() else 'running')
+
+    def showing(self):
+        """the slideshow on the page being looked at, if there is one"""
+        for show in self.slideshows:
+            if show.isVisible():
+                return show
+        return None
 
     def mousePressEvent(self, event):
         return
@@ -103,13 +122,7 @@ class PiClock3(QWidget):
             unsortedPages.append(pageFrame)
 
             if 'background' in theme:
-                bg = QLabel(pageFrame)
-                bg.setObjectName(self.qtName(pageName) + '-background')
-                bg.setGeometry(0, 0, self.screen.width(), self.screen.height())
-                bg.setStyleSheet(
-                    "#%s-background { border-image: url(%s) 0 0 0 0 "
-                    "stretch stretch; }"
-                    % (self.qtName(pageName), self.expand(theme['background'])))
+                self._buildBackground(pageFrame, pageName, theme['background'])
 
             for name in layout.get('regions', {}):
                 self._buildRegion(pageFrame, name,
@@ -129,6 +142,29 @@ class PiClock3(QWidget):
                 continue
             for name in self.config[section]:
                 self.loadModule(name, self.config[section][name])
+
+    def _buildBackground(self, pageFrame, pageName, spec):
+        """one picture behind a page, or a folder of them"""
+        name = self.qtName(pageName) + '-background'
+        if isinstance(spec, dict):
+            resolved = dict(spec)
+            if 'folder' in resolved:
+                resolved['folder'] = self.expand(str(resolved['folder']))
+            elif 'files' in resolved:
+                resolved['files'] = [self.expand(str(f))
+                                     for f in resolved['files']]
+            else:
+                raise SystemExit(
+                    "\nthe background of page '%s' names neither a folder:"
+                    " nor files:.\n" % pageName)
+            self.slideshows.append(Slideshow(pageFrame, resolved, name))
+            return
+        bg = QLabel(pageFrame)
+        bg.setObjectName(name)
+        bg.setGeometry(0, 0, self.screen.width(), self.screen.height())
+        bg.setStyleSheet(
+            "#%s { border-image: url(%s) 0 0 0 0 stretch stretch; }"
+            % (name, self.expand(spec)))
 
     def _requireLayoutConfig(self):
         if 'plugins' in self.config:
@@ -189,18 +225,27 @@ class PiClock3(QWidget):
         to the folder.  a path with a {placeholder} is left alone: that is
         how the shipped themes reach the common image directory.
         """
-        keys = ('art', 'background', 'image')
+        keys = ('art', 'background', 'folder', 'files', 'image')
         if isinstance(part, list):
             for v in part:
                 PiClock3.localArt(v, home)
         elif isinstance(part, dict):
             for k, v in part.items():
-                if isinstance(v, (dict, list)):
+                if k in keys and isinstance(v, list):
+                    part[k] = [PiClock3.localPath(x, home) for x in v]
+                elif isinstance(v, (dict, list)):
                     PiClock3.localArt(v, home)
-                elif (k in keys and isinstance(v, str) and '{' not in v
-                      and not os.path.isabs(v)):
-                    part[k] = (home + '/' + v).replace(os.sep, '/')
+                elif k in keys:
+                    part[k] = PiClock3.localPath(v, home)
         return part
+
+    @staticmethod
+    def localPath(value, home):
+        """one relative path, made relative to the folder it came in"""
+        if (isinstance(value, str) and '{' not in value
+                and not os.path.isabs(value)):
+            return (home + '/' + value).replace(os.sep, '/')
+        return value
 
     def _regionRect(self, pw, ph, r):
         width = pw * r['width'] if 'width' in r else pw
@@ -599,6 +644,8 @@ class PiClock3(QWidget):
                 logging.debug("Setting page %s (%s) to visible"
                              % (current, pageName))
                 page.setVisible(True)
+        for show in self.slideshows:
+            show.pageChange()
         for pluginName in self.plugins:
             plugin = self.plugins[pluginName]
             plugin.pageChange()
