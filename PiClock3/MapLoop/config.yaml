@@ -3,3 +3,9 @@ interval: 10
 frames: 7
 dwell: 200
 hold: 1200
+
+# a name in the corner, for when more than one map is on the screen.  Unset
+# draws nothing, which is right for a clock with only one.
+label: ''
+label-size: 0.10          # a fraction of the map's height
+label-color: '#bef'

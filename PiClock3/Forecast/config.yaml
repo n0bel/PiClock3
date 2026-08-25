@@ -31,6 +31,3 @@ layout:
 
 color: '#bef'
 icons-folder: icons-lightblue
-from-theme:
-  color: default.color
-  icons-folder: weather-icons

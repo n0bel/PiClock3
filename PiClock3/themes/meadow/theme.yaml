@@ -3,9 +3,12 @@ description: Butterflies over a bright meadow, dark-blue clock
 
 background: 'background.png'
 
-# art sets the plugins ship; a theme picks which
-clock-art:     darkblue
-weather-icons: icons-darkblue
+
+# art the shipped plugins carry; a theme picks which set
+kind-settings:
+  analog-clock:       {clock-images-folder: darkblue}
+  current-conditions: {icons-folder: icons-darkblue}
+  forecast:           {icons-folder: icons-darkblue}
 
 default:
   font-size: 0.02        # a fraction of the screen height
@@ -28,15 +31,3 @@ borders:
     art: 'frame.png'
     width: 0.012
     inset: 0.5
-
-styles:
-  centered:
-    font-size: 0.6
-    qproperty-alignment: AlignCenter
-  date:
-    font-size: 0.75
-    qproperty-alignment: AlignCenter
-  bottom:
-    # stays narrow enough to pass under the forecast column
-    font-size: 0.36
-    qproperty-alignment: AlignCenter

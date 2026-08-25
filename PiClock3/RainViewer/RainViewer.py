@@ -77,10 +77,11 @@ class RainViewer(Plugin):
             if name in self.config:
                 return self.config[name]
             return default
-        color = setting('color', 6)
+        # not color: that name means a text color everywhere else
+        palette = setting('palette', 6)
         smooth = setting('smooth', 1)
         snow = setting('snow', 1)
-        return "/256/%%d/%%d/%%d/%d/%d_%d.png" % (color, smooth, snow)
+        return "/256/%%d/%%d/%%d/%d/%d_%d.png" % (palette, smooth, snow)
 
     def getFramePixmap(self, timeSlot, view, layerConfig, callback):
         self.freshen()

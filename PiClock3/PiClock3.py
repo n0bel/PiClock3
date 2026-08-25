@@ -16,6 +16,7 @@ from PyQt5.QtCore import (Qt, QRect,
 from PyQt5.QtGui import (QImage)
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
+from .Config import thisFolder
 from .DottedDict import DottedDict
 from .Languages import Languages
 from .Plugin import Plugin
@@ -23,6 +24,21 @@ from .Slideshow import Slideshow
 from .Units import Units
 
 logger = logging.getLogger(__name__)
+
+
+class Words():
+    """the language table, as something a format string can reach into.
+
+    {language.sunrise} asks the same question as piclock.language('sunrise')
+    and gets the same answer - including the same fallback for a word no
+    table has - so the two ways of asking cannot drift apart.
+    """
+
+    def __init__(self, piclock):
+        self.piclock = piclock
+
+    def __getattr__(self, name):
+        return self.piclock.language(name)
 
 
 class PiClock3(QWidget):
@@ -43,9 +59,13 @@ class PiClock3(QWidget):
     regionName = 'PiClock3'
     net = QtNetwork.QNetworkAccessManager()
 
+    offset = datetime.timedelta()
+
     def __init__(self, config):
         self.config = config
         super().__init__()
+        # before anything asks the time
+        self.offset = self.startAt()
         self.screen = QApplication.desktop().screenGeometry()
         logging.info("%s" % self.screen)
         self.units = Units(self)
@@ -54,10 +74,7 @@ class PiClock3(QWidget):
         self.languages.load()
         self.setLocale()
         self.words = self.languages.strings()
-        # the table, not the code, so {language.sunrise} is the word
-        words = DottedDict()
-        words.update(self.words)
-        self.config['language'] = words
+        self.config['language'] = Words(self)
         self.initData()
         self.initWidgets()
         self.showFullScreen()
@@ -104,7 +121,15 @@ class PiClock3(QWidget):
         for pageName in self.config.pages:
             page = self.config.pages[pageName]
             layout = self._loadPart('layouts', page['layout'])
+            self.config._merge(self.config.get('layout') or {}, layout)
             theme = self._loadPart('themes', page['theme'])
+            # theme: and layout: blocks in the config have the last word
+            # over the files they name, which is what makes either testable
+            # from the command line without editing it.  Named for what they
+            # change rather than -settings: they are not keyed by a target
+            # the way kind-settings and plugin-settings are.
+            self.config._merge(self.config.get('theme') or {}, theme)
+            theme['styles'] = self.regionStyles(layout, theme)
             logging.debug("Building Page %s: layout %s, theme %s",
                           pageName, page['layout'], page['theme'])
 
@@ -166,6 +191,24 @@ class PiClock3(QWidget):
             "#%s { border-image: url(%s) 0 0 0 0 stretch stretch; }"
             % (name, self.expand(spec)))
 
+    def regionStyles(self, layout, theme):
+        """the named styles a region can ask for, layout first then theme.
+
+        A layout knows how big its text has to be to fit; a theme knows what
+        it should look like.  So a layout carries the sizing as a default and
+        a theme overrides whatever it cares to, which is what lets a layout
+        nobody has themed still look right.
+        """
+        styles = {}
+        self.config._merge(layout.get('layout-style-settings') or {}, styles)
+        self.config._merge(theme.get('styles') or {}, styles)
+        wanted = {r['style'] for r in (layout.get('regions') or {}).values()
+                  if isinstance(r, dict) and 'style' in r}
+        for name in sorted(wanted - set(styles)):
+            logger.warning('layout asks for style %r and nothing defines it',
+                           name)
+        return styles
+
     def _requireLayoutConfig(self):
         if 'plugins' in self.config:
             raise SystemExit(
@@ -210,7 +253,10 @@ class PiClock3(QWidget):
                 with open(path, encoding='utf-8') as fh:
                     part = yaml.safe_load(fh)
                 logging.debug('%s %s from %s', stem, name, path)
-                return self.localArt(part, home) if home else part
+                # localArt leaves a {placeholder} alone, so it has to run
+                # before the placeholder becomes a path
+                part = self.localArt(part, home) if home else part
+                return thisFolder(part, os.path.dirname(path))
         raise SystemExit(
             "no %s named '%s'.  looked for %s.yaml, %s/%s.yaml and "
             "%s/%s.yaml, in %s/ and in PiClock3/%s/\n"
@@ -520,6 +566,7 @@ class PiClock3(QWidget):
         if os.path.isfile(path):
             with open(path, encoding='utf-8') as fh:
                 defaults = yaml.safe_load(fh) or {}
+            defaults = thisFolder(defaults, os.path.dirname(path))
             self.config._merge(defaults, config)
 
         # the theme of the page this instance draws on, if it draws at all.
@@ -527,13 +574,43 @@ class PiClock3(QWidget):
         # why anything a theme should be able to say belongs on a widget.
         theme = self.instanceTheme(entry)
         if theme:
-            self.config._merge(self.themeAsks(defaults, theme), config)
-            kind = defaults.get('kind')
-            if isinstance(theme.get(kind), dict):
-                self.config._merge(theme[kind], config)
+            self.cascade(theme, defaults, config)
+            self.settingsFor(theme, defaults, entry, config)
 
+        # the config has the same two blocks and the last word over the theme
+        self.settingsFor(self.config, defaults, entry, config)
         self.config._merge(entry, config)
         return config
+
+    # Qt's own property names, which mean here what they mean in Qt.  A
+    # widget declaring one is asking for the page's answer to it.
+    CASCADE = ('color', 'background-color', 'font-family', 'font-style',
+               'font-weight')
+
+    def cascade(self, theme, defaults, config):
+        """the theme's default: reaching every widget that takes the name.
+
+        font-size is deliberately not among them.  It is a fraction of
+        whatever it sits in, and a page and a region are not the same
+        height - the page's 0.02 would draw a clock face at four pixels.
+        """
+        page = theme.get('default') or {}
+        for name in self.CASCADE:
+            if name in page and name in defaults:
+                config[name] = page[name]
+
+    def settingsFor(self, source, defaults, entry, config):
+        """kind-settings: then plugin-settings:, from a theme or the config.
+
+        A kind is what a plugin is interchangeable with, so a kind-setting
+        means the same thing to every plugin wearing it.  plugin-settings:
+        names one exactly, for the times that is too broad.
+        """
+        for block, key in (('kind-settings', defaults.get('kind')),
+                           ('plugin-settings', entry.get('plugin'))):
+            settings = source.get(block)
+            if isinstance(settings, dict) and isinstance(settings.get(key), dict):
+                self.config._merge(settings[key], config)
 
     def instanceTheme(self, entry):
         """the theme of the page an instance draws on"""
@@ -549,29 +626,6 @@ class PiClock3(QWidget):
             if key.startswith(head):
                 return self.regionTheme[key]
         return None
-
-    @staticmethod
-    def themeAsks(defaults, theme):
-        """the theme values a plugin said it wanted, under its own key names.
-
-        A plugin declares the mapping itself, so the loader knows nothing
-        about any particular plugin and a third-party one can ask for the
-        same things:
-
-            from-theme:
-              clock-images-folder: clock-art
-        """
-        out = {}
-        for mine, theirs in (defaults.get('from-theme') or {}).items():
-            value = theme
-            for part in str(theirs).split('.'):
-                if not isinstance(value, dict) or part not in value:
-                    value = None
-                    break
-                value = value[part]
-            if value is not None:
-                out[mine] = value
-        return out
 
     def regionList(self, name):
         """every region a widget's region: refers to, in order.
@@ -679,8 +733,36 @@ class PiClock3(QWidget):
         return zoneinfo.ZoneInfo(tzlocal.get_localzone_name())
 
     def now(self):
-        """the current time where the clock is pointed"""
-        return datetime.datetime.now(self.timezone())
+        """the current time where the clock is pointed.
+
+        start-at: in the config shifts this, and only this.  The radar asks
+        the wall clock directly, because a frame server has what it has
+        whatever the clock believes - so a clock set to midwinter shows
+        midwinter's sun and this afternoon's rain.
+        """
+        return datetime.datetime.now(self.timezone()) + self.offset
+
+    def startAt(self):
+        """how far off the real time the config asked to be.
+
+        An offset rather than a fixed moment, so the clock still ticks: set
+        it to a polar night and the seconds still run.
+        """
+        wanted = self.config.get('start-at')
+        if not wanted:
+            return datetime.timedelta()
+        try:
+            when = datetime.datetime.fromisoformat(str(wanted))
+        except ValueError:
+            raise SystemExit(
+                "\nstart-at: %r is not a date and time.  Write it as"
+                " 2026-06-21 or 2026-06-21 13:45.\n" % wanted)
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=self.timezone())
+        off = when - datetime.datetime.now(self.timezone())
+        logger.warning('start-at %s: the clock is running %s from now',
+                       when, off)
+        return off
 
     def localtime(self, stamp):
         """a unix timestamp as a time where the clock is pointed"""

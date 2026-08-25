@@ -40,6 +40,14 @@ providers:
   librewxr:   {plugin: PiClock3.LibreWXR}
 
 # Widgets occupy a region named by the page's layout, and draw in it.
+# Settings for every widget of a kind, so the four radars below do not each
+# repeat them.  An instance still has the last word, and a theme can carry
+# the same block for anything that is a look rather than a choice.
+kind-settings:
+  radar:
+    base-provider: mapbox        # or googlemaps, if that is the key you got
+    frame-provider: librewxr     # or rainviewer
+
 widgets:
   clock:  {plugin: PiClock3.AnalogClock, region: clock}
 # clock:  {plugin: PiClock3.DigitalClock, region: clock}
@@ -68,8 +76,6 @@ widgets:
   radar1:
     plugin: PiClock3.MapLoop
     region: maps.1
-    base-provider: mapbox
-    frame-provider: librewxr
     zoom: 7
     center:
       lattitude: '{location.lattitude}'
@@ -85,8 +91,6 @@ widgets:
   radar2:
     plugin: PiClock3.MapLoop
     region: maps.2
-    base-provider: mapbox
-    frame-provider: librewxr
     zoom: 11
     center:
       lattitude: '{location.lattitude}'
@@ -102,8 +106,6 @@ widgets:
   radar3:
     plugin: PiClock3.MapLoop
     region: radars.1
-    base-provider: mapbox
-    frame-provider: librewxr
     zoom: 7
     center:
       lattitude: '{location.lattitude}'
@@ -112,8 +114,6 @@ widgets:
   radar4:
     plugin: PiClock3.MapLoop
     region: radars.2
-    base-provider: mapbox
-    frame-provider: librewxr
     zoom: 11
     center:
       lattitude: '{location.lattitude}'

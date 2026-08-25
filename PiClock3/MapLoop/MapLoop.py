@@ -64,6 +64,25 @@ class MapLoop(Plugin):
         self.markerLabel.setGeometry(rr.x(), rr.y(), rr.width(), rr.height())
         self.markerLabel.setStyleSheet("#markerLabel { background-color: transparent; }")
 
+        # a name for the map, when more than one is on the screen and the
+        # difference between them is not obvious.  The frame provider stamps
+        # its own time in the top left, so this sits opposite it.
+        if self.config.get('label'):
+            self.nameLabel = QLabel(self.markerLabel)
+            self.nameLabel.setObjectName("mapname")
+            self.nameLabel.setGeometry(rr.x(), rr.y(), rr.width(),
+                                       int(rr.height() * 0.16))
+            props = self.piclock.scaleFont(
+                {'font-size': self.config['label-size'],
+                 'color': self.piclock.expand(self.config['label-color']),
+                 'background-color': 'transparent'},
+                rr.height())
+            self.nameLabel.setStyleSheet(
+                '#mapname {%s }' % self.piclock._buildStyleString(props))
+            self.nameLabel.setAlignment(Qt.AlignRight | Qt.AlignTop)
+            self.nameLabel.setText(
+                self.piclock.expand(str(self.config['label'])) + ' ')
+
         logger.debug("maploop get map pixmap")        
         self.view = self.mapView()
         logger.debug('maploop view %s', self.view)

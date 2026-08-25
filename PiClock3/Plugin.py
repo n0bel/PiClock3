@@ -50,8 +50,13 @@ class Plugin(QObject):
         out from a picture.
         """
         folder = folder or self.config.get('icons-folder') or 'icons-lightblue'
-        for base in ('icons', os.path.join('PiClock3', 'icons')):
-            path = os.path.join(base, folder, name + '.png')
+        # a bare name is a set that ships; anything with a path in it is a
+        # set somebody supplied, so it is where it says it is
+        where = [folder] if '/' in folder.replace(os.sep, '/') else []
+        where += [os.path.join(base, folder)
+                  for base in ('icons', os.path.join('PiClock3', 'icons'))]
+        for base in where:
+            path = os.path.join(base, name + '.png')
             if os.path.isfile(path):
                 return path
         logger.warning('no icon %s in %s', name, folder)

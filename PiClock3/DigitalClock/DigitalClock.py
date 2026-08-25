@@ -20,28 +20,25 @@ class DigitalClock(Plugin):
         self.clockrect = None
         self.clockface = None
 
-    def fontCalc(self, size):
-        return "%dpx" % (float(size) * self.region.frameRect().height())
-
     def start(self):
         self.clockface = QLabel(self.region)
         self.clockface.setObjectName("clockface")
         self.clockrect = self.region.frameRect()
         self.clockface.setGeometry(self.clockrect)
         dcolor = QColor(self.config.color).darker(0).name()
-        lcolor = QColor(self.config.color).lighter(120).name()
-        extraAttributes = ''
-        if 'extra-font-attributes' in self.config:
-            extraAttributes = self.config['extra-font-attributes']
+        # the face is lifted off its own glow, which is the darker color
+        props = self.piclock.scaleFont({
+            'background-color': self.config['background-color'],
+            'font-family': self.config['font-family'],
+            'font-weight': self.config['font-weight'],
+            'color': QColor(self.config.color).lighter(120).name(),
+            'font-size': self.config['font-size'],
+        }, self.clockrect.height())
+        extra = str(self.config['extra-font-attributes'] or '').strip().lstrip(';')
         self.clockface.setStyleSheet(
-            "#clockface { background-color: transparent; " +
-            " font-family:sans-serif;" +
-            " font-weight: light; color: " +
-            lcolor +
-            "; background-color: transparent; font-size: " +
-            self.fontCalc(self.config['font-size']) +
-            extraAttributes +
-            "}")
+            "#clockface {%s%s }"
+            % (self.piclock._buildStyleString(props),
+               ' ' + extra.rstrip(';') + ';' if extra else ''))
         logging.info(self.clockface.styleSheet())
         self.clockface.setAlignment(Qt.AlignCenter)
         self.clockface.setGeometry(self.clockrect)
