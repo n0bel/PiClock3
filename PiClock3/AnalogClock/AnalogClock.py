@@ -1,5 +1,4 @@
 import datetime
-import locale
 import logging
 
 from PyQt5.QtCore import Qt, QTimer
@@ -73,7 +72,10 @@ class Plugin(Plugin):
         self.secpixmap = QPixmap(secondImage)
         self.secpixmap2 = QPixmap(secondImage)
 
-        self.lastmin = 0
+        # not 0: the hour and minute hands only repaint when the minute
+        # changes, so starting at the top of a minute would leave them
+        # unpainted until the next one
+        self.lastmin = None
         self.ctimer = QTimer()
         self.ctimer.timeout.connect(self.tick)
         self.ctimer.start(1000)
@@ -83,11 +85,6 @@ class Plugin(Plugin):
 
     def tick(self):
         time_now = self.piclock.now()
-        if 'locale' in self.config:
-            try:
-                locale.setlocale(locale.LC_TIME, self.config.locale)
-            except BaseException:
-                pass
         angle = time_now.second * 6
         ts = self.secpixmap.size()
         self.secpixmap2 = self.secpixmap.transformed(

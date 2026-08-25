@@ -111,7 +111,9 @@ class Forecast(Plugin):
         cell['icon'].setPixmap(p.scaled(
             cell['icon'].width(), cell['icon'].height(),
             Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        cell['wx'].setText(entry['description'] + '\n' + figures)
+        cell['wx'].setText(
+            self.piclock.condition(entry.get('condition'))
+            + '\n' + figures)
         stamp = entry['when'].strftime(when)
         # a leading zero on a 12 hour clock reads as a typo
         cell['day'].setText(stamp.lstrip('0') if '%I' in when else stamp)
@@ -132,15 +134,23 @@ class Forecast(Plugin):
         return '' if not pop else '%d%% ' % pop
 
     def accumulation(self, entry):
-        """rain or snow, when it amounts to more than a rounded zero"""
-        mm = entry.get('accum')
-        if not mm:
+        """how much is coming, when it rounds to more than nothing.
+
+        A provider's precipitation figure is liquid water - snow melted -
+        and snow lies several times deeper than the water in it, so snow is
+        asked for separately and in its own depth.
+        """
+        snowy = entry['icon'] == 'snow'
+        amount = entry.get('snow') if snowy else None
+        frm = 'cm'
+        if amount is None:
+            amount, frm = entry.get('accum'), 'mm'
+        if not amount:
             return ''
-        shown = self.units('depth', 'mm', mm)
+        shown = self.units('depth', frm, amount)
         if float(''.join(c for c in shown if c.isdigit() or c == '.')) == 0:
             return ''
-        word = self.piclock.language(
-            'snow' if entry['icon'] == 'snow' else 'rain')
+        word = self.piclock.condition('SN' if snowy else 'RA')
         return '%s %s ' % (word, shown)
 
     def temperature(self, c, unit=True):

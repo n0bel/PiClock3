@@ -65,7 +65,8 @@ class CurrentConditions(Plugin):
         icon = self.parts['wxicon']
         icon.setPixmap(p.scaled(icon.width(), icon.height(),
                                 Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        self.parts['wxdesc'].setText(c.get('description') or '')
+        self.parts['wxdesc'].setText(
+            self.piclock.condition(c.get('condition')))
 
         self.parts['temper'].setText(
             '' if temp is None

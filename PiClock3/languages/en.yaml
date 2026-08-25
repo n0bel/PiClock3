@@ -1,0 +1,290 @@
+# English.
+#
+# A language is one file: what to call it, and the words.  Files are found
+# the way themes, layouts and units are found - languages/ of your own, or
+# one a plugin brought with it, merges over what ships here.  So a plugin
+# adds its own words without editing this, and you can change a word
+# without editing a plugin.
+#
+# code: is the identity, under whichever standards name this language.  A
+# config's language: is matched against every one of them, so en, eng or
+# en-US all arrive here.  A language with no standard code can say
+# anything, as long as nothing else claims it.
+
+code: [en, eng]
+
+name: English
+
+# LC_TIME names this language answers to, tried in order.  The
+# spelling differs between platforms, and a glibc system has to
+# have generated it (sudo dpkg-reconfigure locales), so several
+# are offered and the first one that takes is used.
+locale: [en_US.UTF-8, en_US.utf8, English_United States.1252, en_US]
+
+strings:
+  pressure: Pressure
+  humidity: Humidity
+  wind: Wind
+  gusting: Gusting
+  feels_like: Feels Like
+  sunrise: Sunrise
+  sunset: Sunset
+  moon_phase: Moon Phase
+  new_moon: New Moon
+  waning_crecent: Waning Crecent
+  last_quarter: Last Quarter
+  waning_gibbous: Waning Gibbous
+  full_moon: Full Moon
+  waxing_gibbous: Waxing Gibbous
+  first_quarter: First Quarter
+  waxing_crecent: Waxing Crecent
+  today: Today
+
+# Conditions, as WMO code table 4678 - METAR present-weather notation.
+# The key is the notation a provider reports; the comment is WMO's own
+# English, which is a technical gloss rather than something to put on a
+# screen, so every language including English is a translation of it.
+#
+# Nothing has to be complete.  A notation with no entry falls back to a
+# less specific one - -SHRA to SHRA to RA - so a language is useful from
+# its first dozen lines.
+
+conditions:
+  # sky cover - a separate METAR group, not in 4678
+  'CAVOK':  Clear                        # ceiling and visibility OK
+  'SKC':    Clear                        # sky clear, 0 oktas
+  'CLR':    Clear                        # no cloud below 12 000 ft
+  'NCD':    Clear                        # no cloud detected
+  'NSC':    Fair                         # no significant cloud
+  'FEW':    Mostly Clear                 # few, 1 to 2 oktas
+  'SCT':    Partly Cloudy                # scattered, 3 to 4 oktas
+  'BKN':    Mostly Cloudy                # broken, 5 to 7 oktas
+  'OVC':    Overcast                     # overcast, 8 oktas
+  'VV':     Sky Obscured                 # vertical visibility, sky obscured
+  # phenomena that only occur under a descriptor
+  'GR':     Hail                         # hail
+  'GS':     Snow Pellets                 # small hail and/or snow pellets
+  'SH':     Showers                      # shower(s)
+  # WMO code table 4678, present weather
+  'BR':     Mist                         # Mist
+  'DS':     Duststorm                    # Duststorm
+  '+DS':    Heavy Duststorm              # Heavy duststorm
+  '-DS':    Light Duststorm              # Light duststorm
+  'VCDS':   Duststorm Nearby             # Duststorm in the vicinity
+  'DU':     Dust                         # Dust
+  'BLDU':   Blowing Dust                 # Blowing dust
+  'VCBLDU': Blowing Dust Nearby          # Blowing dust in the vicinity
+  'DRDU':   Drifting Dust                # Low drifting dust
+  'DZ':     Drizzle                      # Precipitation of drizzle
+  '+DZ':    Heavy Drizzle                # Heavy precipitation of drizzle
+  '-DZ':    Light Drizzle                # Light precipitation of drizzle
+  'FZDZ':   Freezing Drizzle             # Precipitation of freezing drizzle
+  '+FZDZ':  Heavy Freezing Drizzle       # Heavy precipitation of freezing drizzle
+  '-FZDZ':  Light Freezing Drizzle       # Light precipitation of freezing drizzle
+  'DZPL':   Drizzle and Sleet            # Precipitation of drizzle and ice pellets
+  '+DZPL':  Heavy Wintry Mix             # Heavy precipitation of drizzle and ice pellets
+  '-DZPL':  Light Wintry Mix             # Light precipitation of drizzle and ice pellets
+  'DZRA':   Drizzle and Rain             # Precipitation of drizzle and rain
+  '+DZRA':  Heavy Rain                   # Heavy precipitation of drizzle and rain
+  '-DZRA':  Light Rain                   # Light precipitation of drizzle and rain
+  'FZDZRA': Freezing Drizzle             # Precipitation of freezing drizzle and rain
+  '+FZDZRA': Heavy Freezing Drizzle       # Heavy precipitation of freezing drizzle and rain
+  '-FZDZRA': Light Freezing Drizzle       # Light precipitation of freezing drizzle and rain
+  'DZSG':   Drizzle and Grains           # Precipitation of drizzle and snow grains
+  '+DZSG':  Heavy Wintry Mix             # Heavy precipitation of drizzle and snow grains
+  '-DZSG':  Light Wintry Mix             # Light precipitation of drizzle and snow grains
+  'DZSN':   Drizzle and Snow             # Precipitation of drizzle and snow
+  '+DZSN':  Heavy Wintry Mix             # Heavy precipitation of drizzle and snow
+  '-DZSN':  Light Wintry Mix             # Light precipitation of drizzle and snow
+  'FC':     Funnel Cloud                 # Funnel cloud(s) (tornado or water-spout)
+  '+FC':    Tornado                      # Well-developed funnel cloud(s) (tornado or waterspout)
+  'VCFC':   Funnel Cloud Nearby          # Funnel cloud(s) (tornado or water-spout) in the vicinity
+  'FG':     Fog                          # Fog
+  'VCFG':   Fog Nearby                   # Fog in the vicinity
+  'BCFG':   Fog Patches                  # Patches of fog
+  'FZFG':   Freezing Fog                 # Freezing fog
+  'MIFG':   Ground Fog                   # Shallow fog
+  'PRFG':   Partial Fog                  # Partial fog (covering part of the aerodrome)
+  'FU':     Smoke                        # Smoke
+  'SHGR':   Hail Showers                 # Showery precipitation of hail
+  '+SHGR':  Heavy Hail Showers           # Heavy showery precipitation of hail
+  '-SHGR':  Light Hail Showers           # Light showery precipitation of hail
+  'TSGR':   Thunderstorm with Hail       # Thunderstorm with precipitation of hail
+  '+TSGR':  Thunderstorm, Heavy Hail     # Thunderstorm with heavy precipitation of hail
+  '-TSGR':  Thunderstorm, Light Hail     # Thunderstorm with light precipitation of hail
+  'SHGRRA': Hail Showers                 # Showery precipitation of hail and rain
+  '+SHGRRA': Heavy Hail Showers           # Heavy showery precipitation of hail and rain
+  '-SHGRRA': Light Hail Showers           # Light showery precipitation of hail and rain
+  'TSGRRA': Thunderstorm with Hail       # Thunderstorm with precipitation of hail and rain
+  '+TSGRRA': Thunderstorm, Heavy Hail     # Thunderstorm with heavy precipitation of hail and rain
+  '-TSGRRA': Thunderstorm, Light Hail     # Thunderstorm with light precipitation of hail and rain
+  'SHGRSN': Hail Showers                 # Showery precipitation of hail and snow
+  '+SHGRSN': Heavy Hail Showers           # Heavy showery precipitation of hail and snow
+  '-SHGRSN': Light Hail Showers           # Light showery precipitation of hail and snow
+  'TSGRSN': Thunderstorm with Hail       # Thunderstorm with precipitation of hail and snow
+  '+TSGRSN': Thunderstorm, Heavy Hail     # Thunderstorm with heavy precipitation of hail and snow
+  '-TSGRSN': Thunderstorm, Light Hail     # Thunderstorm with light precipitation of hail and snow
+  'SHGS':   Pellet Showers               # Showery precipitation of snow pellets/small hail
+  '+SHGS':  Heavy Pellet Showers         # Heavy showery precipitation of snow pellets/small hail
+  '-SHGS':  Light Pellet Showers         # Light showery precipitation of snow pellets/small hail
+  'TSGS':   Thunderstorm with Pellets    # Thunderstorm with precipitation of snow pellets/small hail
+  '+TSGS':  Thunderstorm, Heavy Pellets  # Thunderstorm with heavy precipitation of snow pellets/small hail
+  '-TSGS':  Thunderstorm, Light Pellets  # Thunderstorm with light precipitation of snow pellets/small hail
+  'SHGSRA': Pellet Showers               # Showery precipitation of snow pellets/small hail and rain
+  '+SHGSRA': Heavy Pellet Showers         # Heavy showery precipitation of snow pellets/small hail and rain
+  '-SHGSRA': Light Pellet Showers         # Light showery precipitation of snow pellets/small hail and rain
+  'TSGSRA': Thunderstorm with Pellets    # Thunderstorm with precipitation of snow pellets/small hail and rain
+  '+TSGSRA': Thunderstorm, Heavy Pellets  # Thunderstorm with heavy precipitation of snow pellets/small hail and rain
+  '-TSGSRA': Thunderstorm, Light Pellets  # Thunderstorm with light precipitation of snow pellets/small hail and rain
+  'SHGSSN': Pellet Showers               # Showery precipitation of snow pellets/small hail and snow
+  '+SHGSSN': Heavy Pellet Showers         # Heavy showery precipitation of snow pellets/small hail and snow
+  '-SHGSSN': Light Pellet Showers         # Light showery precipitation of snow pellets/small hail and snow
+  'TSGSSN': Thunderstorm with Pellets    # Thunderstorm with precipitation of snow pellets/small hail and snow
+  '+TSGSSN': Thunderstorm, Heavy Pellets  # Thunderstorm with heavy precipitation of snow pellets/small hail and snow
+  '-TSGSSN': Thunderstorm, Light Pellets  # Thunderstorm with light precipitation of snow pellets/small hail and snow
+  'HZ':     Haze                         # Haze
+  'PL':     Ice Pellets                  # Precipitation of ice pellets
+  '+PL':    Heavy Ice Pellets            # Heavy precipitation of ice pellets
+  '-PL':    Light Ice Pellets            # Light precipitation of ice pellets
+  'PLDZ':   Sleet and Drizzle            # Precipitation of ice pellets and drizzle
+  '+PLDZ':  Heavy Wintry Mix             # Heavy precipitation of ice pellets and drizzle
+  '-PLDZ':  Light Wintry Mix             # Light precipitation of ice pellets and drizzle
+  'PLRA':   Sleet and Rain               # Precipitation of ice pellets and rain
+  '+PLRA':  Heavy Wintry Mix             # Heavy precipitation of ice pellets and rain
+  '-PLRA':  Light Wintry Mix             # Light precipitation of ice pellets and rain
+  'PLSG':   Sleet and Grains             # Precipitation of ice pellets and snow grains
+  '+PLSG':  Heavy Wintry Mix             # Heavy precipitation of ice pellets and snow grains
+  '-PLSG':  Light Wintry Mix             # Light precipitation of ice pellets and snow grains
+  'PLSN':   Sleet and Snow               # Precipitation of ice pellets and snow
+  '+PLSN':  Heavy Wintry Mix             # Heavy precipitation of ice pellets and snow
+  '-PLSN':  Light Wintry Mix             # Light precipitation of ice pellets and snow
+  'PO':     Dust Devils                  # Dust/sand whirls (dust devils)
+  'VCPO':   Dust Devils Nearby           # Dust/sand whirls (dust devils) in the vicinity
+  'RA':     Rain                         # Precipitation of rain
+  '+RA':    Heavy Rain                   # Heavy precipitation of rain
+  '-RA':    Light Rain                   # Light precipitation of rain
+  'FZRA':   Freezing Rain                # Precipitation of freezng rain
+  '+FZRA':  Heavy Freezing Rain          # Heavy precipitation of freezng rain
+  '-FZRA':  Light Freezing Rain          # Light precipitation of freezng rain
+  'SHRA':   Rain Showers                 # Showery precipitation of rain
+  '+SHRA':  Heavy Rain Showers           # Heavy showery precipitation of rain
+  '-SHRA':  Light Rain Showers           # Light showery precipitation of rain
+  'TSRA':   Thunderstorm with Rain       # Thunderstorm with precipitation of rain
+  '+TSRA':  Thunderstorm, Heavy Rain     # Thunderstorm with heavy precipitation of rain
+  '-TSRA':  Thunderstorm, Light Rain     # Thunderstorm with light precipitation of rain
+  'RADZ':   Rain and Drizzle             # Precipitation of rain and drizzle
+  '+RADZ':  Heavy Rain                   # Heavy precipitation of rain and drizzle
+  '-RADZ':  Light Rain                   # Light precipitation of rain and drizzle
+  'FZRADZ': Freezing Rain                # Precipitation of freezing rain and drizzle
+  '+FZRADZ': Heavy Freezing Rain          # Heavy precipitation of freezing rain and drizzle
+  '-FZRADZ': Light Freezing Rain          # Light precipitation of freezing rain and drizzle
+  'SHRAGR': Hail Showers                 # Showery precipitation of rain and hail
+  '+SHRAGR': Heavy Hail Showers           # Heavy showery precipitation of rain and hail
+  '-SHRAGR': Light Hail Showers           # Light showery precipitation of rain and hail
+  'TSRAGR': Thunderstorm with Hail       # Thunderstorm with precipitation of rain and hail
+  '+TSRAGR': Thunderstorm, Heavy Hail     # Thunderstorm with heavy precipitation of rain and hail
+  '-TSRAGR': Thunderstorm, Light Hail     # Thunderstorm with light precipitation of rain and hail
+  'SHRAGS': Pellet Showers               # Showery precipitation of rain and snow pellets/small hail
+  '+SHRAGS': Heavy Pellet Showers         # Heavy showery precipitation of rain and snow pellets/small hail
+  '-SHRAGS': Light Pellet Showers         # Light showery precipitation of rain and snow pellets/small hail
+  'TSRAGS': Thunderstorm with Pellets    # Thunderstorm with precipitation of rain and snow pellets/small hail
+  '+TSRAGS': Thunderstorm, Heavy Pellets  # Thunderstorm with heavy precipitation of rain and snow pellets/small hail
+  '-TSRAGS': Thunderstorm, Light Pellets  # Thunderstorm with light precipitation of rain and snow pellets/small hail
+  'RAPL':   Rain and Sleet               # Precipitation of rain and ice pellets
+  '+RAPL':  Heavy Wintry Mix             # Heavy precipitation of rain and ice pellets
+  '-RAPL':  Light Wintry Mix             # Light precipitation of rain and ice pellets
+  'RASG':   Rain and Grains              # Precipitation of rain and snow grains
+  '+RASG':  Heavy Wintry Mix             # Heavy precipitation of rain and snow grains
+  '-RASG':  Light Wintry Mix             # Light precipitation of rain and snow grains
+  'RASN':   Rain and Snow                # Precipitation of rain and snow
+  '+RASN':  Heavy Wintry Mix             # Heavy precipitation of rain and snow
+  '-RASN':  Light Wintry Mix             # Light precipitation of rain and snow
+  'SHRASN': Wintry Showers               # Showery precipitation of rain and snow
+  '+SHRASN': Heavy Wintry Showers         # Heavy showery precipitation of rain and snow
+  '-SHRASN': Light Wintry Showers         # Light showery precipitation of rain and snow
+  'TSRASN': Thunderstorm with Snow       # Thunderstorm with precipitation of rain and snow
+  '+TSRASN': Thunderstorm, Heavy Snow     # Thunderstorm with heavy precipitation of rain and snow
+  '-TSRASN': Thunderstorm, Light Snow     # Thunderstorm with light precipitation of rain and snow
+  'SA':     Sand                         # Sand
+  'BLSA':   Blowing Sand                 # Blowing sand
+  'VCBLSA': Blowing Sand Nearby          # Blowing sand in the vicinity
+  'DRSA':   Drifting Sand                # Low drifting sand
+  'SG':     Snow Grains                  # Precipitation of snow grains
+  '+SG':    Heavy Snow Grains            # Heavy precipitation of snow grains
+  '-SG':    Light Snow Grains            # Light precipitation of snow grains
+  'SGDZ':   Grains and Drizzle           # Precipitation of snow grains and drizzle
+  '+SGDZ':  Heavy Wintry Mix             # Heavy precipitation of snow grains and drizzle
+  '-SGDZ':  Light Wintry Mix             # Light precipitation of snow grains and drizzle
+  'SGPL':   Grains and Sleet             # Precipitation of snow grains and ice pellets
+  '+SGPL':  Heavy Wintry Mix             # Heavy precipitation of snow grains and ice pellets
+  '-SGPL':  Light Wintry Mix             # Light precipitation of snow grains and ice pellets
+  'SGRA':   Grains and Rain              # Precipitation of snow grains and rain
+  '+SGRA':  Heavy Wintry Mix             # Heavy precipitation of snow grains and rain
+  '-SGRA':  Light Wintry Mix             # Light precipitation of snow grains and rain
+  'SGSN':   Grains and Snow              # Precipitation of snow grains and snow
+  '+SGSN':  Heavy Snow                   # Heavy precipitation of snow grains and snow
+  '-SGSN':  Light Snow                   # Light precipitation of snow grains and snow
+  'VCSH':   Showers Nearby               # Shower(s) in the vicinity
+  'SN':     Snow                         # Precipitation of snow
+  '+SN':    Heavy Snow                   # Heavy precipitation of snow
+  '-SN':    Light Snow                   # Light precipitation of snow
+  'BLSN':   Blowing Snow                 # Blowing snow
+  'VCBLSN': Blowing Snow Nearby          # Blowing snow in the vicinity
+  'DRSN':   Drifting Snow                # Low drifting snow
+  'SHSN':   Snow Showers                 # Showery precipitation of snow
+  '+SHSN':  Heavy Snow Showers           # Heavy showery precipitation of snow
+  '-SHSN':  Light Snow Showers           # Light showery precipitation of snow
+  'TSSN':   Thunderstorm with Snow       # Thunderstorm with precipitation of snow
+  '+TSSN':  Thunderstorm, Heavy Snow     # Thunderstorm with heavy precipitation of snow
+  '-TSSN':  Thunderstorm, Light Snow     # Thunderstorm with light precipitation of snow
+  'SNDZ':   Snow and Drizzle             # Precipitation of snow and drizzle
+  '+SNDZ':  Heavy Wintry Mix             # Heavy precipitation of snow and drizzle
+  '-SNDZ':  Light Wintry Mix             # Light precipitation of snow and drizzle
+  'SHSNGR': Hail Showers                 # Showery precipitation of snow and hail
+  '+SHSNGR': Heavy Hail Showers           # Heavy showery precipitation of snow and hail
+  '-SHSNGR': Light Hail Showers           # Light showery precipitation of snow and hail
+  'TSSNGR': Thunderstorm with Hail       # Thunderstorm with precipitation of snow and hail
+  '+TSSNGR': Thunderstorm, Heavy Hail     # Thunderstorm with heavy precipitation of snow and hail
+  '-TSSNGR': Thunderstorm, Light Hail     # Thunderstorm with light precipitation of snow and hail
+  'SHSNGS': Pellet Showers               # Showery precipitation of snow and snow pellets/small hail
+  '+SHSNGS': Heavy Pellet Showers         # Heavy showery precipitation of snow and snow pellets/small hail
+  '-SHSNGS': Light Pellet Showers         # Light showery precipitation of snow and snow pellets/small hail
+  'TSSNGS': Thunderstorm with Pellets    # Thunderstorm with precipitation of snow and snow pellets/small hail
+  '+TSSNGS': Thunderstorm, Heavy Pellets  # Thunderstorm with heavy precipitation of snow and snow pellets/small hail
+  '-TSSNGS': Thunderstorm, Light Pellets  # Thunderstorm with light precipitation of snow and snow pellets/small hail
+  'SNPL':   Snow and Sleet               # Precipitation of snow and ice pellets
+  '+SNPL':  Heavy Wintry Mix             # Heavy precipitation of snow and ice pellets
+  '-SNPL':  Light Wintry Mix             # Light precipitation of snow and ice pellets
+  'SNRA':   Snow and Rain                # Precipitation of snow and rain
+  '+SNRA':  Heavy Wintry Mix             # Heavy precipitation of snow and rain
+  '-SNRA':  Light Wintry Mix             # Light precipitation of snow and rain
+  'SHSNRA': Wintry Showers               # Showery precipitation of snow and rain
+  '+SHSNRA': Heavy Wintry Showers         # Heavy showery precipitation of snow and rain
+  '-SHSNRA': Light Wintry Showers         # Light showery precipitation of snow and rain
+  'TSSNRA': Thunderstorm with Snow       # Thunderstorm with precipitation of snow and rain
+  '+TSSNRA': Thunderstorm, Heavy Snow     # Thunderstorm with heavy precipitation of snow and rain
+  '-TSSNRA': Thunderstorm, Light Snow     # Thunderstorm with light precipitation of snow and rain
+  'SNSG':   Snow and Grains              # Precipitation of snow and snow grains
+  '+SNSG':  Heavy Snow                   # Heavy precipitation of snow and snow grains
+  '-SNSG':  Light Snow                   # Light precipitation of snow and snow grains
+  'SQ':     Squalls                      # Squalls
+  'SS':     Sandstorm                    # Sandstorm
+  '+SS':    Heavy Sandstorm              # Heavy sandstorm
+  '-SS':    Light Sandstorm              # Light sandstorm
+  'VCSS':   Sandstorm Nearby             # Sandstorm in the vicinity
+  'TS':     Thunderstorm                 # Thunderstorm
+  'VCTS':   Thunderstorm Nearby          # Thunderstorm in the vicinity
+  'UP':     Precipitation                # Unidentified precipitation
+  '+UP':    Heavy Precipitation          # Heavy unidentified precipitation
+  '-UP':    Light Precipitation          # Light unidentified precipitation
+  'FZUP':   Freezing Precipitation       # Unidentified freezing precipitation
+  '+FZUP':  Heavy Freezing Precipitation # Heavy unidentified freezing precipitation
+  '-FZUP':  Light Freezing Precipitation # Light unidentified freezing precipitation
+  'SHUP':   Showers                      # Unidentified showery precipitation
+  '+SHUP':  Heavy Showers                # Heavy unidentified showery precipitation
+  '-SHUP':  Light Showers                # Light unidentified showery precipitation
+  'TSUP':   Thunderstorm                 # Thunderstorm with unidentified precipitation
+  '+TSUP':  Thunderstorm                 # Thunderstorm with heavy precipitation of unidentified precipitation
+  '-TSUP':  Thunderstorm                 # Thunderstorm with light unidentified precipitation
+  'VA':     Volcanic Ash                 # Volcanic ash
+  'VCVA':   Volcanic Ash Nearby          # Volcanic ash in the vicinity

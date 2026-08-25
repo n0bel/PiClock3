@@ -1,6 +1,7 @@
 import datetime
 import importlib
 import inspect
+import locale
 import logging
 import logging.handlers
 import os
@@ -16,6 +17,7 @@ from PyQt5.QtGui import (QImage)
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
 from .DottedDict import DottedDict
+from .Languages import Languages
 from .Plugin import Plugin
 from .Units import Units
 
@@ -46,6 +48,14 @@ class PiClock3(QWidget):
         logging.info("%s" % self.screen)
         self.units = Units(self)
         self.units.load()
+        self.languages = Languages(self)
+        self.languages.load()
+        self.setLocale()
+        self.words = self.languages.strings()
+        # the table, not the code, so {language.sunrise} is the word
+        words = DottedDict()
+        words.update(self.words)
+        self.config['language'] = words
         self.initData()
         self.initWidgets()
         self.showFullScreen()
@@ -630,11 +640,49 @@ class PiClock3(QWidget):
         return datetime.datetime.fromtimestamp(stamp, self.timezone())
 
     def language(self, s):
+        """a word in the language this clock is set to.
+
+        An unknown key becomes itself, spaced and capitalised, so a plugin
+        that says something no table has yet still reads as words.
+        """
         s = s.replace(' ', '_').lower()
-        if s in self.config.language:
-            return self.config.language[s]
-        else:
-            return s.replace('_', ' ').title()
+        if s in self.words:
+            return self.words[s]
+        return s.replace('_', ' ').title()
+
+    def setLocale(self):
+        """LC_TIME, so strftime names the days and months in this language.
+
+        Set here, before any widget starts, because the widgets that draw
+        dates do so on network callbacks and cannot be ordered.
+
+        A locale is spelled differently on each platform, and on glibc it
+        also has to have been generated, so the language file offers several
+        and the first that takes is the one used.  A config's own locale:
+        overrides the lot.
+        """
+        wanted = self.config.get('locale')
+        names = [wanted] if wanted else self.languages.locales()
+        for name in names:
+            try:
+                locale.setlocale(locale.LC_TIME, name)
+                logger.info('locale %s', name)
+                return name
+            except locale.Error:
+                continue
+        if names:
+            logger.warning(
+                'none of these locales is installed: %s - day and month names'
+                ' will be the system default', ', '.join(str(n) for n in names))
+        return None
+
+    def condition(self, notation):
+        """words for a WMO 4678 weather notation, or a METAR sky cover.
+
+        Providers hand out notation rather than sentences so that what the
+        sky is doing and what to call it stay separate concerns.
+        """
+        return self.languages.condition(notation)
 
     def expand(self, s):
         self.config['plugin-folder'] = os.path.dirname(

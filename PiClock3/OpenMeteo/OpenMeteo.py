@@ -5,10 +5,11 @@ inside a daily volume that one clock, asking every half hour, is nowhere
 near.
 
 This supplies data and occupies no region, so it is a provider.  What it
-hands back is normalised - a day, an icon name, a description, a high and a
-low in Celsius - so a widget drawing it never learns which service it came
-from, and a second source is a second plugin rather than a branch in the
-drawing code.
+hands back is normalised - a day, an icon name, a WMO 4678 condition, a
+high and a low in Celsius - so a widget drawing it never learns which service
+it came from, and a second source is a second plugin rather than a branch in
+the drawing code.  Beside that, raw carries the service's own record for the
+entry untouched, so normalising costs nothing.
 """
 import datetime
 import json
@@ -23,38 +24,38 @@ logger = logging.getLogger(__name__)
 HOST = 'https://api.open-meteo.com/v1/forecast'
 ATTRIBUTION = 'Open-Meteo'
 
-# WMO present-weather codes, onto the eleven icon names the shipped sets
-# have and the words that go under them.  Codes share pictures; the
-# description carries the difference.
+# Open-Meteo's weather codes onto an icon and a WMO 4678 notation.  The
+# codes are not 4678 and not quite 4677 either - 0 to 3 are sky cover, which
+# 4678 has no notation for, so those carry METAR cover codes instead.
 WMO = {
-    0:  ('clear-day',         'Clear'),
-    1:  ('clear-day',         'Mainly Clear'),
-    2:  ('partly-cloudy-day', 'Partly Cloudy'),
-    3:  ('cloudy',            'Overcast'),
-    45: ('fog',               'Fog'),
-    48: ('fog',               'Rime Fog'),
-    51: ('rain',              'Light Drizzle'),
-    53: ('rain',              'Drizzle'),
-    55: ('rain',              'Heavy Drizzle'),
-    56: ('sleet',             'Freezing Drizzle'),
-    57: ('sleet',             'Freezing Drizzle'),
-    61: ('rain',              'Light Rain'),
-    63: ('rain',              'Rain'),
-    65: ('rain',              'Heavy Rain'),
-    66: ('sleet',             'Freezing Rain'),
-    67: ('sleet',             'Freezing Rain'),
-    71: ('snow',              'Light Snow'),
-    73: ('snow',              'Snow'),
-    75: ('snow',              'Heavy Snow'),
-    77: ('snow',              'Snow Grains'),
-    80: ('rain',              'Light Showers'),
-    81: ('rain',              'Showers'),
-    82: ('rain',              'Violent Showers'),
-    85: ('snow',              'Snow Showers'),
-    86: ('snow',              'Heavy Snow Showers'),
-    95: ('thunderstorm',      'Thunderstorm'),
-    96: ('thunderstorm',      'Thunderstorm, Hail'),
-    99: ('thunderstorm',      'Thunderstorm, Hail'),
+    0:  ('clear-day',         'SKC'),
+    1:  ('clear-day',         'FEW'),
+    2:  ('partly-cloudy-day', 'SCT'),
+    3:  ('cloudy',            'OVC'),
+    45: ('fog',               'FG'),
+    48: ('fog',               'FZFG'),
+    51: ('rain',              '-DZ'),
+    53: ('rain',              'DZ'),
+    55: ('rain',              '+DZ'),
+    56: ('sleet',             '-FZDZ'),
+    57: ('sleet',             'FZDZ'),
+    61: ('rain',              '-RA'),
+    63: ('rain',              'RA'),
+    65: ('rain',              '+RA'),
+    66: ('sleet',             '-FZRA'),
+    67: ('sleet',             'FZRA'),
+    71: ('snow',              '-SN'),
+    73: ('snow',              'SN'),
+    75: ('snow',              '+SN'),
+    77: ('snow',              'SG'),
+    80: ('rain',              '-SHRA'),
+    81: ('rain',              'SHRA'),
+    82: ('rain',              '+SHRA'),
+    85: ('snow',              '-SHSN'),
+    86: ('snow',              '+SHSN'),
+    95: ('thunderstorm',      'TS'),
+    96: ('thunderstorm',      'TSGR'),
+    99: ('thunderstorm',      '+TSGR'),
 }
 
 
@@ -121,9 +122,9 @@ class OpenMeteo(Plugin):
             'apparent_temperature,pressure_msl,wind_speed_10m,'
             'wind_direction_10m,wind_gusts_10m'
             '&hourly=weather_code,is_day,temperature_2m,precipitation_probability,'
-            'precipitation'
+            'precipitation,snowfall'
             '&daily=weather_code,temperature_2m_max,temperature_2m_min,'
-            'precipitation_probability_max,precipitation_sum'
+            'precipitation_probability_max,precipitation_sum,snowfall_sum'
             '&temperature_unit=celsius&wind_speed_unit=kmh'
             '&timezone=%s&forecast_days=%d'
             % (HOST,
@@ -136,6 +137,16 @@ class OpenMeteo(Plugin):
         u = self.url()
         logger.info('%s url %s', ATTRIBUTION, u)
         WebGet(u, self.gotForecast)
+
+    @staticmethod
+    def record(block, i):
+        """everything the service said about one hour or one day.
+
+        Un-normalised and provider-shaped on purpose: it is where anything
+        this plugin does not translate remains reachable.
+        """
+        return {k: v[i] for k, v in block.items()
+                if isinstance(v, list) and i < len(v)}
 
     def gotForecast(self, error, data, params):
         if error:
@@ -153,27 +164,28 @@ class OpenMeteo(Plugin):
         days = []
         for i, when in enumerate(daily.get('time') or []):
             code = self.at(daily, 'weather_code', i)
-            icon, words = WMO.get(code, ('cloudy', ''))
+            icon, notation = WMO.get(code, ('cloudy', ''))
             days.append({
                 'when': datetime.date.fromisoformat(when),
-                'code': code,
                 'icon': icon,
-                'description': words,
+                'condition': notation,
                 'high': self.at(daily, 'temperature_2m_max', i),
                 'low': self.at(daily, 'temperature_2m_min', i),
                 'precip': self.at(daily, 'precipitation_probability_max', i),
                 'accum': self.at(daily, 'precipitation_sum', i),
+                'snow': self.at(daily, 'snowfall_sum', i),
+                'raw': self.record(daily, i),
             })
         self.days = days
 
         now = index.get('current') or {}
         if now:
             code = now.get('weather_code')
-            icon, words = WMO.get(code, ('cloudy', ''))
+            icon, notation = WMO.get(code, ('cloudy', ''))
             self.now = {
                 'when': datetime.datetime.fromisoformat(now['time']),
                 'icon': Weather.variant(icon, now.get('is_day')),
-                'description': words,
+                'condition': notation,
                 'temp': now.get('temperature_2m'),
                 'dew': None,
                 'humidity': now.get('relative_humidity_2m'),
@@ -182,21 +194,23 @@ class OpenMeteo(Plugin):
                 'wind': now.get('wind_speed_10m'),
                 'wind-dir': now.get('wind_direction_10m'),
                 'gust': now.get('wind_gusts_10m'),
+                'raw': now,
             }
 
         hourly = index.get('hourly') or {}
         hours = []
         for i, when in enumerate(hourly.get('time') or []):
             code = self.at(hourly, 'weather_code', i)
-            icon, words = WMO.get(code, ('cloudy', ''))
+            icon, notation = WMO.get(code, ('cloudy', ''))
             hours.append({
                 'when': datetime.datetime.fromisoformat(when),
-                'code': code,
                 'icon': Weather.variant(icon, self.at(hourly, 'is_day', i)),
-                'description': words,
+                'condition': notation,
                 'temp': self.at(hourly, 'temperature_2m', i),
                 'precip': self.at(hourly, 'precipitation_probability', i),
                 'accum': self.at(hourly, 'precipitation', i),
+                'snow': self.at(hourly, 'snowfall', i),
+                'raw': self.record(hourly, i),
             })
         self.hours = hours
 

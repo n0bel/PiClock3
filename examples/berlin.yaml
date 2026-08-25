@@ -1,18 +1,33 @@
+# PiClock3 - Berlin.
+#
+# PiClock v1 shipped a Berlin example; this is the same idea rebuilt.  It
+# is the one that shows a clock does not have to be in English: language:
+# picks the words, units: picks what things are measured in, and the
+# timezone belongs to the place rather than to the machine.
+#
+# The coordinates are v1's, which are western Berlin, not anybody's house.
+
 pages:
   clock-page: {order: 0, layout: classic, theme: circuit}
-  maps-page:  {order: 1, layout: bigmaps, theme: stag}
+  maps-page:  {order: 1, layout: bigmaps, theme: circuit}
 
 # the words the clock speaks - one of the codes a language file
 # answers to.  Files ship in PiClock3/languages; a languages/ folder
 # of your own, or a plugin's, adds to them.
-language: en
+language: de
+# Day and month names come from the system, and the language file names the
+# locales it answers to, so nothing is needed here.  Set locale: to override
+# that.  On a Pi a locale has to exist first: sudo dpkg-reconfigure locales
 
 location:
-  lattitude: 45
-  longitude: -93
-  # Blank means the machine's own zone, which is right when the clock
-  # sits where it is pointed.  Name a zone when it does not.
-  timezone:
+  lattitude: 52.5074559
+  longitude: 13.144557
+  # the sunrise and sunset are Berlin's, wherever this runs
+  timezone: Europe/Berlin
+
+# what to show things in.  The sets ship in PiClock3/units; a units/ folder
+# of your own, or a plugin's, can add more.
+units: metric
 
 # Providers supply data and occupy no region.
 providers:
@@ -21,14 +36,16 @@ providers:
   openmeteo: {plugin: PiClock3.OpenMeteo}
 
   # an actual observation from a nearby field
-  metar: {plugin: PiClock3.Metar, METAR: KLVN}
+  metar: {plugin: PiClock3.Metar, METAR: EDDB}   # Berlin Brandenburg
 
   # base map under the radar - needs a key in ApiKeys.yaml
   mapbox:     {plugin: PiClock3.Mapbox}
   googlemaps: {plugin: PiClock3.GoogleMaps}
 
-  # radar tiles - one plugin per service, neither needs a key.  Point a
-  # radar's frame-provider: at whichever you prefer.
+  # radar tiles - one plugin per service, neither needs a key.  RainViewer
+  # stopped serving tiles above zoom 7 and returns a "Zoom Level Not
+  # Supported" card instead; LibreWXR still serves every zoom, so the
+  # close-in radars below point at it.
   rainviewer: {plugin: PiClock3.RainViewer}
   librewxr:   {plugin: PiClock3.LibreWXR}
 

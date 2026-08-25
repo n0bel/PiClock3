@@ -83,8 +83,8 @@ Raspberry Pi OS should be fine and `requirements.txt` already resolves the
 right package versions for it by itself, but it has had less use, so say so
 if something breaks.
 
-The clock, the date, the almanac, the current conditions and the radar all
-work at this point - but it thinks it is somewhere else.  The example sits at
+The clock, the date, the almanac, the current conditions, the forecast and
+the radar all work at this point - but it thinks it is somewhere else.  The example sits at
 45, -93 with KLVN for its METAR, because it has to say something.  Set your
 own latitude and longitude and your nearest METAR station in `Config.yaml`.
 
@@ -109,6 +109,7 @@ python3 PyQtPiClock3.py examples/meadow.yaml
 | `examples/meadow.yaml` | butterflies over a bright meadow, dark-blue clock |
 | `examples/hairline.yaml` | the stag background with thin, hard-edged frames |
 | `examples/london.yaml` | the Thames at night - and the same clock somewhere else: London, metric, its own timezone |
+| `examples/berlin.yaml` | the same clock in German - `language: de`, metric, Berlin's timezone |
 | `examples/ApiKeys.yaml` | the keys file to copy, with links to where to get one |
 
 A theme is one line of a page: `maps-page: {order: 1, layout: bigmaps, theme:
@@ -117,8 +118,8 @@ stag}`.  Writing your own is
 
 `Config.yaml` and `ApiKeys.yaml` are ignored by git, so what you write
 stays yours.  A plugin can ship an `examples/` folder of its own, along with
-`themes/`, `layouts/` and `units/`, so it arrives complete rather than as
-code with a list of things to fetch separately.
+`themes/`, `layouts/`, `units/` and `languages/`, so it arrives complete
+rather than as code with a list of things to fetch separately.
 
 ### Plugins that ship and work
 
@@ -146,6 +147,18 @@ picks a set - `default`, `metric`, `SI` or `nautical` ship - and the table
 behind it lives in `PiClock3/units/`, found the way themes and layouts are
 found, so a `units/` folder of your own or a plugin's merges over it.
 
+Languages are core in the same way.  `language: de` picks one - `en` and `de`
+ship - and a language is one file in `PiClock3/languages/`, found on the same
+search path, so a `languages/` folder of your own or a plugin's merges over
+it.  A file holds the codes it answers to (`code: [de, deu, ger]`), the words,
+and a table of weather conditions.
+
+Day and month names come from the system rather than from that table, and the
+language file lists the locales that mean it, so a config needs nothing
+further.  On a Pi the locale has to exist first - `sudo dpkg-reconfigure
+locales` - and if none of them is installed the names stay in English and the
+log says so.  Setting `locale:` in a config overrides the lot.
+
 `CurrentConditions` and `Forecast` do not care which source they are given.
 A weather provider answers three questions - what it is doing now, the next
 hours, the next days - and answers empty for what it cannot know: a station
@@ -163,7 +176,8 @@ Supported" image instead of an error, so a close radar wants `librewxr`.
 ### Not written yet
 
 * An OpenWeatherMap provider.  The widgets are ready for one - it only has to
-  answer the same three questions `OpenMeteo` does.
+  answer the same three questions `OpenMeteo` does, and say what the sky is
+  doing in the same notation.  See CONTRIBUTING.md.
 * Wind and humidity in the forecast column; the provider already carries
   them.
 

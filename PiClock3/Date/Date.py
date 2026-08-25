@@ -1,5 +1,4 @@
 import datetime
-import locale
 import logging
 
 from PyQt5.QtCore import QTimer
@@ -30,12 +29,6 @@ class Date(Plugin):
         return
 
     def doDate(self):
-        if 'locale' in self.piclock.config:
-            try:
-                locale.setlocale(locale.LC_TIME, self.piclock.config.locale)
-            except BaseException:
-                pass
-
         now = self.piclock.now()
         if now.day != self.lastDay:
             self.lastDay = now.day
