@@ -1,5 +1,9 @@
 kind: almanac
 format: "{language.sunrise} {plugin-data.sunrise:%H:%M} {language.sunset} {plugin-data.sunset:%H:%M} {language.moon_phase} {plugin-data.moonphase}"
+
+# Used instead on a day the sun neither rises nor sets, where the format
+# above has no time to put in and would print its own braces.
+polar-format: "{plugin-data.sun} {language.moon_phase} {plugin-data.moonphase}"
 location:
     lattitude: "{location.lattitude}"
     longitude: "{location.longitude}"

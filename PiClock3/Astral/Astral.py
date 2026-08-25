@@ -5,8 +5,8 @@ import tzlocal
 from PyQt5.QtCore import QTimer
 from astral import LocationInfo
 from astral import moon
-from astral.sun import sun
 
+from .. import Weather
 from ..Plugin import Plugin
 
 logger = logging.getLogger(__name__)
@@ -46,15 +46,12 @@ class Astral(Plugin):
                                     self.piclock.expand(
                                         self.config.location.lattitude),
                                     self.piclock.expand(self.config.location.longitude))
-        try:
-            s = sun(locationInfo.observer, date=now, tzinfo=locationInfo.timezone)
-        except ValueError as e:
-            # astral looks for the event inside the given day in the
-            # given zone, so a far-off zone or a polar summer finds none
-            logger.warning("no sun times for %s,%s in %s: %s",
-                           locationInfo.latitude, locationInfo.longitude,
-                           locationInfo.timezone, e)
-            s = {}
+        s = Weather.sunTimes(now, locationInfo.latitude,
+                             locationInfo.longitude, locationInfo.timezone)
+        for key, _ in Weather.EVENTS:
+            if key not in s:
+                logger.info("no %s at %s,%s today", key,
+                            locationInfo.latitude, locationInfo.longitude)
 
         for key, value in s.items():
             logger.info("sun info %s %s", key, value)
@@ -63,11 +60,23 @@ class Astral(Plugin):
         self.pluginData['moonphase'] = self.piclock.language(
             self.phaseWords(m))
         self.pluginData['moonage'] = m
-        # self.pluginData['sunrise'] = s['sunrise']
+
+        # A day with no sunrise has no time to print, and a format asking for
+        # one comes back with its own braces still in it - so the day says
+        # which of the two it is and a different format is used.
+        polar = 'sunrise' not in s or 'sunset' not in s
+        if polar:
+            up = Weather.daytime(now, locationInfo.latitude,
+                                 locationInfo.longitude,
+                                 locationInfo.timezone)
+            self.pluginData['sun'] = self.piclock.language(
+                'polar_day' if up else 'polar_night')
+        fmt = self.config['polar-format'] if polar else self.config.format
+
         try:
-            ds = self.piclock.expand(self.config.format)
+            ds = self.piclock.expand(fmt)
         except (KeyError, ValueError, TypeError) as e:
-            logger.warning("almanac format %r: %s", self.config.format, e)
+            logger.warning("almanac format %r: %s", fmt, e)
             ds = ''
         self.region.setText(ds)
 

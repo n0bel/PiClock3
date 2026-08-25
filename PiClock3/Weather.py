@@ -11,7 +11,7 @@ import datetime
 import math
 
 from astral import LocationInfo
-from astral.sun import sun
+from astral.sun import dawn, dusk, noon, sunrise, sunset
 
 
 def humidity(temp, dew):
@@ -49,6 +49,28 @@ def feelsLike(temp, dew, wind):
     return temp
 
 
+EVENTS = (('dawn', dawn), ('sunrise', sunrise), ('noon', noon),
+          ('sunset', sunset), ('dusk', dusk))
+
+
+def sunTimes(day, latitude, longitude, zone):
+    """what the sun does that day, each event asked for on its own.
+
+    astral offers them as one bundle, but dawn and dusk are the sun six
+    degrees under and never happen through a northern summer - a bundle
+    loses a sunrise that is perfectly well defined along with them.
+    Whatever the day genuinely has is what comes back.
+    """
+    here = LocationInfo('here', 'here', zone, latitude, longitude)
+    found = {}
+    for name, fn in EVENTS:
+        try:
+            found[name] = fn(here.observer, day, tzinfo=here.timezone)
+        except ValueError:
+            continue
+    return found
+
+
 def daytime(when, latitude, longitude, zone):
     """is the sun up at `when`, where the clock is pointed.
 
@@ -57,15 +79,19 @@ def daytime(when, latitude, longitude, zone):
     sun does not rise or set that day answers by hemisphere and season.
     """
     try:
-        here = LocationInfo('here', 'here', zone, latitude, longitude)
-        s = sun(here.observer, date=when.date(), tzinfo=here.timezone)
-        return s['sunrise'] <= when <= s['sunset']
-    except ValueError:
+        s = sunTimes(when.date(), latitude, longitude, zone)
+    except Exception:
+        return 6 <= when.hour < 18
+    up, down = s.get('sunrise'), s.get('sunset')
+    if up is None or down is None:
         # polar day or polar night: no sunrise to compare against
         summer = 4 <= when.month <= 9
         return summer if float(latitude) >= 0 else not summer
-    except Exception:
-        return 6 <= when.hour < 18
+    if down < up:
+        # far enough north for the sun to set after midnight, so the dark
+        # of this day is its two ends rather than its middle
+        return when <= down or up <= when
+    return up <= when <= down
 
 
 def variant(icon, isDay):

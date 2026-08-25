@@ -30,6 +30,10 @@ strings:
   waxing_crecent: Zunehmende Sichel
   today: Heute
 
+  # what the almanac says where the sun does not rise or set
+  polar_day:       Sonne geht nicht unter
+  polar_night:     Kein Sonnenaufgang
+
 # Conditions, as WMO code table 4678 - METAR present-weather notation.
 # The key is the notation a provider reports; the comment is WMO's own
 # English, which is a technical gloss rather than something to put on a

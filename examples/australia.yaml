@@ -1,0 +1,127 @@
+# PiClock3 - Sydney.
+#
+# The southern hemisphere, where the seasons are the other way up: December
+# is high summer and June is midwinter.  Worth having because almost every
+# rule about the sun has a hemisphere in it, and this is the example that
+# catches one written north-side-up.
+pages:
+  clock-page: {order: 0, layout: classic, theme: meadow}
+  maps-page:  {order: 1, layout: bigmaps, theme: meadow}
+
+# the words the clock speaks - one of the codes a language file
+# answers to.  Files ship in PiClock3/languages; a languages/ folder
+# of your own, or a plugin's, adds to them.
+language: en
+
+units: metric
+
+location:
+  lattitude: -33.8688
+  longitude: 151.2093
+  # Blank means the machine's own zone, which is right when the clock
+  # sits where it is pointed.  Name a zone when it does not.
+  timezone: Australia/Sydney
+# Providers supply data and occupy no region.
+providers:
+
+  # the daily forecast.  No key: Open-Meteo asks for none.
+  openmeteo: {plugin: PiClock3.OpenMeteo}
+
+  # an actual observation from a nearby field
+  metar: {plugin: PiClock3.Metar, METAR: YSSY}
+
+  # base map under the radar - needs a key in ApiKeys.yaml
+  mapbox:     {plugin: PiClock3.Mapbox}
+  googlemaps: {plugin: PiClock3.GoogleMaps}
+
+  # radar tiles - one plugin per service, neither needs a key.  Point a
+  # radar's frame-provider: at whichever you prefer.
+  rainviewer: {plugin: PiClock3.RainViewer}
+  librewxr:   {plugin: PiClock3.LibreWXR}
+
+# Widgets occupy a region named by the page's layout, and draw in it.
+# Settings for every widget of a kind, so the four radars below do not each
+# repeat them.  An instance still has the last word, and a theme can carry
+# the same block for anything that is a look rather than a choice.
+kind-settings:
+  radar:
+    base-provider: mapbox        # or googlemaps, if that is the key you got
+    frame-provider: librewxr     # or rainviewer
+
+widgets:
+  clock:  {plugin: PiClock3.AnalogClock, region: clock}
+# clock:  {plugin: PiClock3.DigitalClock, region: clock}
+  date:   {plugin: PiClock3.Date,   region: date}
+  astral: {plugin: PiClock3.Astral, region: bottom}
+
+  # one day in each cell of the layout's forecast column
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+
+  # the strip along the bottom of the maps page
+  maps-caption:
+    plugin: PiClock3.DigitalClock
+    region: caption
+    format: "{plugin-data.now:%a %b} {plugin-data.now.day} {plugin-data.now.year}   {plugin-data.now:%H:%M:%S}"
+    lowercase: false
+    font-size: 0.75
+
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    conditions-provider: metar
+
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
+    zoom: 7
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          lattitude: '{location.lattitude}'
+          longitude: '{location.longitude}'
+        color: red
+        size: large
+        image: teardrop-home
+
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    zoom: 11
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          lattitude: '{location.lattitude}'
+          longitude: '{location.longitude}'
+        color: green
+        size: medium
+        image: teardrop-home
+
+  radar3:
+    plugin: PiClock3.MapLoop
+    region: radars.1
+    zoom: 7
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+
+  radar4:
+    plugin: PiClock3.MapLoop
+    region: radars.2
+    zoom: 11
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+
+folders:
+  marker: PiClock3/markers
+
+logging-level: debug
+
+apikeys: !include ApiKeys.yaml
