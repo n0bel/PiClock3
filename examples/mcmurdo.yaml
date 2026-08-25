@@ -1,0 +1,146 @@
+# PiClock3 - McMurdo.
+#
+# 77 degrees south, on the Ross Ice Shelf.  The sun does not rise and set
+# there: it circles, staying up from October to February and down from April
+# to August.  This is the example those months are worth testing against -
+# the almanac has no sunrise to print for half the year, and the weather
+# icons have no sunset to decide day from night by.
+#
+# The meridian theme draws that rather than a photograph: the sun's daily
+# circle, the horizon it crosses twice a year, and a spoke for every hour.
+#
+# NZWD is Williams Field, which reports only while the station is staffed,
+# so the observation can be days old out of season.
+pages:
+  clock-page: {order: 0, layout: meridian, theme: meridian}
+  maps-page:  {order: 1, layout: bigmaps, theme: meridian}
+
+# the words the clock speaks - one of the codes a language file
+# answers to.  Files ship in PiClock3/languages; a languages/ folder
+# of your own, or a plugin's, adds to them.
+language: en
+
+units: metric
+
+location:
+  lattitude: -77.846
+  longitude: 166.676
+  # Blank means the machine's own zone, which is right when the clock
+  # sits where it is pointed.  Name a zone when it does not.
+  # McMurdo is the United States' station, but it keeps New Zealand
+  # time: everything flies in from Christchurch, so the clock that
+  # matters is the one at the other end of the flight.
+  timezone: Antarctica/McMurdo
+# Providers supply data and occupy no region.
+providers:
+
+  # the daily forecast.  No key: Open-Meteo asks for none.
+  openmeteo: {plugin: PiClock3.OpenMeteo}
+
+  # an actual observation from a nearby field
+  metar: {plugin: PiClock3.Metar, METAR: NZWD}
+
+  # base map under the radar - needs a key in ApiKeys.yaml
+  mapbox:     {plugin: PiClock3.Mapbox}
+  googlemaps: {plugin: PiClock3.GoogleMaps}
+
+  # radar tiles - one plugin per service, neither needs a key.  Point a
+  # radar's frame-provider: at whichever you prefer.
+  rainviewer: {plugin: PiClock3.RainViewer}
+  librewxr:   {plugin: PiClock3.LibreWXR}
+
+# Widgets occupy a region named by the page's layout, and draw in it.
+# Settings for every widget of a kind, so the four radars below do not each
+# repeat them.  An instance still has the last word, and a theme can carry
+# the same block for anything that is a look rather than a choice.
+kind-settings:
+  radar:
+    base-provider: mapbox        # or googlemaps, if that is the key you got
+    frame-provider: librewxr     # or rainviewer
+
+widgets:
+  clock:  {plugin: PiClock3.AnalogClock, region: clock}
+# clock:  {plugin: PiClock3.DigitalClock, region: clock}
+  date:   {plugin: PiClock3.Date,   region: date}
+  astral: {plugin: PiClock3.Astral, region: foot}
+
+  # one day in each cell of the layout's forecast column
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+    # six cells along the foot: the next three hours, then three days
+    hourly: 3
+    daily: 3
+    # six cells across a screen leaves each one narrow, so the day is
+    # abbreviated where the classic column spells it out
+    hour-format: '%a %I%p'
+
+  # the strip along the bottom of the maps page
+  maps-caption:
+    plugin: PiClock3.DigitalClock
+    region: caption
+    format: "{plugin-data.now:%a %b} {plugin-data.now.day} {plugin-data.now.year}   {plugin-data.now:%H:%M:%S}"
+    lowercase: false
+    font-size: 0.75
+
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    conditions-provider: metar
+
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps
+    label: 'Ross Island'
+    zoom: 7
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          lattitude: '{location.lattitude}'
+          longitude: '{location.longitude}'
+        color: red
+        size: large
+        image: teardrop-home
+
+  # the same weather from the other kind of source.  The station is the
+  # ground truth but only reports while it is staffed; the model always
+  # answers.  Each block signs itself at the foot - NZWD or Open-Meteo.
+  model:
+    plugin: PiClock3.CurrentConditions
+    region: model
+    conditions-provider: openmeteo
+
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: radar
+    label: 'Ross Sea'
+    zoom: 4
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+
+  radar3:
+    plugin: PiClock3.MapLoop
+    region: radars.1
+    zoom: 7
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+
+  radar4:
+    plugin: PiClock3.MapLoop
+    region: radars.2
+    zoom: 11
+    center:
+      lattitude: '{location.lattitude}'
+      longitude: '{location.longitude}'
+
+folders:
+  marker: PiClock3/markers
+
+logging-level: debug
+
+apikeys: !include ApiKeys.yaml
