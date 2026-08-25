@@ -83,7 +83,7 @@ if __name__ == '__main__':
     fileh.setFormatter(fmt)
     logger.addHandler(fileh)
     errh = logging.StreamHandler(sys.stderr)
-    fileh.setFormatter(fmt)
+    errh.setFormatter(fmt)
     logger.addHandler(errh)
     logger.setLevel(logging.WARNING)
 
@@ -99,16 +99,22 @@ if __name__ == '__main__':
             configName, settings = readArgs(sys.argv[1:])
             config = Config()
             config.load(configName)
+
+            def setLevel():
+                levels = {'debug': logging.DEBUG, 'info': logging.INFO,
+                          'warning': logging.WARNING}
+                if config.get('logging-level') in levels:
+                    logger.setLevel(levels[config['logging-level']])
+
+            # the file's level first, so that each --set can say what it did
+            # as it does it - which is the only way to catch a mistyped path,
+            # since one that matches nothing is otherwise silent
+            setLevel()
             # after the file, so the command line has the last word
             for setting in settings:
                 config.override(setting)
-            if 'logging-level' in config:
-                if config['logging-level'] == 'debug':
-                    logger.setLevel(logging.DEBUG)
-                if config['logging-level'] == 'warning':
-                    logger.setLevel(logging.WARNING)
-                if config['logging-level'] == 'info':
-                    logger.setLevel(logging.INFO)
+            # again, in case one of them was logging-level itself
+            setLevel()
             logging.info("Startup....")
             logging.debug('config = %s', config.dump())
         except Exception as e:

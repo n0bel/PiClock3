@@ -175,7 +175,9 @@ It is an offset rather than a fixed moment, so the seconds still run.  Only
 the clock moves: the radar still shows what the frame server has, because
 that is all it has.  `start-at:` in a config does the same permanently.
 
-`--help` prints all of it.
+`--help` prints all of it, and
+[docs/COMMAND-LINE-OPTIONS.md](docs/COMMAND-LINE-OPTIONS.md) explains why
+they are there.
 
 ### Where a setting comes from
 
@@ -247,7 +249,7 @@ Supported" image instead of an error, so a close radar needs `librewxr`.
 
 ### Extending it
 
-Five guides, each answering one question:
+Six guides, each answering one question:
 
 | | |
 |---|---|
@@ -256,6 +258,7 @@ Five guides, each answering one question:
 | [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md) | a widget that draws or a provider that fetches, and what a theme can reach in it |
 | [docs/WRITING-A-LANGUAGE.md](docs/WRITING-A-LANGUAGE.md) | a translation - one yaml file, no code |
 | [docs/FRAME-ART.md](docs/FRAME-ART.md) | drawing the nine-slice sheets a frame is made of |
+| [docs/COMMAND-LINE-OPTIONS.md](docs/COMMAND-LINE-OPTIONS.md) | `--set` and `--at`, and why a clock needs them |
 
 A theme, a layout and a plugin are separate on purpose: any theme works with
 any layout, and neither knows what the other is called.

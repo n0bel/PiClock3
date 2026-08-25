@@ -67,22 +67,12 @@ class Config(DottedDict):
     def override(self, setting):
         """one key=value from the command line, into a dotted path.
 
-        The value is read as yaml, so 7 is a number, true is a boolean and
-        anything else is the string it looks like - the same reading it would
-        get in the file it is standing in for.
+        The value is read the way the file would read it - see value().
         """
         if '=' not in setting:
             raise SystemExit("\n--set wants key=value, not %r\n" % setting)
         path, raw = setting.split('=', 1)
-        try:
-            value = yaml.safe_load(raw)
-        except yaml.YAMLError as e:
-            raise SystemExit("\ncannot read %r as a value: %s\n" % (raw, e))
-        # yaml reads a leading # as a comment, so '#bef' arrives as nothing.
-        # A color is the likeliest thing anyone overrides, so an empty
-        # reading of a non-empty word is taken as the word.
-        if value is None and raw.strip() not in ('', 'null', '~'):
-            value = raw.strip()
+        value = self.value(raw)
         here = self
         parts = path.strip().split('.')
         for part in parts[:-1]:
@@ -91,6 +81,35 @@ class Config(DottedDict):
             here = here[part]
         here[parts[-1]] = value
         logger.info('set %s = %r', path, value)
+
+    @staticmethod
+    def value(raw):
+        """one word from the command line, read the way a file would read it.
+
+        yaml, so 7 is a number and true is a boolean - except at the two
+        characters where yaml and this program disagree.
+
+        A leading # is a comment to yaml and a color to everybody else, so
+        '#bef' would arrive as nothing.  A leading { opens a mapping to yaml
+        and a template to this program, so '{plugin-data.now:%H:%M}' would
+        arrive as a one-key dict - and then fail somewhere else entirely,
+        merging a dict onto a string - while '{this-folder}/hands' would not
+        parse at all.  In each case what was meant is plainly the text, so
+        the text is what it gets.
+
+        Nothing is lost by it: a mapping is set one leaf at a time from the
+        command line, which is what the dotted path is for.
+        """
+        raw = raw.strip()
+        if raw.startswith('{'):
+            return raw
+        try:
+            value = yaml.safe_load(raw)
+        except yaml.YAMLError as e:
+            raise SystemExit("\ncannot read %r as a value: %s\n" % (raw, e))
+        if value is None and raw not in ('', 'null', '~'):
+            return raw
+        return value
 
     def dump(self):
         pprint.pformat(self)
