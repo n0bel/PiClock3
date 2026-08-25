@@ -19,46 +19,10 @@ work the same way.
 If you think something really does belong in the built-in set, open an issue
 before writing it, so we can talk about it first.
 
-## Weather providers say what the sky is doing, not what to call it
-
-A weather provider answers `current()`, `hourly(count, step)` and
-`daily(count)`, and answers empty for whatever it cannot know — a station has
-no forecast.  Each entry carries its condition as **WMO code table 4678
-notation**, the present-weather codes a METAR is written in, and never as
-words:
-
-```python
-{'when': ..., 'condition': '-SHRA', 'icon': 'rain', 'temp': 14.0,
- 'raw': ...}
-```
-
-`-SHRA` is light rain showers.  Turning that into words is the widget's job,
-in whatever language the clock is set to, so a provider that hands over
-English has made itself untranslatable.  Cloud amount has no 4678 notation,
-so a provider with nothing falling reports the METAR sky-cover code instead —
-`SKC`, `FEW`, `SCT`, `BKN`, `OVC`.
-
-If your source speaks something else — numeric codes, or its own English —
-map it to notation in a table at the top of your plugin, the way
-`OpenMeteo.WMO` does.  You do not have to hit an exact 4678 entry: the lookup
-gives up detail in a fixed order, so `-SHRABR` still finds "Light Rain
-Showers" even though 4678 has no such code.
-
-`icon` is one of the eleven names the shipped icon sets use:
-
-    clear-day     clear-night    partly-cloudy-day    partly-cloudy-night
-    cloudy        fog            rain                 sleet
-    snow          thunderstorm   wind
-
-`Weather.variant()` swaps a `-day` name for its `-night` one, and
-`Weather.daytime()` will tell you which applies from the sun rather than from
-the hour.
-
-`raw` is the service's own record for that entry, in whatever shape the
-service uses.  It is deliberately not normalized — it exists so that anything
-a provider does not translate is still reachable by someone who wants it.
-Shipped widgets never read it, and anything that does is knowingly tied to
-one provider.
+How to actually write one is [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md),
+with [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md) and
+[docs/WRITING-A-LAYOUT.md](docs/WRITING-A-LAYOUT.md) beside it.  This file is
+about contributing to this repository; those are about building on it.
 
 ## Never log an API key
 

@@ -1,0 +1,117 @@
+# Writing a plugin
+
+A plugin is a folder holding a module and a `config.yaml` beside it.  Drop it
+into `plugins` and a config can name it; nothing has to be registered.  Start
+from [piclock3-plugin-template](https://github.com/n0bel/piclock3-plugin-template).
+
+They come in two sorts.  A **widget** draws in a region a layout named.  A
+**provider** supplies data to widgets and occupies no region of its own -
+which is why no theme reaches a provider, and why anything a theme should be
+able to say belongs on a widget.
+
+## Weather providers say what the sky is doing, not what to call it
+
+A weather provider answers `current()`, `hourly(count, step)` and
+`daily(count)`, and answers empty for whatever it cannot know — a station has
+no forecast.  Each entry carries its condition as **WMO code table 4678
+notation**, the present-weather codes a METAR is written in, and never as
+words:
+
+```python
+{'when': ..., 'condition': '-SHRA', 'icon': 'rain', 'temp': 14.0,
+ 'raw': ...}
+```
+
+`-SHRA` is light rain showers.  Turning that into words is the widget's job,
+in whatever language the clock is set to, so a provider that hands over
+English has made itself untranslatable.  Cloud amount has no 4678 notation,
+so a provider with nothing falling reports the METAR sky-cover code instead —
+`SKC`, `FEW`, `SCT`, `BKN`, `OVC`.
+
+If your source speaks something else — numeric codes, or its own English —
+map it to notation in a table at the top of your plugin, the way
+`OpenMeteo.WMO` does.  You do not have to hit an exact 4678 entry: the lookup
+gives up detail in a fixed order, so `-SHRABR` still finds "Light Rain
+Showers" even though 4678 has no such code.
+
+`icon` is one of the eleven names the shipped icon sets use:
+
+    clear-day     clear-night    partly-cloudy-day    partly-cloudy-night
+    cloudy        fog            rain                 sleet
+    snow          thunderstorm   wind
+
+`Weather.variant()` swaps a `-day` name for its `-night` one, and
+`Weather.daytime()` will tell you which applies from the sun rather than from
+the hour.
+
+`raw` is the service's own record for that entry, in whatever shape the
+service uses.  It is deliberately not normalized — it exists so that anything
+a provider does not translate is still reachable by someone who wants it.
+Shipped widgets never read it, and anything that does is knowingly tied to
+one provider.
+
+## What a theme can reach in your plugin
+
+Your plugin ships a `config.yaml` beside its code holding its defaults.  That
+file is also the list of what a theme is allowed to change, because a theme
+can only set a key you declared.
+
+Five of those names carry a promise.  **`color`, `background-color`,
+`font-family`, `font-style` and `font-weight` are Qt's, and mean here what
+they mean in Qt.**  Declare one and the page's `default:` block is handed to
+you without anyone asking, which is how one line in a theme colors every
+widget on the page.  In exchange, do not use one of those names for anything
+else — a radar palette called `color` would be handed a hex string meant for
+text.  (That is why the frame providers call theirs `palette`.)
+
+`font-size` is not among them: it is a fraction of whatever it sits in, and
+the page is not the same height as your region.
+
+Anything else a theme wants to set it reaches through your **kind**:
+
+```yaml
+kind: forecast          # in your config.yaml
+
+kind-settings:          # in a theme, or in a config
+  forecast:
+    icons-folder: icons-darkblue
+```
+
+**A kind means "interchangeable with", not "similar to".**  Plugins sharing
+one should take the same settings, so a config can swap them and a setting
+means the same thing to each.  `Mapbox` and `GoogleMaps` are both `basemap`;
+`RainViewer` and `LibreWXR` are both `radar-frames`.  If yours is not
+swappable with anything, give it a kind of its own.
+
+### Read your own config, never the theme
+
+By the time your plugin is built, everything a theme said has been merged
+into `self.config`, along with everything the config said over the theme and
+everything the instance said over both.  That resolved answer is the only one
+that respects what the user asked for.
+
+There is a way to reach the theme itself, and it is right only for a value
+that is the theme's rather than yours — something no key of yours declares.
+For anything you did declare, `self.config` already holds the answer, and
+reading the theme would quietly skip four layers of precedence.
+
+### `{this-folder}`
+
+Any path in any yaml can be written `{this-folder}/art/x.png`, meaning the
+folder that file was read from — your plugin's directory in your
+`config.yaml`, a theme's directory in its `theme.yaml`.  It is how art
+travels with whatever ships it, without anything knowing where it was
+installed.
+
+`from-theme:` used to declare a mapping from theme names to your own.  It is
+gone; the five Qt names arrive by themselves and everything else comes
+through `kind-settings`.
+
+## Two rules worth reading before you publish
+
+Keys travel in URLs, so anything logging a URL logs the key - see
+[Never log an API key](../CONTRIBUTING.md#never-log-an-api-key).
+
+Dependencies are pinned deliberately and Python 3.9 is the floor, because a
+clock runs unattended on hardware nobody touches for years.  Both are
+explained in [CONTRIBUTING.md](../CONTRIBUTING.md).

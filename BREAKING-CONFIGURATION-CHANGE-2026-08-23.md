@@ -98,4 +98,4 @@ widgets:
 Starting again from `examples/default.yaml` gets all of this already wired.
 
 For writing your own theme, or drawing frame art, see
-`PiClock3/themes/FRAME-ART.md`.
+`docs/FRAME-ART.md`.

@@ -8,7 +8,7 @@
 > [BREAKING-CONFIGURATION-CHANGE-2026-08-23.md](BREAKING-CONFIGURATION-CHANGE-2026-08-23.md).
 
 > Drawing frame art, or writing a theme?  See
-> [PiClock3/themes/FRAME-ART.md](PiClock3/themes/FRAME-ART.md).
+> [docs/FRAME-ART.md](docs/FRAME-ART.md).
 
 PiClock3 is a complete rewrite of PiClock (https://github.com/n0bel/PiClock).
 It is based on Python3 and PyQt5.  It is also much more modular and less monolithic.
@@ -112,12 +112,16 @@ python3 PyQtPiClock3.py examples/meadow.yaml
 | `examples/hairline.yaml` | the stag background with thin, hard-edged frames |
 | `examples/london.yaml` | the Thames at night - and the same clock somewhere else: London, metric, its own timezone |
 | `examples/berlin.yaml` | the same clock in German - `language: de`, metric, Berlin's timezone |
+| `examples/digital.yaml` | a digital face instead of hands, and what a theme reaches without being asked |
 | `examples/gallery.yaml` | the clock page works through every shipped background in turn; the maps page holds one |
+| `examples/australia.yaml` | Sydney - the southern hemisphere, where December is midsummer |
+| `examples/arctic.yaml` | Tromso, above the Arctic Circle: months with no sunrise to print |
+| `examples/mcmurdo.yaml` | McMurdo, as far the other way, under a theme whose art is generated rather than photographed |
 | `examples/ApiKeys.yaml` | the keys file to copy, with links to where to get one |
 
 A theme is one line of a page: `maps-page: {order: 1, layout: bigmaps, theme:
 stag}`.  Writing your own is
-[PiClock3/themes/FRAME-ART.md](PiClock3/themes/FRAME-ART.md).
+[docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md).
 
 A theme's `background:` can be a folder of pictures rather than one picture,
 and the clock works through them - F6 and F7 step, F8 holds.  Which pages do
@@ -127,6 +131,67 @@ it follows from which theme they name.
 stays yours.  A plugin can ship an `examples/` folder of its own, along with
 `themes/`, `layouts/`, `units/` and `languages/`, so it arrives complete
 rather than as code with a list of things to fetch separately.
+
+### Trying something without editing anything
+
+Any setting in a config can be given on the command line, which is how to
+answer "what would it look like if" without editing a file and putting it
+back:
+
+```
+python3 PyQtPiClock3.py examples/london.yaml --set units=default
+python3 PyQtPiClock3.py Config.yaml --set location.timezone=Europe/Oslo
+```
+
+The key is dotted for anything nested, and the value is read as yaml - `4` is
+a number, `true` is a boolean, and a word starting with `#` is a color rather
+than a comment.
+
+`theme:` and `layout:` are blocks of their own, laid over whichever theme or
+layout each page names, so either can be tried without touching it:
+
+```
+--set theme.default.color=#ff8800
+--set theme.borders.default.width=0.03
+--set layout.regions.clock.width=0.4
+```
+
+A plugin is reached the same way a theme reaches one, through its kind:
+
+```
+--set kind-settings.radar.palette=4
+--set kind-settings.digital-clock.font-weight=300
+```
+
+`--at` starts the clock at another time and lets it run on from there, which
+is the only way to see a polar night in August:
+
+```
+python3 PyQtPiClock3.py examples/mcmurdo.yaml --at 2026-06-21
+python3 PyQtPiClock3.py examples/arctic.yaml  --at "2026-12-21 13:45"
+```
+
+It is an offset rather than a fixed moment, so the seconds still run.  Only
+the clock moves: the radar still shows what the frame server has, because
+that is all it has.  `start-at:` in a config does the same permanently.
+
+`--help` prints all of it.
+
+### Where a setting comes from
+
+A widget's settings are assembled from several places, each having the last
+word over the one before:
+
+1. the plugin's own `config.yaml`, beside its code
+2. the theme's `default:`, for the five names Qt owns - `color`,
+   `background-color`, `font-family`, `font-style` and `font-weight`
+3. the theme's `kind-settings:`, then its `plugin-settings:`
+4. the config's `kind-settings:`, then its `plugin-settings:`
+5. the widget's own entry under `widgets:`
+
+So a theme colors everything by saying `color:` once, a config overrules the
+theme without editing it, and one widget overrules both by naming a value
+itself.  `--set` writes into the config, which is why it beats a theme.
 
 ### Plugins that ship and work
 
@@ -179,6 +244,22 @@ is what the conditions block shows beside the observation time.
 
 RainViewer stopped serving tiles above zoom 7 and returns a "Zoom Level Not
 Supported" image instead of an error, so a close radar needs `librewxr`.
+
+### Extending it
+
+Four guides, each answering one question:
+
+| | |
+|---|---|
+| [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md) | what a page looks like - colors, fonts, frames, backgrounds, which art the widgets use |
+| [docs/WRITING-A-LAYOUT.md](docs/WRITING-A-LAYOUT.md) | where things go - regions, fractions, repeats |
+| [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md) | a widget that draws or a provider that fetches, and what a theme can reach in it |
+| [docs/FRAME-ART.md](docs/FRAME-ART.md) | drawing the nine-slice sheets a frame is made of |
+
+A theme, a layout and a plugin are separate on purpose: any theme works with
+any layout, and neither knows what the other is called.
+[CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository
+rather than building on it.
 
 ### Not written yet
 
