@@ -159,7 +159,7 @@ layout each page names, so either can be tried without touching it:
 A plugin is reached the same way a theme reaches one, through its kind:
 
 ```
---set kind-settings.radar.palette=4
+--set kind-settings.radar-frames.palette=4
 --set kind-settings.digital-clock.font-weight=300
 ```
 

@@ -108,36 +108,76 @@ value changed.
 
 ### Reaching into a plugin
 
-The same two doors a theme uses.  By kind, when any plugin of that sort will
-do:
-
-```
---set kind-settings.radar.palette=4
---set kind-settings.digital-clock.font-weight=300
-```
-
-Or at one instance by the name the config gave it, which beats everything:
+**Name the instance.**  Not the plugin and not its kind - the name the config
+gave that particular widget or provider:
 
 ```
 --set providers.metar.METAR=NZWD
+--set widgets.radar1.zoom=9
 --set widgets.clock.region=bottom
 ```
 
-Which of them to use is the same question as in a theme, and
-[WRITING-A-THEME.md](WRITING-A-THEME.md) is where that is answered.  The
-order they resolve in is in the [README](../README.md#where-a-setting-comes-from).
+The names are the keys under `providers:` and `widgets:` in the config you
+are running, so the config is also the list of what you can say.
 
-**`plugin-settings:` cannot be reached this way**, and this is the one gap in
-`--set`.  That block is keyed by the plugin's name - the literal string
-`PiClock3.Metar`, dots and all - while `--set` reads a dot as a step down
-into the config.  So `--set plugin-settings.PiClock3.Metar.METAR=NZWD` builds
-four nested levels and matches nothing, quietly.
+This is the answer rather than one of three answers, and the reason is
+precedence.  An instance's own entry is the **last** thing merged, after the
+plugin's defaults, after the theme, and after both `-settings` blocks.  So
+for any value an instance names in the file, the instance path is the only
+door that reaches it - the others are outranked before they are read.
 
-It is rarely a loss.  `plugin-settings:` exists to name one plugin exactly
-rather than a whole kind, and from the command line the instance form above
-says the same thing more directly - it names one *instance* exactly, which is
-narrower still.  Use `kind-settings` to reach every plugin of a sort, the
-instance to reach one, and the config file for the case genuinely in between.
+That is not a corner case.  Instances name exactly the interesting values:
+
+```yaml
+providers:
+  metar: {plugin: PiClock3.Metar, METAR: EDDB}
+widgets:
+  radar1: {plugin: PiClock3.MapLoop, region: maps.1, zoom: 7}
+```
+
+`METAR` and `zoom` are both written on the instance, so
+
+```
+--set kind-settings.weather-source.METAR=NZWD
+```
+
+is read, applied, and then quietly beaten by the `EDDB` in the file.  The
+clock still shows Berlin, and nothing says why.  Reach for the instance and
+it works:
+
+```
+--set providers.metar.METAR=NZWD
+```
+
+### The other two, and when they help
+
+`kind-settings:` still works from the command line, for a value **no instance
+names** - a default nobody overrode:
+
+```
+--set kind-settings.radar-frames.palette=4
+--set kind-settings.digital-clock.font-weight=300
+```
+
+Being by kind, it reaches every plugin of that sort at once, which is its
+point: both radar maps, or both digital clocks, without naming either.
+
+`plugin-settings:` cannot be reached by `--set` at all.  It is keyed by the
+plugin's name - the literal string `PiClock3.Metar`, dots and all - while
+`--set` reads a dot as a step down into the config, so
+`--set plugin-settings.PiClock3.Metar.METAR=NZWD` builds four nested levels
+and matches nothing.
+
+Little is lost by that.  Between the instance path, which is narrower, and
+`kind-settings`, which is broader, what `plugin-settings` uniquely offers is
+*one plugin but not the others sharing its kind* - and only two kinds here
+have more than one plugin, `radar-frames` and `basemap`.  For that, edit the
+config.
+
+The order all of these resolve in is in the
+[README](../README.md#where-a-setting-comes-from), and which to use when you
+are writing a file rather than a command line is in
+[WRITING-A-THEME.md](WRITING-A-THEME.md).
 
 ## `--at when` - start the clock somewhere else in time
 

@@ -28,7 +28,7 @@ USAGE = """
 
              A plugin is reached through kind-settings or plugin-settings,
              the same way a theme reaches one:
-                              --set kind-settings.radar.palette=4
+                              --set kind-settings.radar-frames.palette=4
 
       --at   start the clock at another time and let it run from there,
              which is how to see a polar night in August:
