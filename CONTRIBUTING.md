@@ -55,7 +55,7 @@ Showers" even though 4678 has no such code.
 the hour.
 
 `raw` is the service's own record for that entry, in whatever shape the
-service uses.  It is deliberately not normalised — it exists so that anything
+service uses.  It is deliberately not normalized — it exists so that anything
 a provider does not translate is still reachable by someone who wants it.
 Shipped widgets never read it, and anything that does is knowingly tied to
 one provider.

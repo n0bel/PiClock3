@@ -116,7 +116,7 @@ and the whole page scales together from 800x600 to 1920x1080.
 **What this means for you:** the cell's pixel size is not the frame's size on
 screen.  Every piece is rescaled to `width`.  Draw at whatever resolution
 gives you enough detail.  20px cells are plenty for a soft glow; a crisp
-bevel wants more.
+bevel needs more.
 
 **Fill the cell edge to edge.**  This is the one rule that trips people up.
 Blank margin inside a cell does not disappear - it scales up with

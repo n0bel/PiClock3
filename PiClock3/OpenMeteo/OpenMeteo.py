@@ -5,11 +5,11 @@ inside a daily volume that one clock, asking every half hour, is nowhere
 near.
 
 This supplies data and occupies no region, so it is a provider.  What it
-hands back is normalised - a day, an icon name, a WMO 4678 condition, a
+hands back is normalized - a day, an icon name, a WMO 4678 condition, a
 high and a low in Celsius - so a widget drawing it never learns which service
 it came from, and a second source is a second plugin rather than a branch in
 the drawing code.  Beside that, raw carries the service's own record for the
-entry untouched, so normalising costs nothing.
+entry untouched, so normalizing costs nothing.
 """
 import datetime
 import json
@@ -142,7 +142,7 @@ class OpenMeteo(Plugin):
     def record(block, i):
         """everything the service said about one hour or one day.
 
-        Un-normalised and provider-shaped on purpose: it is where anything
+        Un-normalized and provider-shaped on purpose: it is where anything
         this plugin does not translate remains reachable.
         """
         return {k: v[i] for k, v in block.items()
@@ -158,7 +158,7 @@ class OpenMeteo(Plugin):
             logger.warning('%s did not answer with json', ATTRIBUTION)
             return
 
-        # Celsius, percent and millimetres throughout; converting is the
+        # Celsius, percent and millimeters throughout; converting is the
         # drawing side's business
         daily = index.get('daily') or {}
         days = []

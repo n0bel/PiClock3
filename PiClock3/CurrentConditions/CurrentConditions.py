@@ -37,7 +37,7 @@ class CurrentConditions(Plugin):
         return
 
     def part(self, name):
-        """one labelled part of this region, placed by this plugin's layout"""
+        """one labeled part of this region, placed by this plugin's layout"""
         spec = self.config['layout'][name]
         rr = self.region.frameRect()
         label = QLabel(self.region)

@@ -25,7 +25,7 @@ layout:
          font-size: 0.17, align: right-bottom}
 
   # drawn once, in the last cell.  Removing it draws no credit, which
-  # Open-Meteo's licence does not allow.
+  # Open-Meteo's license does not allow.
   attribution: {left: 0.0, bottom: 0.0, width: 1.0, height: 0.22,
                 font-size: 0.15, align: center}
 

@@ -32,7 +32,9 @@ If you want a clock to simply rely on today, use the original PiClock
 here to see where PiClock is going, to run it, and to say what is wrong with
 it.
 
-Ongoing updates to this will be https://github.com/n0bel/PiClock/issues/230
+Progress, plans and half-formed ideas live in
+https://github.com/n0bel/PiClock3/issues/11 - it replaces issue 230 on
+PiClock.  A bug or a specific request is better as its own issue.
 
 I'll be committing many partially complete commits here as an easy means to
 distribute code to my PiClocks for testing.
@@ -65,7 +67,7 @@ change `base-provider: mapbox` to `base-provider: googlemaps` in
 `Config.yaml`.  Skip this and everything still runs - the radar simply
 animates over bare background with no map beneath it.
 
-Nothing else wants a key.  Radar frames are free from both RainViewer and
+Nothing else needs a key.  Radar frames are free from both RainViewer and
 LibreWXR, and so is the METAR.
 
 Then:
@@ -157,7 +159,7 @@ Day and month names come from the system rather than from that table, and the
 language file lists the locales that mean it, so a config needs nothing
 further.  On a Pi the locale has to exist first - `sudo dpkg-reconfigure
 locales` - and if none of them is installed the names stay in English and the
-log says so.  Setting `locale:` in a config overrides the lot.
+log says so.  Setting `locale:` in a config overrides all of them.
 
 `CurrentConditions` and `Forecast` do not care which source they are given.
 A weather provider answers three questions - what it is doing now, the next
@@ -167,20 +169,56 @@ different sources if you like: a real observation from the field down the
 road, beside a model's forecast.
 
 Open-Meteo needs no key, but its data is CC-BY, so `Forecast` prints its
-name at the foot of the column.  A station's credit is the station id, which
+name at the bottom of the column.  A station's credit is the station id, which
 is what the conditions block shows beside the observation time.
 
 RainViewer stopped serving tiles above zoom 7 and returns a "Zoom Level Not
-Supported" image instead of an error, so a close radar wants `librewxr`.
+Supported" image instead of an error, so a close radar needs `librewxr`.
 
 ### Not written yet
 
 * An OpenWeatherMap provider.  The widgets are ready for one - it only has to
   answer the same three questions `OpenMeteo` does, and say what the sky is
   doing in the same notation.  See CONTRIBUTING.md.
-* Wind and humidity in the forecast column; the provider already carries
-  them.
+* A Tomorrow.io provider.  v1 has one, and it already asks for current,
+  hourly and daily separately - the same three questions a provider answers
+  here - so it maps across without rethinking.  Needs a key.
+* A background slideshow.  A theme names one `background:` image today; a
+  clock that sits in a room all day could work through a folder of them.
 
+### Investigating
+
+Not promised.  These are all still up and serving; no code exists for any of
+them yet.
+
+**Weather**
+
+* **Met.no**, the Norwegian Meteorological Institute.  No key, global, and
+  CC-BY 4.0 - it asks only that requests name the application in a
+  `User-Agent`.  The closest in spirit to Open-Meteo and METAR, both of
+  which need no account either.
+* **Pirate Weather.**  Dark Sky's JSON shape served from NOAA data, which
+  makes it the natural landing spot for anyone carrying a config from when
+  PiClock used Dark Sky.  Needs a key; there is a free tier.
+* **NWS `api.weather.gov`.**  No key and official, but United States only,
+  so it would leave the London and Berlin examples unserved.
+
+**Radar and base maps**
+
+Both base maps that ship need a key, and that is the only thing in the setup
+above that makes anyone stop and open an account.  These do not.
+
+* **CARTO** basemaps, `dark_all` and `light_all`.  No key, and dark enough
+  to sit under a clock without fighting it.  Attribution required.
+* **Iowa State NEXRAD.**  No key, and already plain XYZ tiles, which is what
+  `MapLoop` consumes.  United States only, so it would sit beside RainViewer
+  and LibreWXR rather than replace them.
+* **Esri World Imagery.**  No key, satellite rather than a drawn map.  Its
+  tiles are addressed `{z}/{y}/{x}` rather than the usual `{z}/{x}/{y}`.
+* **OpenStreetMap's own tiles.**  No key.  A clock is the case the OSMF tile
+  policy allows for - one small viewport, served from cache, never
+  pre-fetched - but it would have to send a `User-Agent` naming PiClock3,
+  honor the cache headers, and carry the attribution.
 
 I'll welcome any contributions.
 

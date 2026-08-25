@@ -642,7 +642,7 @@ class PiClock3(QWidget):
     def language(self, s):
         """a word in the language this clock is set to.
 
-        An unknown key becomes itself, spaced and capitalised, so a plugin
+        An unknown key becomes itself, spaced and capitalized, so a plugin
         that says something no table has yet still reads as words.
         """
         s = s.replace(' ', '_').lower()
@@ -659,7 +659,7 @@ class PiClock3(QWidget):
         A locale is spelled differently on each platform, and on glibc it
         also has to have been generated, so the language file offers several
         and the first that takes is the one used.  A config's own locale:
-        overrides the lot.
+        overrides all of them.
         """
         wanted = self.config.get('locale')
         names = [wanted] if wanted else self.languages.locales()

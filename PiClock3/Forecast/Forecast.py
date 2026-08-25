@@ -3,7 +3,7 @@
 This is the drawing half.  It asks a provider - named by forecast-provider -
 for as many hourly and daily entries as its config says, and knows nothing
 about where they came from.  Anything the provider hands over is already
-normalised, so a second source is a second provider and not a branch here.
+normalized, so a second source is a second provider and not a branch here.
 
 The shape follows PiClock v1: a picture on the left, the conditions in words
 above a line of figures, and the day in the bottom corner.  The first cells
@@ -61,7 +61,7 @@ class Forecast(Plugin):
         return
 
     def part(self, region, name):
-        """one labelled part of one cell, placed by this plugin's layout.
+        """one labeled part of one cell, placed by this plugin's layout.
 
         The geometry keys are the ones a page layout uses, resolved against
         the cell rather than against a page, so nothing about where these sit
