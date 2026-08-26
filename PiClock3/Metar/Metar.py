@@ -145,7 +145,7 @@ class Metar(Plugin):
         """was the sun up over the station when it reported"""
         return Weather.daytime(
             when,
-            self.piclock.expand(self.piclock.config.location.lattitude),
+            self.piclock.expand(self.piclock.config.location.latitude),
             self.piclock.expand(self.piclock.config.location.longitude),
             self.piclock.timezone().key)
 

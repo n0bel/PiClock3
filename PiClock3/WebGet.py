@@ -36,7 +36,7 @@ class WebGet(QObject):
     #    logger.debug("delete of WebGet Object %s", self.url)
 
     def finished(self):
-        logger.debug("WebGet Finished")
+        logger.debug(f"WebGet Finished: {safeurl(self.url)}")
         request = self.reply.request()
         if self.reply.error() != QNetworkReply.NoError:
             self.callback(self.reply.error(), None, self.params)

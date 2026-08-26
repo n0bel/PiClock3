@@ -5,5 +5,5 @@ format: "{language.sunrise} {plugin-data.sunrise:%H:%M} {language.sunset} {plugi
 # above has no time to put in and would print its own braces.
 polar-format: "{plugin-data.sun} {language.moon_phase} {plugin-data.moonphase}"
 location:
-    lattitude: "{location.lattitude}"
+    latitude: "{location.latitude}"
     longitude: "{location.longitude}"

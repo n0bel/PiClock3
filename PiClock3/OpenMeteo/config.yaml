@@ -10,5 +10,5 @@ forecast-days: 9
 
 # the place the clock is pointed at
 location:
-    lattitude: "{location.lattitude}"
+    latitude: "{location.latitude}"
     longitude: "{location.longitude}"

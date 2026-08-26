@@ -1,6 +1,6 @@
 pages:
   clock-page: {order: 0, layout: classic, theme: circuit}
-  maps-page:  {order: 1, layout: bigmaps, theme: stag}
+  maps-page:  {order: 1, layout: bigmaps, theme: circuit}
 
 # the words the clock speaks - one of the codes a language file
 # answers to.  Files ship in PiClock3/languages; a languages/ folder
@@ -8,7 +8,7 @@ pages:
 language: en
 
 location:
-  lattitude: 45
+  latitude: 45
   longitude: -93
   # Blank means the machine's own zone, which is right when the clock
   # sits where it is pointed.  Name a zone when it does not.
@@ -64,18 +64,22 @@ widgets:
   current-conditions:
     plugin: PiClock3.CurrentConditions
     region: current
-    conditions-provider: metar
+    conditions-provider: metar  # or openmeteo
 
   radar1:
     plugin: PiClock3.MapLoop
     region: maps.1
+    style: mapbox/satellite-streets-v10
     zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
     markers:
       - location:
-          lattitude: '{location.lattitude}'
+          latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: red
         size: large
@@ -84,13 +88,17 @@ widgets:
   radar2:
     plugin: PiClock3.MapLoop
     region: maps.2
+    style: mapbox/satellite-streets-v10
     zoom: 11
+    palette: 6
+    smooth: 1
+    snow: 1
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
     markers:
       - location:
-          lattitude: '{location.lattitude}'
+          latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: green
         size: medium
@@ -99,17 +107,25 @@ widgets:
   radar3:
     plugin: PiClock3.MapLoop
     region: radars.1
+    style: mapbox/satellite-streets-v10
     zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
   radar4:
     plugin: PiClock3.MapLoop
     region: radars.2
+    style: mapbox/satellite-streets-v10
     zoom: 11
+    palette: 6
+    smooth: 1
+    snow: 1
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
 folders:
