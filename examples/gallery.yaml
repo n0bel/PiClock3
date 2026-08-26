@@ -20,7 +20,7 @@ pages:
 language: en
 
 location:
-  lattitude: 45
+  latitude: 45
   longitude: -93
   # Blank means the machine's own zone, which is right when the clock
   # sits where it is pointed.  Name a zone when it does not.
@@ -83,11 +83,11 @@ widgets:
     region: maps.1
     zoom: 7
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
     markers:
       - location:
-          lattitude: '{location.lattitude}'
+          latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: red
         size: large
@@ -98,11 +98,11 @@ widgets:
     region: maps.2
     zoom: 11
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
     markers:
       - location:
-          lattitude: '{location.lattitude}'
+          latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: green
         size: medium
@@ -113,7 +113,7 @@ widgets:
     region: radars.1
     zoom: 7
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
   radar4:
@@ -121,7 +121,7 @@ widgets:
     region: radars.2
     zoom: 11
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
 folders:

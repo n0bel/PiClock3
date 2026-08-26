@@ -23,7 +23,7 @@ language: en
 units: metric
 
 location:
-  lattitude: -77.846
+  latitude: -77.846
   longitude: 166.676
   # Blank means the machine's own zone, which is right when the clock
   # sits where it is pointed.  Name a zone when it does not.
@@ -95,11 +95,11 @@ widgets:
     label: 'Ross Island'
     zoom: 7
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
     markers:
       - location:
-          lattitude: '{location.lattitude}'
+          latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: red
         size: large
@@ -119,7 +119,7 @@ widgets:
     label: 'Ross Sea'
     zoom: 4
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
   radar3:
@@ -127,7 +127,7 @@ widgets:
     region: radars.1
     zoom: 7
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
   radar4:
@@ -135,7 +135,7 @@ widgets:
     region: radars.2
     zoom: 11
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
 folders:

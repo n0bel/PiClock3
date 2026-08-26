@@ -17,7 +17,7 @@ pages:
 language: en
 
 location:
-  lattitude: 51.5286416
+  latitude: 51.5286416
   longitude: -0.1015987
   # this config describes London, not wherever it is running,
   # so the sunrise and sunset have to be London's
@@ -86,11 +86,11 @@ widgets:
     region: maps.1
     zoom: 7
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
     markers:
       - location:
-          lattitude: '{location.lattitude}'
+          latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: red
         size: large
@@ -101,11 +101,11 @@ widgets:
     region: maps.2
     zoom: 11
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
     markers:
       - location:
-          lattitude: '{location.lattitude}'
+          latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: green
         size: medium
@@ -116,7 +116,7 @@ widgets:
     region: radars.1
     zoom: 7
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
   radar4:
@@ -124,7 +124,7 @@ widgets:
     region: radars.2
     zoom: 11
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
 folders:

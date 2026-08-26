@@ -20,7 +20,7 @@ language: de
 # that.  On a Pi a locale has to exist first: sudo dpkg-reconfigure locales
 
 location:
-  lattitude: 52.5074559
+  latitude: 52.5074559
   longitude: 13.144557
   # the sunrise and sunset are Berlin's, wherever this runs
   timezone: Europe/Berlin
@@ -88,11 +88,11 @@ widgets:
     region: maps.1
     zoom: 7
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
     markers:
       - location:
-          lattitude: '{location.lattitude}'
+          latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: red
         size: large
@@ -103,11 +103,11 @@ widgets:
     region: maps.2
     zoom: 11
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
     markers:
       - location:
-          lattitude: '{location.lattitude}'
+          latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: green
         size: medium
@@ -118,7 +118,7 @@ widgets:
     region: radars.1
     zoom: 7
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
   radar4:
@@ -126,7 +126,7 @@ widgets:
     region: radars.2
     zoom: 11
     center:
-      lattitude: '{location.lattitude}'
+      latitude: '{location.latitude}'
       longitude: '{location.longitude}'
 
 folders:
