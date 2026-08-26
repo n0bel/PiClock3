@@ -7,8 +7,8 @@ language and has never opened a Python file can add one.
     PiClock3/languages/en.yaml
     PiClock3/languages/de.yaml
 
-Two ship, English and German.  A file holds three things: the codes it
-answers to, the everyday words, and a table of weather conditions.
+Two ship, English and German.  A file holds the codes it answers to, the
+shape of a date, the everyday words, and a table of weather conditions.
 
 ## Where a language goes
 
@@ -89,6 +89,54 @@ If none of them is accepted the day and month names stay in English and the
 log says so, which is the usual explanation for a clock that is otherwise
 translated.  `locale:` in a config overrides the list.
 
+## `date-format:` - the shape of a date
+
+`strftime` localizes the *names* but never the *order*: `%A %d %B %Y` gives
+"Mittwoch 26 August 2026" in German, which is nearly right, and there is no
+directive for a long date the way `%x` gives a short one.  So the language
+says the shape:
+
+```yaml
+# en.yaml
+date-format: '%A %B {day}<sup>{sup}</sup> %Y'
+
+# de.yaml
+date-format: '%A, {day}. %B %Y'
+```
+
+It is a `strftime` string with two extra tokens.  **`{day}` is the day of
+the month, without a leading zero** - written that way because `%-d` means
+that on glibc, `%#d` on Windows, and each raises on the other, so the
+natural thing to write would break the clock on one platform.  **`{sup}`**
+is the ordinal suffix, below.
+
+Anything else the config holds can go in it too - `{location.timezone}` and
+the like - because the string is expanded before `strftime` sees it.
+
+The whole thing is a default: `format:` on the Date widget, or in
+`kind-settings: {date: {format: ...}}`, outranks it.  That is what to use
+for one clock in a language you otherwise want left alone.
+
+## `date-ordinal:` - 26th, 1er, or nothing
+
+```yaml
+# en.yaml
+date-ordinal: {1: st, 2: nd, 3: rd, 21: st, 22: nd, 23: rd, 31: st, default: th}
+
+# fr.yaml - the first of the month only
+date-ordinal: {1: er}
+```
+
+Keyed by day of the month, with `default:` for the rest.  A day nothing
+matches and no `default:` gives an empty string, so `<sup></sup>` draws
+nothing - which is why French needs one entry and no default.
+
+Most languages do not need this key at all.  Of twenty-one locales, only English
+attaches a suffix to every day; French uses one on the first; German, Danish,
+Norwegian, Finnish, Czech, Icelandic and Hungarian write a plain period,
+which is just a character in `date-format:`; and the rest use a bare numeral.
+Leave the key out and no suffix is added.
+
 ## `strings:` - the everyday words
 
 ```yaml
@@ -168,6 +216,17 @@ The log lists every language it found and which one it chose:
 
 If yours is not in that list, the file is somewhere that is not being read
 from, or its `code:` is not what you thought.
+
+The date is the quickest thing to eyeball, since it is on the screen at all
+times and changes shape entirely between languages:
+
+```
+python3 PyQtPiClock3.py examples/berlin.yaml --set language=de
+```
+
+If it stays English, the file is not being read or its `code:` is not what
+you thought.  If the words are right but the order is not, `date-format:` is
+missing and English's was used.
 
 For the conditions, point the station at somewhere reporting something
 unusual.  A station is a provider rather than a widget, so:
