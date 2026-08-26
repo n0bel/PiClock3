@@ -44,7 +44,7 @@ class Astral(Plugin):
         locationInfo = LocationInfo('here', 'here',
                                     self.piclock.timezone().key,
                                     self.piclock.expand(
-                                        self.config.location.lattitude),
+                                        self.config.location.latitude),
                                     self.piclock.expand(self.config.location.longitude))
         s = Weather.sunTimes(now, locationInfo.latitude,
                              locationInfo.longitude, locationInfo.timezone)

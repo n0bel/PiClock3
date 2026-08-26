@@ -128,7 +128,7 @@ class OpenMeteo(Plugin):
             '&temperature_unit=celsius&wind_speed_unit=kmh'
             '&timezone=%s&forecast_days=%d'
             % (HOST,
-               self.piclock.expand(self.config.location.lattitude),
+               self.piclock.expand(self.config.location.latitude),
                self.piclock.expand(self.config.location.longitude),
                self.piclock.timezone().key,
                int(self.config['forecast-days'])))

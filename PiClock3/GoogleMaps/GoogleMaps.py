@@ -38,13 +38,18 @@ class GoogleMaps(Plugin):
         zoom = view.zoom
         rsize = frameRect.size()
         if rsize.width() > 640 or rsize.height() > 640:
-            rsize = QSize(rsize.width() / 2, rsize.height() / 2)
+            rsize = QSize(rsize.width() // 2, rsize.height() // 2)
             zoom -= 1
         urlp.append('zoom=' + str(zoom))
         urlp.append('size=' + str(rsize.width()) + 'x' + str(rsize.height()))
-        urlp.append('maptype=hybrid')
+        maptype = 'hybrid'
+        if 'style' in self.config:
+            maptype = self.config['style']
+        if 'style' in radarConfig:
+            maptype = radarConfig['style']
+        urlp.append('maptype=' + maptype)
 
-        mapUrl = 'http://maps.googleapis.com/maps/api/staticmap?' + \
+        mapUrl = 'https://maps.googleapis.com/maps/api/staticmap?' + \
             '&'.join(urlp)
         
         logger.info("googlemaps url %s", safeurl(mapUrl))   
