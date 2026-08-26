@@ -11,6 +11,8 @@ name: Deutsch
 # are offered and the first one that takes is used.
 locale: [de_DE.UTF-8, de_DE.utf8, German_Germany.1252, de_DE]
 
+date-format: '%A, {day}. %B %Y'
+
 strings:
   pressure: Luftdruck
   humidity: Luftfeuchte

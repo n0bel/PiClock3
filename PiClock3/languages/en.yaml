@@ -21,6 +21,9 @@ name: English
 # are offered and the first one that takes is used.
 locale: [en_US.UTF-8, en_US.utf8, English_United States.1252, en_US]
 
+date-format: '%A %B {day}<sup>{sup}</sup> %Y'
+date-ordinal: {1: st, 2: nd, 3: rd, 21: st, 22: nd, 23: rd, 31: st, default: th}
+
 strings:
   pressure: Pressure
   humidity: Humidity

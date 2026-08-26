@@ -31,6 +31,10 @@ logger = logging.getLogger(__name__)
 
 class Languages():
 
+    # the keys merge() shapes itself.  every other key in a language file is
+    # carried through untouched for setting() to find.
+    STRUCTURED = ('code', 'codes', 'name', 'locale', 'strings', 'conditions')
+
     def __init__(self, piclock):
         self.piclock = piclock
         self.languages = {}          # canonical name -> {'codes', 'name', 'strings'}
@@ -135,6 +139,17 @@ class Languages():
         found = self.entry()
         return list(found.get('locale') or []) if found else []
 
+    def setting(self, name, default=None):
+        """a top-level key from this clock's language, or English's.
+
+        Falling through to English is what strings() does, so a translation
+        that leaves date-format out gets a working date rather than none.
+        """
+        for entry in (self.entry(), self.languages.get('en')):
+            if entry and name in entry:
+                return entry[name]
+        return default
+
     def conditions(self):
         found = self.entry() or self.languages.get('en')
         return (found.get('conditions') or {}) if found else {}
@@ -158,6 +173,12 @@ class Languages():
             self._merge(part.get('strings') or {}, entry['strings'])
             self._merge(part.get('conditions') or {},
                         entry.setdefault('conditions', {}))
+            # anything else the file declares - date-format, date-ordinal -
+            # is carried as it is, so a new one needs no code here and
+            # setting() can find it
+            for name, value in part.items():
+                if name not in self.STRUCTURED:
+                    entry[name] = value
             logger.debug('language %s from %s', key, path)
 
     @staticmethod

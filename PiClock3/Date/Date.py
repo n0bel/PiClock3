@@ -35,17 +35,18 @@ class Date(Plugin):
         else:
             return
 
-        # date
-        sup = 'th'
-        if now.day == 1 or now.day == 21 or now.day == 31:
-            sup = 'st'
-        if now.day == 2 or now.day == 22:
-            sup = 'nd'
-        if now.day == 3 or now.day == 23:
-            sup = 'rd'
-        if 'locale' in self.config:
-            sup = ""
+        ordinal = self.piclock.languages.setting('date-ordinal') or {}
+        sup = ordinal.get(now.day, ordinal.get('default', ''))
         self.pluginData.sup = sup
         self.pluginData.now = now
-        ds = self.piclock.expand(self.config.format)
-        self.region.setText(ds)
+
+        # the two tokens first: expand() reads anything in braces as a name
+        # to look up, and would take these out before they could be filled.
+        # {day} rather than %-d because that is a ValueError on Windows.
+        # Then expand, so a {plugin-data.now:%A} template still works, and
+        # strftime last for the bare directives.
+        fmt = (self.config.get('format')
+               or self.piclock.languages.setting('date-format',
+                                                 '%A %B {day} %Y'))
+        text = fmt.replace('{day}', str(now.day)).replace('{sup}', sup)
+        self.region.setText(now.strftime(self.piclock.expand(text)))
