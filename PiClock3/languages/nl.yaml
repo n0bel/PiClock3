@@ -27,15 +27,9 @@ strings:
   waning_crescent: Afnemende sikkel
   today: vandaag
 
-# Lmoon1 = 'nieuwe maan'
-# Lmoon2 = 'jonge maan'
-# Lmoon3 = 'eerste kwartier'
-# Lmoon4 = 'wassende maan'
-# Lmoon5 = 'volle maan'
-# Lmoon6 = 'afnemende maan'
-# Lmoon7 = 'laatste kwartier'
-# Lmoon8 = 'asgrauwe maan'
-
+ # what the almanac says where the sun does not rise or set
+  polar_day:       Zon op de hele dag
+  polar_night:     Geen zonsopgang vandaag
 
 # Conditions, as WMO code table 4678 - METAR present-weather notation.
 # The key is the notation a provider reports; the comment is WMO's own
