@@ -120,20 +120,53 @@ one provider.
 
 ## What a theme can reach in your plugin
 
-Your plugin ships a `config.yaml` beside its code holding its defaults.  That
-file is also the list of what a theme is allowed to change, because a theme
-can only set a key you declared.
+Your plugin ships a `config.yaml` beside its code holding its defaults.  A
+theme or a config can set any key in it, and can set keys that are not in it
+— `kind-settings` merges whatever it is given.  What the file really declares
+is what your plugin *reads*.
 
-Five of those names carry a promise.  **`color`, `background-color`,
-`font-family`, `font-style` and `font-weight` are Qt's, and mean here what
-they mean in Qt.**  Declare one and the page's `default:` block is handed to
-you without anyone asking, which is how one line in a theme colors every
-widget on the page.  In exchange, do not use one of those names for anything
-else — a radar palette called `color` would be handed a hex string meant for
-text.  (That is why the frame providers call theirs `palette`.)
+Five names carry a promise.  **`color`, `background-color`, `font-family`,
+`font-style` and `font-weight` are Qt's, and mean here what they mean in
+Qt.**  Do not use one of them for anything else — a radar palette called
+`color` would be handed a hex string meant for text.  (That is why the frame
+providers call theirs `palette`.)
 
-`font-size` is not among them: it is a fraction of whatever it sits in, and
-the page is not the same height as your region.
+Four of the five — all but `background-color`, which CSS does not inherit —
+are put on your region by core, as a `QWidget` rule, from whatever resolved
+for your instance.  Qt carries them to everything you draw there.  **So a
+widget that only draws text needs none of them in its `config.yaml` and none
+of them in the stylesheet it builds.**  `DigitalClock` declares none and its
+stylesheet is one line:
+
+```python
+props = self.piclock.scaleFont({'font-size': self.config['font-size']},
+                               self.clockrect.height())
+```
+
+Set one on your own widget only when you want it to differ from what the
+region says — an id selector outranks the region's rule, so yours wins.
+
+`font-size` is not among the five: it is a fraction of whatever it sits in,
+and your region is not the same height as a label inside it.
+
+### Graphics effects happen without you
+
+A glow or a drop shadow is not a stylesheet property, so none of the above
+would carry it.  Core applies `effect:` to your regions before `start()`
+runs, and a Qt effect covers a widget's whole subtree and picks up children
+made afterwards — so it reaches everything you draw, and **there is nothing
+for your plugin to do**.
+
+```yaml
+effect: glow 0.125         # blur as a fraction of the region's height
+effect: none
+```
+
+Two things to know rather than to code.  A widget gets exactly one effect,
+so if you ever call `applyEffect()` yourself you replace the one core set.
+And the effect renders the whole subtree — for a widget that is alone in its
+region that is what you want, but if you draw an icon beside your text, the
+icon glows too.
 
 Anything else a theme wants to set it reaches through your **kind**:
 
@@ -158,10 +191,15 @@ into `self.config`, along with everything the config said over the theme and
 everything the instance said over both.  That resolved answer is the only one
 that respects what the user asked for.
 
-There is a way to reach the theme itself, and it is right only for a value
-that is the theme's rather than yours — something no key of yours declares.
-For anything you did declare, `self.config` already holds the answer, and
-reading the theme would quietly skip four layers of precedence.
+`self.themeDefault(name)` reaches the page's own answer, and is right only
+as a **last resort**, after `self.config` — for a value that is the theme's
+rather than yours, that no key of yours declares.  Reaching it first would
+skip `kind-settings`, `plugin-settings` and the widget's own entry, all of
+which outrank a theme's `default:`.
+
+`self.color()` is that chain already written: `self.config`, then the page,
+then white.  It exists because a graphics effect needs a real color in
+Python where a stylesheet would have inherited one.
 
 ### `{this-folder}`
 
@@ -172,7 +210,7 @@ travels with whatever ships it, without anything knowing where it was
 installed.
 
 `from-theme:` used to declare a mapping from theme names to your own.  It is
-gone; the five Qt names arrive by themselves and everything else comes
+gone; the Qt names arrive by themselves and everything else comes
 through `kind-settings`.
 
 ## Two rules worth reading before you publish

@@ -120,15 +120,26 @@ kind-settings:               # what the plugins should use
 background - a pale blue reads well on the dark ones and is close to
 invisible on a bright one.
 
-Five of its names reach the widgets by themselves: **`color`,
-`background-color`, `font-family`, `font-style` and `font-weight`**.  A
-widget that takes a setting by one of those names is handed the page's answer
-to it without asking, so setting `color:` once colors the digital clock, the
-conditions and the forecast.  They are Qt's names and mean what Qt means by
-them, which is why a plugin must not use one of them for anything else.
+Five of its names are Qt's and mean what Qt means by them: **`color`,
+`background-color`, `font-family`, `font-style` and `font-weight`**.  Setting
+`color:` once colors the digital clock, the conditions and the forecast, and
+a plugin must not use one of those names for anything else.
 
-`font-size` is deliberately not among them.  It is a fraction of whatever it
-sits in, and a page is not the same height as a region - the page's `0.02`
+They arrive by two roads, and neither needs the plugin's cooperation.  The
+`default:` block is put on the page itself, and Qt hands its colors and fonts
+down to everything drawn on it.  Anything that resolved for one widget - from
+`kind-settings:`, from `plugin-settings:`, from the widget's own entry - is
+put on that widget's **region**, and reaches whatever the plugin draws there.
+Nearer wins, so a `kind-settings` color beats the page's, and a widget that
+names a color itself beats both.
+
+`background-color` travels the first road only.  CSS does not inherit it, so
+putting it on a region would paint a box behind every child - including the
+analog clock's face, which is a picture that expects to see through.  To give
+one region a background, use a `styles:` entry, below.
+
+`font-size` is deliberately not among the five.  It is a fraction of whatever
+it sits in, and a page is not the same height as a region - the page's `0.02`
 would draw a clock face four pixels tall.
 
 `kind-settings:` is how a theme reaches anything else a plugin takes.  The
@@ -141,12 +152,50 @@ them.  `plugin-settings:` does the same for one plugin named exactly, as
 An instance keeps the last word: a widget that names a value in the config
 holds it, whatever the theme says.
 
+### Glows and shadows
+
+`effect:` is an ordinary setting, so a theme reaches it the same way:
+
+```yaml
+kind-settings:
+  digital-clock: {effect: glow 0.125}
+  analog-clock:  {effect: glow 0.04}
+  forecast:      {effect: none}
+```
+
+`glow <blur> <lighten>`.  The blur is a fraction of the region's height, so
+the halo is the same size on an 800x600 panel and on 4K - a fixed pixel count
+is a quarter the relative size on one that it is on the other.  `lighten`
+brightens the widget's own color for the glow and defaults to 150: a pale
+color has clipped to white by then, while a dark one merely brightens, so a
+dark-on-light theme does not get a white halo behind dark text.  `none` or
+`glow 0` turns it off.
+
+The long form names a color outright, or offsets it into a drop shadow:
+
+```yaml
+effect: {type: glow, blur: 0.125, color: '#ffffff', offset: 0}
+```
+
+A color cannot go in the short form - yaml reads a space then `#` as the
+start of a comment, so it would vanish without a word.
+
+Two things worth knowing.  The effect goes on the **region**, so it covers
+everything the widget draws there - for the analog clock that is the dial,
+all three hands and the lettering together.  And a widget gets exactly one
+effect, so `effect:` is a slot rather than a list.
+
+Only the digital clock ships with one.  Every other widget will take one and
+has none by default.
+
 `borders:` are named frames.  A layout asks for `border: true` to get
 `default`, or `border: radar` for a named one, and an unknown name falls back
 to `default` so any theme works with any layout.
 
 `styles:` are named sets of raw Qt stylesheet properties, which a layout
-region asks for by name with `style: date`.  Both files have a say in them,
+region asks for by name with `style: date`.  This is where a region's own
+background belongs, since that is the one Qt name a theme cannot push
+through `kind-settings:`.  Both files have a say in them,
 and the theme has the last one:
 
 - a layout carries its own under `layout-style-settings:`, because how big
