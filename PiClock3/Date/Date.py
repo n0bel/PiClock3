@@ -1,11 +1,23 @@
 import datetime
 import logging
+import re
+import sys
 
 from PyQt5.QtCore import QTimer
 
 from ..Plugin import Plugin
 
 logger = logging.getLogger(__name__)
+
+# glibc drops a leading zero with %-d, the Windows CRT with %#d, and Windows
+# raises on %-d rather than ignoring it.  A language file travels between
+# them, so it is written the glibc way and turned round here.
+DASH = re.compile(r'%-([a-zA-Z])')
+
+
+def portable(fmt):
+    """a strftime string the machine this is running on will accept"""
+    return DASH.sub(r'%#\1', fmt) if sys.platform == 'win32' else fmt
 
 
 class TimeZoneUTC(datetime.tzinfo):
@@ -49,4 +61,4 @@ class Date(Plugin):
                or self.piclock.languages.setting('date-format',
                                                  '%A %B {day} %Y'))
         text = fmt.replace('{day}', str(now.day)).replace('{sup}', sup)
-        self.region.setText(now.strftime(self.piclock.expand(text)))
+        self.region.setText(now.strftime(portable(self.piclock.expand(text))))

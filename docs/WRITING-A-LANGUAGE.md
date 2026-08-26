@@ -104,11 +104,13 @@ date-format: '%A %B {day}<sup>{sup}</sup> %Y'
 date-format: '%A, {day}. %B %Y'
 ```
 
-It is a `strftime` string with two extra tokens.  **`{day}` is the day of
-the month, without a leading zero** - written that way because `%-d` means
-that on glibc, `%#d` on Windows, and each raises on the other, so the
-natural thing to write would break the clock on one platform.  **`{sup}`**
-is the ordinal suffix, below.
+It is a `strftime` string with two extra tokens.  **`{sup}`** is the
+ordinal suffix, below, and **`{day}`** is the day of the month without a
+leading zero.
+
+Write `%-d` for that if you prefer - it is turned into the Windows spelling
+`%#d` when the clock runs there, so either works on either.  `{day}` reads
+better next to `{sup}`, which is the only reason the shipped files use it.
 
 Anything else the config holds can go in it too - `{location.timezone}` and
 the like - because the string is expanded before `strftime` sees it.
