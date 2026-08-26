@@ -12,7 +12,7 @@
 # slideshow follows from which theme each one names.
 pages:
   clock-page: {order: 0, layout: classic, theme: gallery}
-  maps-page:  {order: 1, layout: bigmaps, theme: stag}
+  maps-page:  {order: 1, layout: bigmaps, theme: gallery}
 
 # the words the clock speaks - one of the codes a language file
 # answers to.  Files ship in PiClock3/languages; a languages/ folder
