@@ -720,6 +720,12 @@ class PiClock3(QWidget):
         logger.debug('found %s %s', cls, clsName)
         instance = cls(self, name, moduleConfig)
         self.plugins[name] = instance
+        # effect: on the region, before start() draws anything into it.  An
+        # effect covers a widget's whole subtree and picks up children added
+        # later, so this reaches whatever the plugin goes on to make without
+        # the plugin knowing an effect exists.
+        for region in getattr(instance, 'regions', None) or []:
+            instance.applyEffect(region, region.height())
         instance.start()
 
     def nextPage(self, n):

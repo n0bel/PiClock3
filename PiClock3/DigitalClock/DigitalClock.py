@@ -2,8 +2,7 @@ import datetime
 import logging
 
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QLabel, QGraphicsDropShadowEffect
+from PyQt5.QtWidgets import QLabel
 
 from ..Plugin import Plugin
 
@@ -16,7 +15,6 @@ class DigitalClock(Plugin):
         super().__init__(piclock, name, config)
         self.ctimer = None
         self.lasttimestr = None
-        self.glow = None
         self.clockrect = None
         self.clockface = None
 
@@ -25,13 +23,10 @@ class DigitalClock(Plugin):
         self.clockface.setObjectName("clockface")
         self.clockrect = self.region.frameRect()
         self.clockface.setGeometry(self.clockrect)
-        dcolor = QColor(self.config.color).darker(0).name()
-        # the face is lifted off its own glow, which is the darker color
+        # only the size.  color, font-family and font-weight arrive on the
+        # region and Qt inherits them, so the face draws in the color the
+        # theme actually wrote rather than a lightened one.
         props = self.piclock.scaleFont({
-            'background-color': self.config['background-color'],
-            'font-family': self.config['font-family'],
-            'font-weight': self.config['font-weight'],
-            'color': QColor(self.config.color).lighter(120).name(),
             'font-size': self.config['font-size'],
         }, self.clockrect.height())
         extra = str(self.config['extra-font-attributes'] or '').strip().lstrip(';')
@@ -42,11 +37,6 @@ class DigitalClock(Plugin):
         logging.info(self.clockface.styleSheet())
         self.clockface.setAlignment(Qt.AlignCenter)
         self.clockface.setGeometry(self.clockrect)
-        self.glow = QGraphicsDropShadowEffect()
-        self.glow.setOffset(0)
-        self.glow.setBlurRadius(50)
-        self.glow.setColor(QColor(dcolor))
-        self.clockface.setGraphicsEffect(self.glow)
         self.lasttimestr = ""
 
         self.ctimer = QTimer()

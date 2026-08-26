@@ -1,15 +1,26 @@
 kind: digital-clock
 
-# Everything the face is drawn with is a setting, so a theme can reach all of
-# it.  The Qt names mean what they mean in Qt.
-color: "#50CBEB"
-background-color: transparent
-font-family: sans-serif
-font-weight: light
+# The face carries no color or font of its own.  The page's default: and
+# anything a kind-setting says arrive through the region, and Qt inherits
+# them - so a theme colors this clock by saying color once, and overrules
+# it with kind-settings: {digital-clock: {color: ...}} when it wants this
+# one different.
 
 # a fraction of the height of the region it sits in.  A value with units,
 # 20px, is used as written.
 font-size: 0.3
+
+# glow <blur> <lighten>.  Blur is a fraction of the region's height, so the
+# halo is the same size on any screen.  Lighten is how far the glow is
+# brightened from this widget's own color, and defaults to 150: a pale color
+# has clipped to white by then, a dark one has only brightened.  100 leaves
+# the color alone.  'none' or 'glow 0' for a flat face.
+#
+#   effect: {type: glow, blur: 0.125, color: '#fff', offset: 0}
+#
+# is the long form, for naming a color outright or offsetting it into a
+# drop shadow.
+effect: glow 0.125
 
 # anything Qt understands that has no setting of its own
 extra-font-attributes: ""

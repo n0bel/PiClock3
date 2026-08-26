@@ -4,6 +4,8 @@ import os
 logger = logging.getLogger(__name__)
 
 from PyQt5.QtCore import (QObject)
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect
 
 class Plugin(QObject):
 
@@ -23,6 +25,99 @@ class Plugin(QObject):
 
     def start(self):
         return
+
+    def themeDefault(self, name):
+        """what the page says a Qt property should be, or None.
+
+        A last resort.  self.config is asked first: it already holds what
+        the theme's default: said, what kind-settings and plugin-settings
+        said, and what this widget's own entry said, in that order.
+
+        For what a stylesheet cannot deliver.  Qt inherits color into text
+        by itself, so a widget that only draws text never needs this - a
+        graphics effect is not a stylesheet property and inherits nothing.
+        """
+        theme = self.piclock.instanceTheme(self.config) or {}
+        return (theme.get('default') or {}).get(name)
+
+    def color(self, default='white'):
+        """the color this widget draws in, whoever answered."""
+        found = self.config.get('color') or self.themeDefault('color')
+        return self.piclock.expand(found) if found else default
+
+    def applyEffect(self, widget, height=None):
+        """the effect: setting, on one widget.
+
+            effect: glow 0.125      blur, as a fraction of height
+            effect: glow 0.125 150  and how far to lighten the color
+            effect: none            or 'glow 0', or absent
+
+        Qt gives a widget one effect and renders its whole subtree, so this
+        replaces whatever the widget had.  The blur is a fraction because
+        50 hard pixels is a quarter of the relative size on a 4K panel that
+        it is on the 800x600 one it was chosen on.
+
+        The color defaults to this widget's own, lightened - which is what
+        makes the face readable without draining the color out of the text
+        itself.  100 means the color as written; a pale color clips to white
+        somewhere near 150, while a dark one stays in hue and simply
+        brightens, so a dark-on-light theme does not get a white halo.
+        """
+        spec = self.config.get('effect')
+        kind, blur, color, offset, lighten = self._effect(spec)
+        if not kind or blur <= 0:
+            widget.setGraphicsEffect(None)
+            return None
+        height = widget.height() if height is None else height
+        effect = QGraphicsDropShadowEffect()
+        effect.setBlurRadius(blur * height)
+        effect.setOffset(offset[0] * height, offset[1] * height)
+        effect.setColor(QColor(color) if color
+                        else QColor(self.color()).lighter(lighten))
+        widget.setGraphicsEffect(effect)
+        logger.info('%s: %s blur %.0fpx %s', self.name, kind,
+                    effect.blurRadius(), effect.color().name())
+        return effect
+
+    # blur as a fraction of the widget's height, and how far to lighten the
+    # widget's own color for the glow.  A pale color has clipped to white by
+    # 150, so on most themes this is as bright as it goes.
+    EFFECT = {'blur': 0.125, 'lighten': 150}
+
+    # glow and shadow are one Qt effect; only the offset tells them apart.
+    # Anything else is a typo, and a typo draws nothing.
+    EFFECTS = ('glow', 'shadow')
+
+    def _effect(self, spec):
+        """(kind, blur, color, offset, lighten) from either way of writing it"""
+        off = (None, 0, None, (0, 0), 100)
+        if not spec or spec == 'none':
+            return off
+        if isinstance(spec, str):
+            # 'glow 0.125 150'.  A color cannot ride here: yaml reads a
+            # space then # as a comment, so it would vanish in silence.
+            word = spec.split()
+            try:
+                blur = float(word[1]) if len(word) > 1 else self.EFFECT['blur']
+                light = int(word[2]) if len(word) > 2 else self.EFFECT['lighten']
+            except ValueError:
+                logger.warning('%s: cannot read effect %r', self.name, spec)
+                return off
+            kind, color, o = word[0], None, (0, 0)
+        else:
+            kind = spec.get('type', 'glow')
+            if kind == 'none':
+                return off
+            o = spec.get('offset', 0)
+            o = (o, o) if isinstance(o, (int, float)) else tuple(o)
+            blur = float(spec.get('blur', self.EFFECT['blur']))
+            light = int(spec.get('lighten', self.EFFECT['lighten']))
+            color = spec.get('color')
+        if kind not in self.EFFECTS:
+            logger.warning("%s: no effect called '%s' - try %s", self.name,
+                           kind, ' or '.join(self.EFFECTS))
+            return off
+        return kind, blur, color, o, light
 
     def pageChange(self):
         return
