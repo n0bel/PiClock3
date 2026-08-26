@@ -28,6 +28,4 @@ layout:
   # Open-Meteo's license does not allow.
   attribution: {left: 0.0, bottom: 0.0, width: 1.0, height: 0.22,
                 font-size: 0.15, align: center}
-
-color: '#bef'
 icons-folder: icons-lightblue

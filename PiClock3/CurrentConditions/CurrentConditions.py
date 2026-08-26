@@ -46,8 +46,8 @@ class CurrentConditions(Plugin):
         if 'font-size' in spec:
             props = self.piclock.scaleFont({'font-size': spec['font-size']},
                                            rr.height())
-            style += ' color: %s; font-size: %s;' % (
-                self.piclock.expand(self.config['color']), props['font-size'])
+            # not color: it arrives on the region and Qt inherits it
+            style += ' font-size: %s;' % props['font-size']
         label.setStyleSheet('#%s { %s }' % (name, style))
         label.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         label.setGeometry(self.piclock._regionRect(rr.width(), rr.height(),
