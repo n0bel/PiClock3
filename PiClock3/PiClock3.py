@@ -654,12 +654,56 @@ class PiClock3(QWidget):
             "no region or repeat named '%s'.  the layout defines: %s\n"
             % (name, ', '.join(sorted(self.regions)) or 'nothing'))
 
+    # The Qt names that genuinely inherit, and so can be handed to a region
+    # for whatever a plugin draws inside it.
+    #
+    # background-color is deliberately not among them.  CSS does not inherit
+    # it, and broadcasting it would paint a box behind every child - the
+    # analog face among them, which is a border-image that expects to see
+    # through.  A widget that wants a background sets its own.
+    #
+    # font-size is not among them either, for the reason it is not in
+    # CASCADE: it is a fraction of whatever it sits in, and a region and a
+    # label inside that region are not the same height.
+    INHERITED = ('color', 'font-family', 'font-style', 'font-weight')
+
+    def broadcast(self, entry, config):
+        """a widget's resolved settings, onto its region, for its children.
+
+        A theme's default: reaches everything because core hands it to the
+        page frame and Qt carries it down.  A kind-setting had no such road:
+        it was merged into the plugin's config and then did nothing unless
+        that plugin happened to have written a line reading that key - which
+        is why kind-settings font-weight moved nothing for most widgets.
+
+        This is the page's trick one level in.  Whatever resolved for this
+        instance is put on its region, and Qt carries it to whatever the
+        plugin draws there.  A widget that names a value itself still wins,
+        because an id selector outranks a type selector - so this reaches
+        only what nobody else answered.
+
+        QWidget { } rather than a bare list of properties: a stylesheet
+        holding both bare properties and a rule loses the bare half, and
+        loses it silently.
+        """
+        if not entry.get('region'):
+            return                      # a provider draws nothing
+        props = {n: self.expand(config[n]) for n in self.INHERITED
+                 if config.get(n) is not None}
+        if not props:
+            return
+        rule = 'QWidget {%s }' % self._buildStyleString(props)
+        for region in self.regionList(entry['region']):
+            region.setStyleSheet(rule + ' ' + region.styleSheet())
+        logger.debug('region style for %s: %s', entry.get('region'), rule)
+
     def loadModule(self, name, entry):
         if 'plugin' not in entry:
             raise SystemExit("%s does not say which plugin it is.  Add"
                              " plugin: <module>\n" % name)
         mod = importlib.import_module(entry['plugin'])
         moduleConfig = self.pluginConfig(mod, entry)
+        self.broadcast(entry, moduleConfig)
         logging.info('loading %s %s', mod, name)
         self.pluginData[name] = DottedDict()
         cls = None
