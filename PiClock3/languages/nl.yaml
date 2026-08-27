@@ -1,0 +1,278 @@
+code: [nl]
+
+name: Dutch
+
+# LC_TIME names this language answers to, tried in order.  The
+# spelling differs between platforms, and a glibc system has to
+# have generated it (sudo dpkg-reconfigure locales), so several
+# are offered and the first one that takes is used.
+locale: [nl_NL.UTF-8, nl_NL]
+
+strings:
+  pressure: Luchtdruk
+  humidity: Vochtigheid
+  wind: Wind
+  gusting: buien
+  feels_like: GevoelsT.
+  sunrise: Zon op
+  sunset: Zon onder
+  moon_phase: Maanstand
+  new_moon: Nieuwe maan
+  waxing_crescent: Wassende sikkel
+  first_quarter: Eerste kwartier
+  waxing_gibbous: Wassende maan
+  full_moon: Volle maan
+  waning_gibbous: Afnemende maan
+  last_quarter: Laatste kwartier
+  waning_crescent: Afnemende sikkel
+  today: vandaag
+
+ # what the almanac says where the sun does not rise or set
+  polar_day:       Zon op de hele dag
+  polar_night:     Geen zonsopgang vandaag
+
+# Conditions, as WMO code table 4678 - METAR present-weather notation.
+# The key is the notation a provider reports; the comment is WMO's own
+# English, which is a technical gloss rather than something to put on a
+# screen, so every language including English is a translation of it.
+#
+# Nothing has to be complete.  A notation with no entry falls back to a
+# less specific one - -SHRA to SHRA to RA - so a language is useful from
+# its first dozen lines.
+
+conditions:
+# sky cover - a separate METAR group, not in 4678
+  'CAVOK':  Heldere hemel                        # ceiling and visibility OK
+  'SKC':    Heldere hemel                        # sky clear, 0 oktas
+  'CLR':    Heldere hemel                        # no cloud below 12 000 ft
+  'NCD':    Heldere hemel                        # no cloud detected
+  'NSC':    Overwegend helder                    # no significant cloud
+  'FEW':    Overwegend helder                    # few, 1 to 2 oktas
+  'SCT':    Half bewolkt                         # scattered, 3 to 4 oktas
+  'BKN':    Overwegend bewolkt                  # broken, 5 to 7 oktas
+  'OVC':    Volledig bewolkt                     # overcast, 8 oktas
+  'VV':     Hemel onzichtbaar                    # vertical visibility, sky obscured
+# phenomena that only occur under a descriptor
+  'GR':     Hagel                                   # hail
+  'GS':     Sneeuwhagel                            # small hail and/or snow pellets
+  'SH':     Buien                                  # shower(s)
+# WMO code table 4678, present weather
+  'BR':     Dunne mist                             # Mist
+  'DS':     Stofstorm                              # Duststorm
+  '+DS':    Hevige stofstorm                      # Heavy duststorm
+  '-DS':    Lichte stofstorm                      # Light duststorm
+  'VCDS':   Stofstorm in de omgeving              # Duststorm in the vicinity
+  'DU':     Stof                                   # Dust
+  'BLDU':   Opwaaiend stof                         # Blowing dust
+  'VCBLDU': Opwaaiend stof in de omgeving         # Blowing dust in the vicinity
+  'DRDU':   Laag drijvend stof                     # Low drifting dust
+  'DZ':     Motregen                               # Precipitation of drizzle
+  '+DZ':    Hevige motregen                        # Heavy precipitation of drizzle
+  '-DZ':    Lichte motregen                        # Light precipitation of drizzle
+  'FZDZ':   IJzel                                 # Precipitation of freezing drizzle
+  '+FZDZ':  Hevige ijzel                          # Heavy precipitation of freezing drizzle
+  '-FZDZ':  Lichte ijzel                          # Light precipitation of freezing drizzle
+  'DZPL':   Motregen en ijsregen                   # Precipitation of drizzle and ice pellets
+  '+DZPL':  Hevige motregen en ijsregen            # Heavy precipitation of drizzle and ice pellets
+  '-DZPL':  Lichte motregen en ijsregen            # Light precipitation of drizzle and ice pellets
+  'DZRA':   Motregen en regen                      # Precipitation of drizzle and rain
+  '+DZRA':  Hevige motregen en regen               # Heavy precipitation of drizzle and rain
+  '-DZRA':  Lichte motregen en regen               # Light precipitation of drizzle and rain
+  'FZDZRA': IJzel (bevriezende motregen en regen)  # Precipitation of freezing drizzle and rain
+  '+FZDZRA': Hevige ijzel                         # Heavy precipitation of freezing drizzle and rain
+  '-FZDZRA': Lichte ijzel                         # Light precipitation of freezing drizzle and rain
+  'DZSG':   Motregen en sneeuwkorrels              # Precipitation of drizzle and snow grains
+  '+DZSG':  Hevige motregen en sneeuwkorrels       # Heavy precipitation of drizzle and snow grains
+  '-DZSG':  Lichte motregen en sneeuwkorrels       # Light precipitation of drizzle and snow grains
+  'DZSN':   Motregen en sneeuw                    # Precipitation of drizzle and snow
+  '+DZSN':  Hevige motregen en sneeuw             # Heavy precipitation of drizzle and snow
+  '-DZSN':  Lichte motregen en sneeuw             # Light precipitation of drizzle and snow
+  'FC':     Trechterwolk                           # Funnel cloud(s) (tornado or water-spout)
+  '+FC':    Tornado                                # Well-developed funnel cloud(s) (tornado or waterspout)
+  'VCFC':   Trechterwolk in de omgeving            # Funnel cloud(s) (tornado or water-spout) in the vicinity
+  'FG':     Dichte mist                            # Fog
+  'VCFG':   Mist in de omgeving                    # Fog in the vicinity
+  'BCFG':   Mistbanken                             # Patches of fog
+  'FZFG':   IJzelmist (bevriezende mist)           # Freezing fog
+  'MIFG':   Grondmist                              # Shallow fog
+  'PRFG':   Gedeeltelijke mist                     # Partial fog (covering part of the aerodrome)
+  'FU':     Rook                                   # Smoke
+  'SHGR':   Hagelbuien                             # Showery precipitation of hail
+  '+SHGR':  Hevige hagelbuien                      # Heavy showery precipitation of hail
+  '-SHGR':  Lichte hagelbuien                      # Light showery precipitation of hail
+  'TSGR':   Onweer met hagel                       # Thunderstorm with precipitation of hail
+  '+TSGR':  Onweer met hevige hagel                # Thunderstorm with heavy precipitation of hail
+  '-TSGR':  Onweer met lichte hagel                # Thunderstorm with light precipitation of hail
+  'SHGRRA': Hagelbuien en regen                     # Showery precipitation of hail and rain
+  '+SHGRRA': Hevige hagelbuien en regen             # Heavy showery precipitation of hail and rain
+  '-SHGRRA': Lichte hagelbuien en regen             # Light showery precipitation of hail and rain
+  'TSGRRA': Onweer met hagel en regen               # Thunderstorm with precipitation of hail and rain
+  '+TSGRRA': Onweer met hevige hagel en regen       # Thunderstorm with heavy precipitation of hail and rain
+  '-TSGRRA': Onweer met lichte hagel en regen       # Thunderstorm with light precipitation of hail and rain
+  'SHGRSN': Hagelbuien en sneeuw                   # Showery precipitation of hail and snow
+  '+SHGRSN': Hevige hagelbuien en sneeuw           # Heavy showery precipitation of hail and snow
+  '-SHGRSN': Lichte hagelbuien en sneeuw           # Light showery precipitation of hail and snow
+  'TSGRSN': Onweer met hagel en sneeuw             # Thunderstorm with precipitation of hail and snow
+  '+TSGRSN': Onweer met hevige hagel en sneeuw     # Thunderstorm with heavy precipitation of hail and snow
+  '-TSGRSN': Onweer met lichte hagel en sneeuw     # Thunderstorm with light precipitation of hail and snow
+  'SHGS':   Sneeuwhagelbuien                       # Showery precipitation of snow pellets/small hail
+  '+SHGS':  Hevige sneeuwhagelbuien                # Heavy showery precipitation of snow pellets/small hail
+  '-SHGS':  Lichte sneeuwhagelbuien                # Light showery precipitation of snow pellets/small hail
+  'TSGS':   Onweer met sneeuwhagel                 # Thunderstorm with precipitation of snow pellets/small hail
+  '+TSGS':  Onweer met hevige sneeuwhagel          # Thunderstorm with heavy precipitation of snow pellets/small hail
+  '-TSGS':  Onweer met lichte sneeuwhagel          # Thunderstorm with light precipitation of snow pellets/small hail
+  'SHGSRA': Sneeuwhagelbuien en regen               # Showery precipitation of snow pellets/small hail and rain
+  '+SHGSRA': Hevige sneeuwhagelbuien en regen       # Heavy showery precipitation of snow pellets/small hail and rain
+  '-SHGSRA': Lichte sneeuwhagelbuien en regen       # Light showery precipitation of snow pellets/small hail and rain
+  'TSGSRA': Onweer met sneeuwhagel en regen         # Thunderstorm with precipitation of snow pellets/small hail and rain
+  '+TSGSRA': Onweer met hevige sneeuwhagel en regen # Thunderstorm with heavy precipitation of snow pellets/small hail and rain
+  '-TSGSRA': Onweer met lichte sneeuwhagel en regen # Thunderstorm with light precipitation of snow pellets/small hail and rain
+  'SHGSSN': Sneeuwhagelbuien en sneeuw             # Showery precipitation of snow pellets/small hail and snow
+  '+SHGSSN': Hevige sneeuwhagelbuien en sneeuw     # Heavy showery precipitation of snow pellets/small hail and snow
+  '-SHGSSN': Lichte sneeuwhagelbuien en sneeuw     # Light showery precipitation of snow pellets/small hail and snow
+  'TSGSSN': Onweer met sneeuwhagel en sneeuw       # Thunderstorm with precipitation of snow pellets/small hail and snow
+  '+TSGSSN': Onweer met hevige sneeuwhagel en sneeuw # Thunderstorm with heavy precipitation of snow pellets/small hail and snow
+  '-TSGSSN': Onweer met lichte sneeuwhagel en sneeuw # Thunderstorm with light precipitation of snow pellets/small hail and snow
+  'HZ':     Dwaalmist                               # Haze
+  'PL':     IJsregen                                # Precipitation of ice pellets
+  '+PL':    Hevige ijsregen                        # Heavy precipitation of ice pellets
+  '-PL':    Lichte ijsregen                        # Light precipitation of ice pellets
+  'PLDZ':   IJsregen en motregen                    # Precipitation of ice pellets and drizzle
+  '+PLDZ':  Hevige ijsregen en motregen             # Heavy precipitation of ice pellets and drizzle
+  '-PLDZ':  Lichte ijsregen en motregen             # Light precipitation of ice pellets and drizzle
+  'PLRA':   IJsregen en regen                       # Precipitation of ice pellets and rain
+  '+PLRA':  Hevige ijsregen en regen                # Heavy precipitation of ice pellets and rain
+  '-PLRA':  Lichte ijsregen en regen                # Light precipitation of ice pellets and rain
+  'PLSG':   IJsregen en sneeuwkorrels               # Precipitation of ice pellets and snow grains
+  '+PLSG':  Hevige ijsregen en sneeuwkorrels        # Heavy precipitation of ice pellets and snow grains
+  '-PLSG':  Lichte ijsregen en sneeuwkorrels        # Light precipitation of ice pellets and snow grains
+  'PLSN':   IJsregen en sneeuw                      # Precipitation of ice pellets and snow
+  '+PLSN':  Hevige ijsregen en sneeuw               # Heavy precipitation of ice pellets and snow
+  '-PLSN':  Lichte ijsregen en sneeuw               # Light precipitation of ice pellets and snow
+  'PO':     Stofduivels                             # Dust/sand whirls (dust devils)
+  'VCPO':   Stofduivels in de omgeving              # Dust/sand whirls (dust devils) in the vicinity
+  'RA':     Regen                                   # Precipitation of rain
+  '+RA':    Hevige regen                             # Heavy precipitation of rain
+  '-RA':    Lichte regen                             # Light precipitation of rain
+  'FZRA':   IJzel (bevriezende regen)               # Precipitation of freezing rain
+  '+FZRA':  Hevige ijzel                            # Heavy precipitation of freezing rain
+  '-FZRA':  Lichte ijzel                            # Light precipitation of freezing rain
+  'SHRA':   Regenbuien                              # Showery precipitation of rain
+  '+SHRA':  Hevige regenbuien                        # Heavy showery precipitation of rain
+  '-SHRA':  Lichte regenbuien                        # Light showery precipitation of rain
+  'TSRA':   Onweer met regen                         # Thunderstorm with precipitation of rain
+  '+TSRA':  Onweer met hevige regen                  # Thunderstorm with heavy precipitation of rain
+  '-TSRA':  Onweer met lichte regen                  # Thunderstorm with light precipitation of rain
+  'RADZ':   Regen en motregen                        # Precipitation of rain and drizzle
+  '+RADZ':  Hevige regen en motregen                 # Heavy precipitation of rain and drizzle
+  '-RADZ':  Lichte regen en motregen                 # Light precipitation of rain and drizzle
+  'FZRADZ': IJzel (bevriezende regen en motregen)    # Precipitation of freezing rain and drizzle
+  '+FZRADZ': Hevige ijzel                           # Heavy precipitation of freezing rain and drizzle
+  '-FZRADZ': Lichte ijzel                           # Light precipitation of freezing rain and drizzle
+  'SHRAGR': Hagelbuien en regen                      # Showery precipitation of rain and hail
+  '+SHRAGR': Hevige hagelbuien en regen              # Heavy showery precipitation of rain and hail
+  '-SHRAGR': Lichte hagelbuien en regen              # Light showery precipitation of rain and hail
+  'TSRAGR': Onweer met hagel en regen                # Thunderstorm with precipitation of rain and hail
+  '+TSRAGR': Onweer met hevige hagel en regen        # Thunderstorm with heavy precipitation of rain and hail
+  '-TSRAGR': Onweer met lichte hagel en regen        # Thunderstorm with light precipitation of rain and hail
+  'SHRAGS': Sneeuwhagelbuien en regen                # Showery precipitation of rain and snow pellets/small hail
+  '+SHRAGS': Hevige sneeuwhagelbuien en regen        # Heavy showery precipitation of rain and snow pellets/small hail
+  '-SHRAGS': Lichte sneeuwhagelbuien en regen        # Light showery precipitation of rain and snow pellets/small hail
+  'TSRAGS': Onweer met sneeuwhagel en regen          # Thunderstorm with precipitation of rain and snow pellets/small hail
+  '+TSRAGS': Onweer met hevige sneeuwhagel en regen  # Thunderstorm with heavy precipitation of rain and snow pellets/small hail
+  '-TSRAGS': Onweer met lichte sneeuwhagel en regen  # Thunderstorm with light precipitation of rain and snow pellets/small hail
+  'RAPL':   Regen en ijsregen                        # Precipitation of rain and ice pellets
+  '+RAPL':  Hevige regen en ijsregen                 # Heavy precipitation of rain and ice pellets
+  '-RAPL':  Lichte regen en ijsregen                 # Light precipitation of rain and ice pellets
+  'RASG':   Regen en sneeuwkorrels                   # Precipitation of rain and snow grains
+  '+RASG':  Hevige regen en sneeuwkorrels            # Heavy precipitation of rain and snow grains
+  '-RASG':  Lichte regen en sneeuwkorrels            # Light precipitation of rain and snow grains
+  'RASN':   Regen en sneeuw                         # Precipitation of rain and snow
+  '+RASN':  Hevige regen en sneeuw                  # Heavy precipitation of rain and snow
+  '-RASN':  Lichte regen en sneeuw                  # Light precipitation of rain and snow
+  'SHRASN': Buien met regen en sneeuw                # Showery precipitation of rain and snow
+  '+SHRASN': Hevige buien met regen en sneeuw        # Heavy showery precipitation of rain and snow
+  '-SHRASN': Lichte buien met regen en sneeuw        # Light showery precipitation of rain and snow
+  'TSRASN': Onweer met regen en sneeuw               # Thunderstorm with precipitation of rain and snow
+  '+TSRASN': Onweer met hevige regen en sneeuw       # Thunderstorm with heavy precipitation of rain and snow
+  '-TSRASN': Onweer met lichte regen en sneeuw       # Thunderstorm with light precipitation of rain and snow
+  'SA':     Zand                                   # Sand
+  'BLSA':   Opwaaiend zand                         # Blowing sand
+  'VCBLSA': Opwaaiend zand in de omgeving          # Blowing sand in the vicinity
+  'DRSA':   Laag drijvend zand                     # Low drifting sand
+  'SG':     Sneeuwkorrels                           # Precipitation of snow grains
+  '+SG':    Hevige sneeuwkorrels                   # Heavy precipitation of snow grains
+  '-SG':    Lichte sneeuwkorrels                   # Light precipitation of snow grains
+  'SGDZ':   Sneeuwkorrels en motregen               # Precipitation of snow grains and drizzle
+  '+SGDZ':  Hevige sneeuwkorrels en motregen        # Heavy precipitation of snow grains and drizzle
+  '-SGDZ':  Lichte sneeuwkorrels en motregen        # Light precipitation of snow grains and drizzle
+  'SGPL':   Sneeuwkorrels en ijsregen               # Precipitation of snow grains and ice pellets
+  '+SGPL':  Hevige sneeuwkorrels en ijsregen        # Heavy precipitation of snow grains and ice pellets
+  '-SGPL':  Lichte sneeuwkorrels en ijsregen        # Light precipitation of snow grains and ice pellets
+  'SGRA':   Sneeuwkorrels en regen                  # Precipitation of snow grains and rain
+  '+SGRA':  Hevige sneeuwkorrels en regen           # Heavy precipitation of snow grains and rain
+  '-SGRA':  Lichte sneeuwkorrels en regen           # Light precipitation of snow grains and rain
+  'SGSN':   Sneeuwkorrels en sneeuw                # Precipitation of snow grains and snow
+  '+SGSN':  Hevige sneeuwkorrels en sneeuw         # Heavy precipitation of snow grains and snow
+  '-SGSN':  Lichte sneeuwkorrels en sneeuw         # Light precipitation of snow grains and snow
+  'VCSH':   Buien in de omgeving                    # Shower(s) in the vicinity
+  'SN':     Sneeuw                                 # Precipitation of snow
+  '+SN':    Hevige sneeuw                          # Heavy precipitation of snow
+  '-SN':    Lichte sneeuw                          # Light precipitation of snow
+  'BLSN':   Opwaaiende sneeuw                      # Blowing snow
+  'VCBLSN': Opwaaiende sneeuw in de omgeving        # Blowing snow in the vicinity
+  'DRSN':   Laag drijvende sneeuw                  # Low drifting snow
+  'SHSN':   Sneeuwbuien                             # Showery precipitation of snow
+  '+SHSN':  Hevige sneeuwbuien                      # Heavy showery precipitation of snow
+  '-SHSN':  Lichte sneeuwbuien                      # Light showery precipitation of snow
+  'TSSN':   Onweer met sneeuw                       # Thunderstorm with precipitation of snow
+  '+TSSN':  Onweer met hevige sneeuw                # Thunderstorm with heavy precipitation of snow
+  '-TSSN':  Onweer met lichte sneeuw                # Thunderstorm with light precipitation of snow
+  'SNDZ':   Sneeuw en motregen                      # Precipitation of snow and drizzle
+  '+SNDZ':  Hevige sneeuw en motregen               # Heavy precipitation of snow and drizzle
+  '-SNDZ':  Lichte sneeuw en motregen               # Light precipitation of snow and drizzle
+  'SHSNGR': Hagelbuien en sneeuw                    # Showery precipitation of snow and hail
+  '+SHSNGR': Hevige hagelbuien en sneeuw            # Heavy showery precipitation of snow and hail
+  '-SHSNGR': Lichte hagelbuien en sneeuw            # Light showery precipitation of snow and hail
+  'TSSNGR': Onweer met hagel en sneeuw              # Thunderstorm with precipitation of snow and hail
+  '+TSSNGR': Onweer met hevige hagel en sneeuw      # Thunderstorm with heavy precipitation of snow and hail
+  '-TSSNGR': Onweer met lichte hagel en sneeuw      # Thunderstorm with light precipitation of snow and hail
+  'SHSNGS': Sneeuwhagelbuien en sneeuw             # Showery precipitation of snow and snow pellets/small hail
+  '+SHSNGS': Hevige sneeuwhagelbuien en sneeuw     # Heavy showery precipitation of snow and snow pellets/small hail
+  '-SHSNGS': Lichte sneeuwhagelbuien en sneeuw     # Light showery precipitation of snow and snow pellets/small hail
+  'TSSNGS': Onweer met sneeuwhagel en sneeuw       # Thunderstorm with precipitation of snow and snow pellets/small hail
+  '+TSSNGS': Onweer met hevige sneeuwhagel en sneeuw # Thunderstorm with heavy precipitation of snow and snow pellets/small hail
+  '-TSSNGS': Onweer met lichte sneeuwhagel en sneeuw # Thunderstorm with light precipitation of snow and snow pellets/small hail
+  'SNPL':   Sneeuw en ijsregen                      # Precipitation of snow and ice pellets
+  '+SNPL':  Hevige sneeuw en ijsregen               # Heavy precipitation of snow and ice pellets
+  '-SNPL':  Lichte sneeuw en ijsregen               # Light precipitation of snow and ice pellets
+  'SNRA':   Sneeuw en regen                         # Precipitation of snow and rain
+  '+SNRA':  Hevige sneeuw en regen                  # Heavy precipitation of snow and rain
+  '-SNRA':  Lichte sneeuw en regen                  # Light precipitation of snow and rain
+  'SHSNRA': Buien met sneeuw en regen                # Showery precipitation of snow and rain
+  '+SHSNRA': Hevige buien met sneeuw en regen        # Heavy showery precipitation of snow and rain
+  '-SHSNRA': Lichte buien met sneeuw en regen        # Light showery precipitation of snow and rain
+  'TSSNRA': Onweer met sneeuw en regen               # Thunderstorm with precipitation of snow and rain
+  '+TSSNRA': Onweer met hevige sneeuw en regen       # Thunderstorm with heavy precipitation of snow and rain
+  '-TSSNRA': Onweer met lichte sneeuw en regen       # Thunderstorm with light precipitation of snow and rain
+  'SNSG':   Sneeuw en sneeuwkorrels                 # Precipitation of snow and snow grains
+  '+SNSG':  Hevige sneeuw en sneeuwkorrels          # Heavy precipitation of snow and snow grains
+  '-SNSG':  Lichte sneeuw en sneeuwkorrels          # Light precipitation of snow and snow grains
+  'SQ':     Windstoten                              # Squalls
+  'SS':     Zandstorm                               # Sandstorm
+  '+SS':    Hevige zandstorm                        # Heavy sandstorm
+  '-SS':    Lichte zandstorm                        # Light sandstorm
+  'VCSS':   Zandstorm in de omgeving                # Sandstorm in the vicinity
+  'TS':     Onweer                                  # Thunderstorm
+  'VCTS':   Onweer in de omgeving                   # Thunderstorm in the vicinity
+  'UP':     Onbekende neerslag                      # Unidentified precipitation
+  '+UP':    Hevige onbekende neerslag               # Heavy unidentified precipitation
+  '-UP':    Lichte onbekende neerslag               # Light unidentified precipitation
+  'FZUP':   Bevriezende onbekende neerslag          # Unidentified freezing precipitation
+  '+FZUP':  Hevige bevriezende onbekende neerslag   # Heavy unidentified freezing precipitation
+  '-FZUP':  Lichte bevriezende onbekende neerslag   # Light unidentified freezing precipitation
+  'SHUP':   Buien met onbekende neerslag             # Unidentified showery precipitation
+  '+SHUP':  Hevige buien met onbekende neerslag      # Heavy unidentified showery precipitation
+  '-SHUP':  Lichte buien met onbekende neerslag      # Light unidentified showery precipitation
+  'VA':     Vulkaanas                               # Volcanic ash
+  'VCVA':   Vulkaanas in de omgeving                # Volcanic ash in the vicinity
