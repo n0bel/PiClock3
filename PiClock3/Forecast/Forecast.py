@@ -33,8 +33,14 @@ class Forecast(Plugin):
         super().__init__(piclock, name, config)
         self.provider = piclock.plugins[self.config['forecast-provider']]
         self.cells = []
+        self.hourFormat = None
+        self.dayFormat = None
 
     def start(self):
+        self.hourFormat = self.strftimePortableFormat(
+            self.config['hour-format'])
+        self.dayFormat = self.strftimePortableFormat(
+            self.config['day-format'])
         want = int(self.config['hourly']) + int(self.config['daily'])
         if want > len(self.regions):
             logger.warning(
@@ -96,11 +102,11 @@ class Forecast(Plugin):
 
         for i, cell in enumerate(self.cells):
             if i < hours and i < len(near):
-                self.fill(cell, near[i], self.config['hour-format'],
+                self.fill(cell, near[i], self.hourFormat,
                           self.hourFigures(near[i]))
             elif hours <= i < hours + days and (i - hours) < len(far):
                 day = far[i - hours]
-                self.fill(cell, day, self.config['day-format'],
+                self.fill(cell, day, self.dayFormat,
                           self.dayFigures(day))
             else:
                 for key in ('icon', 'wx', 'day'):
@@ -114,9 +120,7 @@ class Forecast(Plugin):
         cell['wx'].setText(
             self.piclock.condition(entry.get('condition'))
             + '\n' + figures)
-        stamp = entry['when'].strftime(when)
-        # a leading zero on a 12 hour clock reads as a typo
-        cell['day'].setText(stamp.lstrip('0') if '%I' in when else stamp)
+        cell['day'].setText(entry['when'].strftime(when))
 
     def hourFigures(self, hour):
         """chance, then any accumulation, then the temperature"""

@@ -1,11 +1,17 @@
 import logging
 import os
+import re
+import sys
 
 logger = logging.getLogger(__name__)
 
 from PyQt5.QtCore import (QObject)
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect
+
+DASH = re.compile(r'%-([a-zA-Z])')
+WINDOWS = sys.platform == 'win32'
+
 
 class Plugin(QObject):
 
@@ -25,6 +31,20 @@ class Plugin(QObject):
 
     def start(self):
         return
+
+    @staticmethod
+    def strftimePortableFormat(fmt):
+        """a strftime string this machine will accept.
+
+        glibc drops a leading zero with %-d, the Windows CRT with %#d, and
+        Windows raises on %-d rather than ignoring it.  A config travels
+        between them, so it is written the glibc way and turned round here.
+
+        Call it in start() and keep what it returns: the answer cannot
+        change while the clock runs, and the widgets that draw a time
+        redraw every second.
+        """
+        return DASH.sub(r'%#\1', fmt) if WINDOWS else fmt
 
     def themeDefault(self, name):
         """what the page says a Qt property should be, or None.

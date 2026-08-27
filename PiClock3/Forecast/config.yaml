@@ -11,7 +11,7 @@ daily: 6
 hourly-step: 3
 
 # strftime for the corner of a cell
-hour-format: '%A %I:%M%p'
+hour-format: '%A %-I:%M%p'
 day-format: '%A'
 
 # Where the parts sit inside one cell, as fractions of it - the same geometry

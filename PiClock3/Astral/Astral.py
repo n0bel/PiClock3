@@ -22,8 +22,13 @@ class Astral(Plugin):
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
         self.lastDay = -1
+        self.format = None
+        self.polarFormat = None
 
     def start(self):
+        self.format = self.strftimePortableFormat(self.config.format)
+        self.polarFormat = self.strftimePortableFormat(
+            self.config['polar-format'])
         timer = QTimer()
         timer.timeout.connect(self.doAstral)
         timer.start(1000)
@@ -71,7 +76,7 @@ class Astral(Plugin):
                                  locationInfo.timezone)
             self.pluginData['sun'] = self.piclock.language(
                 'polar_day' if up else 'polar_night')
-        fmt = self.config['polar-format'] if polar else self.config.format
+        fmt = self.polarFormat if polar else self.format
 
         try:
             ds = self.piclock.expand(fmt)

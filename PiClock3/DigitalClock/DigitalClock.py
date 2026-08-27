@@ -17,8 +17,10 @@ class DigitalClock(Plugin):
         self.lasttimestr = None
         self.clockrect = None
         self.clockface = None
+        self.format = None
 
     def start(self):
+        self.format = self.strftimePortableFormat(self.config.format)
         self.clockface = QLabel(self.region)
         self.clockface.setObjectName("clockface")
         self.clockrect = self.region.frameRect()
@@ -49,10 +51,7 @@ class DigitalClock(Plugin):
     def tick(self):
         now = self.piclock.now()
         self.pluginData.now = now
-        timestr = self.piclock.expand(self.config.format)
-        if self.config.format.find("%I") > -1:
-            if timestr[0] == '0':
-                timestr = timestr[1:99]
+        timestr = self.piclock.expand(self.format)
         if self.lasttimestr != timestr:
             self.clockface.setText(
                 timestr.lower() if self.config['lowercase'] else timestr)

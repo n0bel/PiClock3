@@ -26,8 +26,11 @@ class CurrentConditions(Plugin):
         super().__init__(piclock, name, config)
         self.provider = piclock.plugins[self.config['conditions-provider']]
         self.parts = {}
+        self.observedFormat = None
 
     def start(self):
+        self.observedFormat = self.strftimePortableFormat(
+            self.config['observed-format'])
         for name in ('wxicon', 'wxdesc', 'temper', 'pressure', 'humidity',
                      'wind', 'feelslike', 'wdate'):
             self.parts[name] = self.part(name)
@@ -85,7 +88,7 @@ class CurrentConditions(Plugin):
         when = c.get('when')
         self.parts['wdate'].setText(
             '' if when is None
-            else '%s %s' % (when.strftime(self.config['observed-format']),
+            else '%s %s' % (when.strftime(self.observedFormat),
                             getattr(self.provider, 'attribution', '')))
 
     def humidity(self, c, temp, dew):
