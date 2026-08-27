@@ -157,7 +157,13 @@ names** - a default nobody overrode:
 ```
 --set kind-settings.radar-frames.palette=4
 --set kind-settings.digital-clock.font-weight=300
+--set 'kind-settings.digital-clock.effect=glow 0.25'
+--set kind-settings.analog-clock.effect=none
 ```
+
+`effect:` is worth knowing for trying things: it is a glow or a drop shadow,
+a setting like any other, and every widget takes one whether or not it ships
+with one.  The blur is a fraction of the region's height.
 
 Being by kind, it reaches every plugin of that sort at once, which is its
 point: both radar maps, or both digital clocks, without naming either.

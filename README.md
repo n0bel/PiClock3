@@ -195,6 +195,18 @@ So a theme colors everything by saying `color:` once, a config overrules the
 theme without editing it, and one widget overrules both by naming a value
 itself.  `--set` writes into the config, which is why it beats a theme.
 
+Those five Qt names then travel two roads, neither needing the plugin's
+help.  The theme's `default:` goes on the page, and Qt hands its colors and
+fonts down to everything drawn there.  Whatever resolved for one widget goes
+on that widget's region, and reaches whatever it draws.  Nearer wins, so a
+`kind-settings` color beats the page's - and a widget that names one itself
+beats both.  `background-color` takes the first road only: CSS does not
+inherit it, so a region background belongs in a theme's `styles:`.
+
+`effect:` - a glow or a drop shadow - is an ordinary setting on the same
+tiers, applied by core to a widget's regions.  See
+[docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md).
+
 ### Plugins that ship and work
 
 A widget draws in a region a layout named.  A provider supplies data to

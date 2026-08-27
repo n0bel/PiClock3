@@ -184,6 +184,36 @@ means the same thing to each.  `Mapbox` and `GoogleMaps` are both `basemap`;
 `RainViewer` and `LibreWXR` are both `radar-frames`.  If yours is not
 swappable with anything, give it a kind of its own.
 
+### If you format a time
+
+Resolve the format once in `start()`, through `strftimePortableFormat()`,
+and keep what it gives you:
+
+```python
+def start(self):
+    self.hourFormat = self.strftimePortableFormat(self.config['hour-format'])
+```
+
+Two reasons, and only one of them is portability.
+
+`%-d` drops a leading zero on glibc and raises on Windows; `%#d` does it on
+Windows and silently pads on glibc.  A config travels between the two, so it
+is written the glibc way and turned round for you.  Any `%-x` is handled,
+not only the day.
+
+And a widget that draws a time redraws every second, so resolving in the
+tick would run the substitution forever for an answer that cannot change.
+
+That is the whole contract - use the saved string however you were going to,
+whether that is `when.strftime(self.hourFormat)` or handing it to `expand()`
+for a `{plugin-data.now:%-I}` template.
+
+Do not strip the zero yourself afterwards.  Both shipped plugins used to,
+and both got it wrong: one tested the first character of the whole rendered
+string, so `'%S %I'` ate the seconds' zero and `'%A %I:%M'` missed the
+hour's; the other could not fire at all for either format it shipped.
+`%-I` is a field, and knows which one it is.
+
 ### Read your own config, never the theme
 
 By the time your plugin is built, everything a theme said has been merged
