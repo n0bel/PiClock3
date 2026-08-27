@@ -6,7 +6,9 @@ name: Dutch
 # spelling differs between platforms, and a glibc system has to
 # have generated it (sudo dpkg-reconfigure locales), so several
 # are offered and the first one that takes is used.
-locale: [nl_NL.UTF-8, nl_NL]
+locale: [nl_NL.UTF-8, nl_NL.utf8, Dutch_Netherlands.1252, nl_NL]
+
+date-format: '%A {day} %B %Y'
 
 strings:
   pressure: Luchtdruk

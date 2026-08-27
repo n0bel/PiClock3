@@ -23,13 +23,13 @@ strings:
   sunset: Sonnenuntergang
   moon_phase: Mondphase
   new_moon: Neumond
-  waning_crecent: Abnehmende Sichel
+  waning_crescent: Abnehmende Sichel
   last_quarter: Letztes Viertel
   waning_gibbous: Abnehmender Dreiviertelmond
   full_moon: Vollmond
   waxing_gibbous: Zunehmender Dreiviertelmond
   first_quarter: Erstes Viertel
-  waxing_crecent: Zunehmende Sichel
+  waxing_crescent: Zunehmende Sichel
   today: Heute
 
   # what the almanac says where the sun does not rise or set

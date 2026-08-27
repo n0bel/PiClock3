@@ -34,13 +34,13 @@ strings:
   sunset: Sunset
   moon_phase: Moon Phase
   new_moon: New Moon
-  waning_crecent: Waning Crecent
+  waning_crescent: Waning Crescent
   last_quarter: Last Quarter
   waning_gibbous: Waning Gibbous
   full_moon: Full Moon
   waxing_gibbous: Waxing Gibbous
   first_quarter: First Quarter
-  waxing_crecent: Waxing Crecent
+  waxing_crescent: Waxing Crescent
   today: Today
 
   # what the almanac says where the sun does not rise or set

@@ -91,7 +91,7 @@ class Astral(Plugin):
         if (f > 0.9375):
             pp = 'new_moon'
         elif (f > 0.8125):
-            pp = 'waning_crecent'
+            pp = 'waning_crescent'
         elif (f > 0.6875):
             pp = 'last_quarter'
         elif (f > 0.5625):
@@ -103,5 +103,5 @@ class Astral(Plugin):
         elif (f > 0.1875):
             pp = 'first_quarter'
         elif (f > 0.0625):
-            pp = 'waxing_crecent'
+            pp = 'waxing_crescent'
         return pp
