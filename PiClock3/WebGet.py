@@ -1,5 +1,6 @@
 import logging
 import re
+import time
 from PyQt5 import (QtNetwork)
 from PyQt5.QtCore import (QObject, QThread, pyqtSlot, pyqtSignal, Qt, QRect,
                           QSize, QUrl)
@@ -8,6 +9,7 @@ from PyQt5.QtNetwork import (QNetworkReply, QNetworkRequest, QNetworkAccessManag
 logger = logging.getLogger(__name__)
 
 def safeurl(url):
+    """a key in a query parameter becomes <key>; one in a path would not"""
     return re.sub(r'((?:apikey|appid|key|access_token)=)[^&]*',
                   r'\1<key>', url)
 
@@ -28,6 +30,7 @@ class WebGet(QObject):
             if WebGet.sharedManager is None:
                 WebGet.sharedManager = QtNetwork.QNetworkAccessManager()
             self.manager = WebGet.sharedManager
+        self.started = time.monotonic()
         self.request = QNetworkRequest(QUrl(self.url))
         self.reply = self.manager.get(self.request)
         self.reply.finished.connect(self.finished)
@@ -36,13 +39,17 @@ class WebGet(QObject):
     #    logger.debug("delete of WebGet Object %s", self.url)
 
     def finished(self):
-        logger.debug(f"WebGet Finished: {safeurl(self.url)}")
-        request = self.reply.request()
-        if self.reply.error() != QNetworkReply.NoError:
-            self.callback(self.reply.error(), None, self.params)
+        error = self.reply.error()
+        took = time.monotonic() - self.started
+        waiting = len(WebGet.webGets)
+        if error != QNetworkReply.NoError:
+            logger.warning("WebGet FAILED %s in %.3fs (%d in flight): %s",
+                           error, took, waiting, safeurl(self.url))
+            self.callback(error, None, self.params)
         else:
-            data = self.reply.readAll()
-            self.callback(self.reply.error(), data, self.params)
+            logger.debug("WebGet ok in %.3fs (%d in flight): %s",
+                         took, waiting, safeurl(self.url))
+            self.callback(error, self.reply.readAll(), self.params)
         WebGet.webGets.remove(self)
 
 if __name__ == '__main__':
