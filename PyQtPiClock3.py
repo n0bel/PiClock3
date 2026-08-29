@@ -116,7 +116,6 @@ if __name__ == '__main__':
             # again, in case one of them was logging-level itself
             setLevel()
             logging.info("Startup....")
-            logging.debug('config = %s', config.dump())
         except Exception as e:
             logging.exception('PyQtPiClock3 Config Error:')
             QMessageBox.critical(

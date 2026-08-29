@@ -1,7 +1,6 @@
 import logging
 import os
 import yaml
-import pprint
 from yamlinclude import YamlIncludeConstructor
 from .DottedDict import DottedDict
 
@@ -110,9 +109,6 @@ class Config(DottedDict):
         if value is None and raw not in ('', 'null', '~'):
             return raw
         return value
-
-    def dump(self):
-        pprint.pformat(self)
 
     # finds keys ending in --, merges with key of name without --
     def _overrides(self, d):
