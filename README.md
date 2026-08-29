@@ -49,7 +49,7 @@ git clone https://github.com/n0bel/PiClock3.git
 cd PiClock3
 sudo apt update
 sudo apt install python3-pyqt5 python3-yaml
-python3 -m pip install --upgrade pip
+export PIP_BREAK_SYSTEM_PACKAGES=1
 python3 -m pip install -r requirements.txt
 cp examples/default.yaml Config.yaml
 cp examples/ApiKeys.yaml ApiKeys.yaml
@@ -78,6 +78,18 @@ python3 PyQtPiClock3.py
 
 PyQt5 comes from apt on purpose.  Installing it with pip builds Qt from
 source, which takes hours on a Pi and usually runs out of memory first.
+
+`PIP_BREAK_SYSTEM_PACKAGES=1` is there for a similar reason.  Debian 12 and
+later refuse a pip install outside a venv and stop with `error:
+externally-managed-environment`.  That setting says you meant it.  Without
+`sudo`, pip then installs into `~/.local` and touches nothing apt owns - it is
+the name that is alarming, and only `sudo pip` that earns it.  Older pip does
+not know the setting and ignores it, so the one line serves Bullseye through
+Trixie.
+
+Those requirements land in `~/.local`, which belongs to the user who ran pip.
+Start the clock as that same user - one started as another gets
+`ModuleNotFoundError` for packages that are plainly installed.
 
 **Python 3.9 is the floor**, which is Raspberry Pi OS Bullseye.  Bullseye is
 what this is developed and tested on - Python 3.9.2 with PyQt 5.15.2.  Newer
