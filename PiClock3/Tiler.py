@@ -47,13 +47,19 @@ class TileFetcher():
 
     def getTiles(self):
         """ask for every tile of this frame at once"""
-        wanted = [(y, x) for y in self.tiles for x in self.tiles[y]]
+        n = 2 ** self.zoom
+        # a row off the top or bottom of the world is left empty and paints
+        # transparent.  the key stays either way: the grid is laid out in the
+        # order it is walked, so a missing entry would shift the rest.
+        wanted = [(y, x) for y in self.tiles for x in self.tiles[y]
+                  if 0 <= y < n]
         self.pending = len(wanted)
         if not self.pending:
             self.finish()
             return
         for y, x in wanted:
-            WebGet(self.tileurl(self.zoom, x, y),
+            # east of the last column is the first one
+            WebGet(self.tileurl(self.zoom, x % n, y),
                    self.gotTile, {'x': x, 'y': y})
 
     def gotTile(self, error, data, params):
