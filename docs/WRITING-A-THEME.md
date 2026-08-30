@@ -192,6 +192,17 @@ has none by default.
 `default`, or `border: radar` for a named one, and an unknown name falls back
 to `default` so any theme works with any layout.
 
+`art` is the PNG.  `width` is the frame's weight as a fraction of screen
+height, so it stays the same weight on a small panel as on a big monitor -
+0.012 is about 13px at 1080p and 7px at 800x600.  `inset` is where content
+lands inside the frame, as a fraction of that width: a frame that glows
+inward wants about 0.5, so content sits in the middle of the fade, while a
+solid rule with a hard edge wants 1.0, so content sits right against it
+instead of being pulled back into a fade that is not there.
+
+Drawing the sheet itself - the 3x3 grid, what gets stretched, and how to
+check it - is [FRAME-ART.md](FRAME-ART.md).
+
 `styles:` are named sets of raw Qt stylesheet properties, which a layout
 region asks for by name with `style: date`.  This is where a region's own
 background belongs, since that is the one Qt name a theme cannot push

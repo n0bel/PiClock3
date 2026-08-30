@@ -1,6 +1,8 @@
 name: London
 description: The Thames at night, light-blue clock
 
+# "London Skyline" by Sushant Sakhalkar, CC0 1.0, cropped to 1440x900.
+# https://commons.wikimedia.org/wiki/File:London_Skyline_(199638369).jpeg
 background: 'background.png'
 
 kind-settings:
