@@ -273,10 +273,11 @@ Supported" image instead of an error, so a close radar needs `librewxr`.
 
 ### Extending it
 
-Six guides, each answering one question:
+Seven guides, each answering one question:
 
 | | |
 |---|---|
+| [docs/WRITING-A-CONFIG.md](docs/WRITING-A-CONFIG.md) | your own `Config.yaml` - pages, location, providers, widgets, settings |
 | [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md) | what a page looks like - colors, fonts, frames, backgrounds, which art the widgets use |
 | [docs/WRITING-A-LAYOUT.md](docs/WRITING-A-LAYOUT.md) | where things go - regions, fractions, repeats |
 | [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md) | a widget that draws or a provider that fetches, and what a theme can reach in it |
