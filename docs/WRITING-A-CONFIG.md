@@ -123,18 +123,59 @@ word over the one before:
 4. the config's `kind-settings:`, then its `plugin-settings:`
 5. the widget's own entry under `widgets:`
 
-So say a thing once where it applies to everything of a kind:
+### `kind-settings:` is shorthand
+
+Anything a widget takes can be written on the widget itself.  These two say
+the same thing:
+
+```yaml
+widgets:
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
+    base-provider: mapbox          # said here
+    frame-provider: librewxr       # and here
+    zoom: 7
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    base-provider: mapbox          # and again
+    frame-provider: librewxr       # and again
+    zoom: 11
+```
 
 ```yaml
 kind-settings:
   radar:
-    base-provider: mapbox
+    base-provider: mapbox          # said once
     frame-provider: librewxr
+
+widgets:
+  radar1: {plugin: PiClock3.MapLoop, region: maps.1, zoom: 7}
+  radar2: {plugin: PiClock3.MapLoop, region: maps.2, zoom: 11}
 ```
 
-and the four radars below need not repeat it.  `plugin-settings:` does the
-same keyed by plugin rather than kind.  A widget's own entry still wins, which
-is how one radar differs from the rest.
+The second says it once.  With four radars on two pages, which is
+what most of the examples have, that is the difference between one block and
+eight repeated lines - and between changing a provider in one place or four.
+
+**`radar` is not the plugin's name.**  It is the plugin's *kind*, declared in
+its own `config.yaml`:
+
+| kind | plugin |
+|---|---|
+| `radar` | `MapLoop` |
+| `analog-clock`, `digital-clock` | the two clock faces |
+| `current-conditions`, `forecast`, `date`, `almanac` | the rest of the widgets |
+| `basemap`, `radar-frames`, `weather-source`, `forecast-source` | the providers |
+
+So a kind is what a thing *is*, and several plugins can share one - Mapbox and
+GoogleMaps are both `basemap`, so a setting under that reaches whichever you
+use.  `plugin-settings:` is the same idea keyed by the plugin instead, for
+when you mean one implementation and not the other.
+
+A widget's own entry still wins over both, which is how one radar differs from
+the rest while the other three take the shared block.
 
 **This is also the answer to "I edited a shipped file and an update
 overwrote it".**  Anything a plugin, theme or layout carries can be reached
