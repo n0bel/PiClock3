@@ -3,6 +3,8 @@ description: Conditions and two radars left, clock center, forecast right
 
 provides: [current, maps, clock, date, bottom, forecast]
 
+designed-for: '16:9'
+
 regions:
 
   current:  {left: 0.0,  top: 0.0,    width: 0.2, height: 0.3333}
@@ -15,17 +17,13 @@ regions:
 
   clock:    {width: 0.5, aspect: 1.0, horizontal-center: 0.0, vertical-center: 0.0}
 
-  date:     {left: 0.0,  top: 0.0,    width: 1.0, height: 0.1, style: date}
-  bottom:   {left: 0.0,  bottom: 0.0, width: 1.0, height: 0.1, style: bottom}
+  date:     {left: 0.2, right: 0.2, top: 0.0,    height: 0.1, style: date}
+  bottom:   {left: 0.2, right: 0.2, bottom: 0.0, height: 0.1, style: bottom}
 
-# How big the text has to be to fit these regions.  A theme overrides any of
-# it; carrying it here is what lets a layout look right under a theme that
-# has never heard of it.
 layout-style-settings:
   date:
-    font-size: 0.75            # a fraction of the region's height
+    font-size: 0
     qproperty-alignment: AlignCenter
   bottom:
-    # stays narrow enough to pass under the forecast column
-    font-size: 0.36
+    font-size: 0
     qproperty-alignment: AlignCenter

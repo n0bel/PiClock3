@@ -32,6 +32,12 @@ class Plugin(QObject):
     def start(self):
         return
 
+    def scaleFont(self, props, height):
+        """sizes text the way core does, under the layout this widget sits in
+        rather than whichever page happened to be built last"""
+        return self.piclock.scaleFont(props, height,
+                                      getattr(self, 'region', None))
+
     @staticmethod
     def strftimePortableFormat(fmt):
         """a strftime string this machine will accept.

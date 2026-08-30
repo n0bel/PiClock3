@@ -28,7 +28,7 @@ class DigitalClock(Plugin):
         # only the size.  color, font-family and font-weight arrive on the
         # region and Qt inherits them, so the face draws in the color the
         # theme actually wrote rather than a lightened one.
-        props = self.piclock.scaleFont({
+        props = self.scaleFont({
             'font-size': self.config['font-size'],
         }, self.clockrect.height())
         extra = str(self.config['extra-font-attributes'] or '').strip().lstrip(';')

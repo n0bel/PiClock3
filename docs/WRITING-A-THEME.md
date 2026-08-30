@@ -205,9 +205,10 @@ and the theme has the last one:
   `date: {font-size: 0.4}` changes the size and leaves the alignment the
   layout asked for.
 
-So a theme need only say what it wants to differ.  None of the shipped themes
-defines a style at present, because the sizes the layouts carry suit them all
-- but redefining one is a first-class thing to do, not a leftover.
+So a theme need only say what it wants to differ.  `meridian` is the one that
+does: its date rides above the sun diagram, so the theme sets `date:
+{font-size: 0.5}` where its layout asks for 0.62.  The rest leave the layouts'
+sizes alone.
 
 A name nothing defines is simply not applied, and says so in the log.
 

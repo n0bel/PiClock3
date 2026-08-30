@@ -79,8 +79,8 @@ class Forecast(Plugin):
         label.setObjectName(name)
         style = 'background-color: transparent;'
         if 'font-size' in spec:
-            props = self.piclock.scaleFont({'font-size': spec['font-size']},
-                                           rr.height())
+            props = self.scaleFont({'font-size': spec['font-size']},
+                                   rr.height())
             # not color: it arrives on the region and Qt inherits it
             style += ' font-size: %s;' % props['font-size']
         label.setStyleSheet('#%s { %s }' % (name, style))

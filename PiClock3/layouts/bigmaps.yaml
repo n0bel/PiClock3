@@ -3,16 +3,15 @@ description: Two large radars side by side, caption strip along the bottom
 
 provides: [radars, caption]
 
+designed-for: '16:9'
+
 regions:
   radars:  {left: 0.05, top: 0.05, width: 0.9,  height: 0.8,
             border: radar,
             repeat: {count: 2, direction: across, gap: 0.1111}}
   caption: {left: 0.0,  bottom: 0.0, width: 1.0, height: 0.05, style: centered}
 
-# How big the text has to be to fit these regions.  A theme overrides any of
-# it; carrying it here is what lets a layout look right under a theme that
-# has never heard of it.
 layout-style-settings:
   centered:
-    font-size: 0.6             # a fraction of the region's height
+    font-size: 0.6
     qproperty-alignment: AlignCenter

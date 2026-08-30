@@ -5,6 +5,7 @@ import locale
 import logging
 import logging.handlers
 import os
+import re
 import zoneinfo
 
 import tzlocal
@@ -13,7 +14,7 @@ import yaml
 from PyQt5 import (QtNetwork)
 from PyQt5.QtCore import (Qt, QRect,
                           QSize)
-from PyQt5.QtGui import (QImage)
+from PyQt5.QtGui import (QImage, QFontMetrics)
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
 from .Config import thisFolder
@@ -24,6 +25,44 @@ from .Slideshow import Slideshow
 from .Units import Units
 
 logger = logging.getLogger(__name__)
+
+
+class FitLabel(QLabel):
+    """text as large as fits across, asked for by font-size: 0.
+
+    The size only ever comes down.  A clock started on a short date would
+    otherwise clip on a long one.
+    """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.fitCeiling = None
+        self.fitSize = None
+        self.baseStyle = ''
+
+    def setText(self, text):
+        super().setText(text)
+        if self.fitCeiling and text:
+            self.fitText(text)
+
+    def fitText(self, text):
+        # a label renders markup, so the tags are not part of the width
+        shown = re.sub(r'<[^>]*>', '', text)
+        size = self.fitSize or self.fitCeiling
+        room = self.width() - 4
+        font = self.font()
+        font.setPixelSize(int(size))
+        while size > 6 and QFontMetrics(font).horizontalAdvance(shown) > room:
+            size -= 1
+            font.setPixelSize(int(size))
+        if self.fitSize is not None and size >= self.fitSize:
+            return
+        self.fitSize = size
+        # a stylesheet beats setFont, and the page carries one
+        self.setStyleSheet("%s #%s { font-size: %dpx; }"
+                           % (self.baseStyle, self.objectName(), size))
+        logger.info("fit %s: %dpx for %r in %dpx",
+                    self.objectName(), size, shown, room)
 
 
 class Words():
@@ -68,6 +107,10 @@ class PiClock3(QWidget):
         self.offset = self.startAt()
         self.screen = QApplication.desktop().screenGeometry()
         logging.info("%s" % self.screen)
+        # fontScale is per region; a region keeps the one it was built under
+        self.pageRatio = 1.0
+        self.designAspect = None
+        self.fontScale = 1.0
         self.units = Units(self)
         self.units.load()
         self.languages = Languages(self)
@@ -130,8 +173,14 @@ class PiClock3(QWidget):
             # the way kind-settings and plugin-settings are.
             self.config._merge(self.config.get('theme') or {}, theme)
             theme['styles'] = self.regionStyles(layout, theme)
+            self.pageRatio = self.aspectScale(layout)
             logging.debug("Building Page %s: layout %s, theme %s",
                           pageName, page['layout'], page['theme'])
+            logging.info("page %s: layout %s designed for %s, screen %.3f,"
+                         " ratio %.3f", pageName, page['layout'],
+                         layout.get('designed-for', 'any shape'),
+                         self.screen.width() / self.screen.height(),
+                         self.pageRatio)
 
             pageFrame = QFrame(self)
             pageFrame.setVisible(False)
@@ -293,9 +342,31 @@ class PiClock3(QWidget):
             return (home + '/' + value).replace(os.sep, '/')
         return value
 
-    def _regionRect(self, pw, ph, r):
-        width = pw * r['width'] if 'width' in r else pw
+    def _regionRect(self, pw, ph, r, widen=False):
+        # both edges and no size: whatever lies between them
+        edges = 'width' not in r and 'left' in r and 'right' in r
+        leftf, rightf = r.get('left', 0.0), r.get('right', 0.0)
+        if edges:
+            if widen:
+                leftf = leftf / self.pageRatio
+                rightf = rightf / self.pageRatio
+            width = pw * max(0.0, 1.0 - leftf - rightf)
+        else:
+            width = pw * r['width'] if 'width' in r else pw
         height = ph * r['height'] if 'height' in r else ph
+        # width only: a region grown downward would cover the one under it.
+        # Not a plugin's parts - their region was corrected already.
+        if (widen and not edges and 'width' in r and 'height' in r
+                and 'aspect' not in r):
+            # all of it or none: half is the wrong shape and costs a margin
+            want = width / self.pageRatio
+            room = pw
+            if 'left' in r:
+                room = pw - pw * r['left']
+            elif 'right' in r:
+                room = pw - pw * r['right']
+            if want <= room:
+                width = want
         if 'aspect' in r:
             if 'width' in r:
                 height = width * r['aspect']
@@ -307,13 +378,24 @@ class PiClock3(QWidget):
         if 'vertical-center' in r:
             top = ph / 2.0 + ph * r['vertical-center'] - height / 2.0
         if 'left' in r:
-            left = pw * r['left']
+            left = pw * leftf
         if 'top' in r:
             top = ph * r['top']
         if 'right' in r:
-            left = pw - pw * r['right'] - width
+            left = pw - pw * rightf - width
         if 'bottom' in r:
             top = ph - ph * r['bottom'] - height
+        # a side past an edge is held at it
+        if left < 0:
+            width += left
+            left = 0
+        if left + width > pw:
+            width = pw - left
+        if top < 0:
+            height += top
+            top = 0
+        if top + height > ph:
+            height = ph - top
         return QRect(int(left), int(top), int(width), int(height))
 
     @staticmethod
@@ -322,17 +404,63 @@ class PiClock3(QWidget):
         means a class - so maps.1 has to become maps_1"""
         return name.replace('.', '_')
 
-    @staticmethod
-    def scaleFont(props, height):
-        """a bare number font-size is a fraction of the height it sits in, so
-        that nothing in a layout or theme is tied to a pixel count"""
+    def scaleFont(self, props, height, region=None):
+        """a bare number font-size is a fraction of the height it sits in.
+
+        The region says which layout it came from: a plugin sizes its text
+        long after the page holding it was built.
+        """
+        scale = (self.fontScale if region is None
+                 else getattr(region, 'fontScale', self.fontScale))
         props = dict(props)
         fs = props.get('font-size')
         if fs is not None:
             t = str(fs)
             if t.replace('.', '', 1).isdigit():
-                props['font-size'] = "%dpx" % (float(t) * height)
+                if float(t) == 0.0:
+                    del props['font-size']          # fit, once it has text
+                else:
+                    props['font-size'] = "%dpx" % (float(t) * height * scale)
         return props
+
+    @staticmethod
+    def readAspect(spec):
+        """a screen shape, as '16:9' or as the number that means"""
+        t = str(spec)
+        if ':' in t:
+            w, h = t.split(':', 1)
+            return float(w) / float(h)
+        value = float(t)
+        # yaml reads a bare 16:9 as sexagesimal - 969.  No screen is that
+        # shape, so take it back apart.
+        if value > 60 and value == int(value) and int(value) % 60:
+            logger.warning("designed-for: %s is being read as a number - quote"
+                           " it as '%d:%d'", t, int(value) // 60,
+                           int(value) % 60)
+            return (int(value) // 60) / float(int(value) % 60)
+        return value
+
+    def aspectScale(self, layout):
+        """the screen's shape over the one the layout was designed for.
+
+        A layout that says nothing is left alone: guessing would reshape one
+        designed for 4:3 on the screen it was designed for.
+        """
+        spec = layout.get('designed-for')
+        self.designAspect = None if spec is None else self.readAspect(spec)
+        if self.designAspect is None:
+            return 1.0
+        actual = self.screen.width() / self.screen.height()
+        return actual / self.designAspect
+
+    def regionFontScale(self, r, rect):
+        """text is a fraction of a region's height but has to fit across its
+        width, so a region that came out a different shape needs it smaller.
+        One that kept its shape does not."""
+        if not self.designAspect or 'width' not in r or 'height' not in r:
+            return 1.0
+        designed = (r['width'] / r['height']) * self.designAspect
+        return min(1.0, (rect.width() / rect.height()) / designed)
 
     def _regionStyle(self, name, region, theme, rect):
         """styling that belongs on the region itself - not the frame"""
@@ -340,6 +468,7 @@ class PiClock3(QWidget):
             return ''
         props = self.scaleFont(
             theme.get('styles', {}).get(region['style'], {}), rect.height())
+        props.pop('fit', None)          # ours to act on, not a Qt property
         style = self._buildStyleString(props)
         return "#%s { %s }" % (self.qtName(name), style) if style else ''
 
@@ -415,7 +544,9 @@ class PiClock3(QWidget):
         return "#%s { %s }" % (qt, style)
 
     def _buildRegion(self, parent, name, region, theme):
-        rect = self._regionRect(parent.width(), parent.height(), region)
+        rect = self._regionRect(parent.width(), parent.height(), region,
+                                widen=True)
+        self.fontScale = self.regionFontScale(region, rect)
         rep = region.get('repeat')
         border = self._borderFor(region, theme)
 
@@ -535,15 +666,25 @@ class PiClock3(QWidget):
 
     def _makeRegion(self, parent, name, rect, region, theme):
         qt = self.qtName(name)
-        w = QLabel(parent)
+        w = FitLabel(parent)
         w.setObjectName(qt)
         w.setGeometry(rect)
+        spec = theme.get('styles', {}).get(region.get('style'), {}) or {}
+        size = str(spec.get('font-size', '')).strip()
+        if size == '0':
+            # nothing but the box constrains it
+            w.fitCeiling = int(rect.height() * 0.8)
+        elif spec.get('fit') and size.replace('.', '', 1).isdigit():
+            # the size the layout asked for, and never larger
+            w.fitCeiling = int(float(size) * rect.height() * self.fontScale)
 
         style = self._regionStyle(name, region, theme, rect)
+        w.baseStyle = style or ''
         if style:
             w.setStyleSheet(style)
 
         w.regionName = name
+        w.fontScale = self.fontScale
         if name in self.regions:
             logging.warning('region %s is defined by more than one layout in '
                             'use - the later page wins', name)

@@ -3,26 +3,18 @@ description: Butterflies over a bright meadow, dark-blue clock
 
 background: 'background.png'
 
-
-# art the shipped plugins carry; a theme picks which set
 kind-settings:
   analog-clock:       {clock-images-folder: darkblue}
   current-conditions: {icons-folder: icons-darkblue}
   forecast:           {icons-folder: icons-darkblue}
 
 default:
-  font-size: 0.02        # a fraction of the screen height
+  font-size: 0.02
   font-family: Arial
   background-color: transparent
-  # this background is bright, so the clock is dark:
-  # #bef is for the dark ones and gives 1.7:1 here, which is unreadable
   color: '#042299'
 
 borders:
-  # a 3x3 sheet, so the slice is a third of it - the art describes its own
-  # geometry and this file cannot disagree with it.  width is a fraction of
-  # screen height, so a frame is the same weight on a small box as on a big
-  # one, and the same at 800x600 as at 1920x1080.
   default:
     art: 'frame.png'
     width: 0.012

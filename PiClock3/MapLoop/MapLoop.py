@@ -72,7 +72,7 @@ class MapLoop(Plugin):
             self.nameLabel.setObjectName("mapname")
             self.nameLabel.setGeometry(rr.x(), rr.y(), rr.width(),
                                        int(rr.height() * 0.16))
-            props = self.piclock.scaleFont(
+            props = self.scaleFont(
                 {'font-size': self.config['label-size'],
                  'color': self.piclock.expand(self.config['label-color']),
                  'background-color': 'transparent'},

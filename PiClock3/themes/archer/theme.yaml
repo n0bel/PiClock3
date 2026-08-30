@@ -4,23 +4,18 @@ description: An archer against an orange sky, light-blue clock
 background: 'background.png'
 
 
-# art the shipped plugins carry; a theme picks which set
 kind-settings:
   analog-clock:       {clock-images-folder: lightblue}
   current-conditions: {icons-folder: icons-lightblue}
   forecast:           {icons-folder: icons-lightblue}
 
 default:
-  font-size: 0.02        # a fraction of the screen height
+  font-size: 0.02
   font-family: Arial
   background-color: transparent
   color: '#bef'
 
 borders:
-  # a 3x3 sheet, so the slice is a third of it - the art describes its own
-  # geometry and this file cannot disagree with it.  width is a fraction of
-  # screen height, so a frame is the same weight on a small box as on a big
-  # one, and the same at 800x600 as at 1920x1080.
   default:
     art: 'frame.png'
     width: 0.012

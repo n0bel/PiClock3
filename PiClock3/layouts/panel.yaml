@@ -1,0 +1,32 @@
+name: Panel
+description: Designed for a 4:3 panel - conditions and radars left, clock center, forecast right
+
+provides: [current, maps, clock, date, bottom, forecast]
+
+designed-for: '4:3'
+
+regions:
+
+  date:     {left: 0.26, right: 0.26, top: 0.0, height: 0.08, style: date}
+
+  current:  {left: 0.0,  top: 0.0,    width: 0.26, height: 0.38}
+
+  maps:     {left: 0.0,  top: 0.38,   width: 0.26, height: 0.62,
+             border: radar, repeat: {count: 2, direction: down}}
+
+  forecast: {right: 0.0, top: 0.0,    width: 0.26, height: 1.0,
+             border: true, repeat: {count: 9, direction: down}}
+
+  clock:    {width: 0.44, aspect: 1.0, horizontal-center: 0.0,
+             vertical-center: 0.0}
+
+  bottom:   {left: 0.26, right: 0.26, bottom: 0.0, height: 0.10,
+             style: bottom}
+
+layout-style-settings:
+  date:
+    font-size: 0
+    qproperty-alignment: AlignCenter
+  bottom:
+    font-size: 0
+    qproperty-alignment: AlignCenter
