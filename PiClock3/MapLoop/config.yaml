@@ -1,6 +1,13 @@
 kind: radar
 interval: 10
 frames: 7
+frame-opacity: 1.0
+
+# a second style of base map drawn over the radar, for labels and roads
+# the radar would otherwise cover.  Unset draws no such layer at all.
+overlay-style: ''
+overlay-opacity: 1.0
+overlay-provider: ''
 dwell: 200
 hold: 1200
 

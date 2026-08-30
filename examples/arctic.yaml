@@ -50,6 +50,17 @@ kind-settings:
     base-provider: mapbox        # or googlemaps, if that is the key you got
     frame-provider: librewxr     # or rainviewer
 
+    # Two Mapbox styles by SerBrynden, drawn from a dark theme so the radar
+    # colors carry: ground and water under the radar, and boundaries, roads
+    # and names over it.  A storm that fills the box no longer hides where
+    # it is.  Both are read with your own key.
+    style:         serbrynden/cmtb05qoy000401sk73c24q61
+    overlay-style: serbrynden/cmtb066o1000l01snc11ne90m
+
+    # the overlay is mostly transparent already - lower this to soften
+    # the lines rather than to see through them
+    overlay-opacity: 1.0
+
 widgets:
   clock:  {plugin: PiClock3.AnalogClock, region: clock}
 # clock:  {plugin: PiClock3.DigitalClock, region: clock}

@@ -28,6 +28,8 @@ class MapLoop(Plugin):
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
         self.baseProvider = self.piclock.plugins[self.config['base-provider']]
+        self.overlayProvider = self.piclock.plugins[
+            self.config.get('overlay-provider') or self.config['base-provider']]
         self.frameProvider = self.piclock.plugins[self.config['frame-provider']]
         self.view = None
         self.mapPixmap = None
@@ -59,7 +61,17 @@ class MapLoop(Plugin):
         logger.debug("maploop geom %s", self.frameLabel.frameRect())
         self.frameLabel.setStyleSheet("#frameLabel { background-color: transparent; }")
 
-        self.markerLabel = QLabel(self.frameLabel)
+        # a second style of base map over the radar - labels and roads that
+        # would be lost under it.  No style named, no layer.
+        self.overlayLabel = None
+        if self.config.get('overlay-style'):
+            self.overlayLabel = QLabel(self.frameLabel)
+            self.overlayLabel.setObjectName("overlayLabel")
+            self.overlayLabel.setGeometry(rr.x(), rr.y(), rr.width(), rr.height())
+            self.overlayLabel.setStyleSheet(
+                "#overlayLabel { background-color: transparent; }")
+
+        self.markerLabel = QLabel(self.overlayLabel or self.frameLabel)
         self.markerLabel.setObjectName("markerLabel")
         self.markerLabel.setGeometry(rr.x(), rr.y(), rr.width(), rr.height())
         self.markerLabel.setStyleSheet("#markerLabel { background-color: transparent; }")
@@ -87,6 +99,11 @@ class MapLoop(Plugin):
         self.view = self.mapView()
         logger.debug('maploop view %s', self.view)
         self.baseProvider.getMapPixmap(self.view, self.config, self.gotMapPixmap)
+        if self.overlayLabel is not None:
+            overlay = dict(self.config)
+            overlay['style'] = self.config['overlay-style']
+            self.overlayProvider.getMapPixmap(self.view, overlay,
+                                              self.gotOverlayPixmap)
         self.interval = 60 * self.config.interval
         self.frameCount = self.config.frames
         self.intervalTimer = QTimer()
@@ -137,6 +154,11 @@ class MapLoop(Plugin):
         self.baseLabel.setPixmap(pixmap)
         self.makeMarkerPixmap()
         
+    def gotOverlayPixmap(self, pixmap):
+        logger.info("maploop got overlay pixmap")
+        self.overlayLabel.setPixmap(
+            self.fade(pixmap, self.config['overlay-opacity']))
+
     def makeMarkerPixmap(self):
         self.markerPixmap = QPixmap(self.mapPixmap.size())
         self.markerPixmap.fill(Qt.transparent)
@@ -213,5 +235,26 @@ class MapLoop(Plugin):
 
     def gotFramePixmap(self, pixmap, timeSlot):
         logger.debug("got radar pixmap %s %s %s", pixmap, timeSlot, time.asctime(time.localtime(timeSlot)))
-        self.framePixmaps[timeSlot] = pixmap
+        self.framePixmaps[timeSlot] = self.fadeFrame(pixmap)
         self.getNextNeededFrame()
+
+    def fadeFrame(self, pixmap):
+        return self.fade(pixmap, self.config['frame-opacity'])
+
+    def fade(self, pixmap, opacity):
+        """a layer at the opacity asked for, composited once as it arrives.
+
+        An opacity effect on the label would redo this on every repaint, and
+        the loop repaints several times a second.
+        """
+        opacity = float(opacity)
+        if opacity >= 1.0:
+            return pixmap
+        faded = QPixmap(pixmap.size())
+        faded.fill(Qt.transparent)
+        painter = QPainter()
+        painter.begin(faded)
+        painter.setOpacity(max(0.0, opacity))
+        painter.drawPixmap(0, 0, pixmap)
+        painter.end()
+        return faded
