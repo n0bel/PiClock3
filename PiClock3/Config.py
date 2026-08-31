@@ -52,14 +52,22 @@ class Config(DottedDict):
             loader_class=yaml.FullLoader)  # , base_dir='/your/conf/dir')
 
     def load(self, name):
-        if os.path.isfile(name):
-            v2 = yaml.load(
-                open(name, "r"), Loader=yaml.FullLoader
-            )
-            # the included files were substituted as they were read; this is
-            # the outermost one, which nothing else has seen
-            v2 = thisFolder(v2, os.path.dirname(name))
-            self._merge(v2, self)
+        """the config, or a sentence saying it is not there.
+
+        Failing here rather than carrying on empty: everything downstream
+        assumes a config has pages and widgets, so a name that is not there
+        surfaces much later as an attribute missing for no apparent reason.
+        """
+        if not os.path.isfile(name):
+            raise SystemExit("config file not found: %s\n" % name)
+
+        v2 = yaml.load(
+            open(name, "r"), Loader=yaml.FullLoader
+        )
+        # the included files were substituted as they were read; this is
+        # the outermost one, which nothing else has seen
+        v2 = thisFolder(v2, os.path.dirname(name))
+        self._merge(v2, self)
 
         self._overrides(self)
 
