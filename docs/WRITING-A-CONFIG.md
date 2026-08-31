@@ -182,6 +182,141 @@ the rest while the other three take the shared block.
 overwrote it".**  Anything a plugin, theme or layout carries can be reached
 from the config instead, in a file `git pull` will not touch.
 
+## What a radar draws
+
+A `MapLoop` is several things stacked and flattened into one picture per
+frame, bottom to top: the base map, the radar, an overlay if you asked for
+one, your markers, the base map's own logo and credit, and the captions.
+
+```yaml
+kind-settings:
+  radar:
+    base-provider: mapbox
+    frame-provider: librewxr
+    style:           serbrynden/cmtb05qoy000401sk73c24q61
+    overlay-style:   serbrynden/cmtb066o1000l01snc11ne90m
+    overlay-opacity: 1.0
+    frame-opacity:   1.0
+```
+
+**`overlay-style:` is a second base map drawn *over* the radar**, so the
+boundaries, roads and place names a storm would otherwise bury stay readable.
+It is a style whose ground and water are transparent, leaving only the lines
+and labels.  Name none and no such layer is built at all.
+`overlay-provider:` takes it from a different provider than the base map;
+unset, it uses the same one.
+
+**`frame-opacity:` fades the radar instead**, for a base map worth seeing
+through.  It is the other way to solve the same problem, and it costs you
+some of the weather: below about 0.45 the light returns start to disappear.
+
+Both composite once as the picture arrives rather than on every repaint, so
+neither costs anything while the loop runs.
+
+**A base map's own logo and credit are lifted back over the radar**, because
+the radar would otherwise cover them and both Mapbox and Google say in as
+many words that their attribution must not be obscured.  That happens
+whatever your captions say.  `ignore-attribution-mask: true` turns it off,
+and the provider's terms are the thing to read before you do.
+
+**If the base map cannot be had, the radar is drawn on plain grey** and the
+map keeps asking for it - quickly at first, then backing off to hourly.
+Nothing is credited on the grey, because it is nobody's imagery.  A map that
+has no radar yet still draws everything else, so the markers and the labels
+do not wait on the weather.
+
+## `captions:` - text over a radar
+
+A `MapLoop` draws its own text, composited into each frame rather than laid
+over it, so nothing that happens to the radar can fade it or cover it.
+
+Say nothing and you get the line every map carries - the frame provider's own
+stamp, `14:20 LibreWXR`, top left and outlined - plus the map's `label:` top
+right if it has one.  Only the frame provider is named there: radar tiles
+carry nothing of their own, while a base map arrives with its own logo and
+credit already drawn into it.
+
+Writing a list replaces that one rather than adding to it:
+
+```yaml
+kind-settings:
+  radar:
+    captions:
+      - text: '{plugin-data.frame-time:%H:%M} {plugin-data.frame-attribution}'
+        left: 0.02
+        top: 0.02
+        size: 18px
+        outline: true
+      - text: 'Regional'
+        right: 0.02
+        top: 0.02
+        size: 0.05
+        color: '#bef'
+      - '{location.latitude}, {location.longitude}'
+```
+
+**A caption is placed the way a layout places a region**, against the map
+instead of against the page: `left`, `right`, `top`, `bottom`,
+`horizontal-center` and `vertical-center`, all fractions, and a side that
+would run off an edge is held at it.  It needs no `width` or `height` - the
+text's own size is what gets placed.
+
+| | |
+|---|---|
+| `text` | the only one needed.  Expanded when it is drawn, so `{...}` reaches anything |
+| `left` `right` `top` `bottom` | fractions of the map, as in a layout |
+| `horizontal-center` `vertical-center` | offset from the middle, as in a layout |
+| `size` | a bare number is a fraction of the **screen's** height, one with units is used as written |
+| `color` | anything Qt reads as a color |
+| `outline` | `true` for one derived from the text's own color, or name one.  Absent means none |
+
+A bare string, as the third entry above, is an entry with everything else left
+to the defaults - top left, `caption-size` and `caption-color`, which are also
+the fallback for any entry that omits them.  Only one caption can be the one
+that says nothing; give the others a place.
+
+**`size` is a fraction of the screen, not of the map**, which is the one place
+a caption departs from a layout.  A clock's radars are not all one size - the
+classic layout at 800x600 gives a 200px cell and bigmaps at 1080p an 850px one
+- so a fraction of the map that reads on one is unreadable or enormous on the
+other.  A caption should be a size on the screen you are looking at, the same
+reasoning behind a theme's `font-size` being a fraction of the page.  The
+default, `caption-size: 0.018`, is about 11px at 800x600 and 19px at 1080p.
+
+`label-size` keeps its old meaning, a fraction of the map, and is converted
+when it builds its entry - so a config written before this draws its map name
+at the size it always did.
+
+**Nothing moves out of the way of anything.**  The bottom of a map is where a
+base map's own logo and credit sit, so a caption put there lands on top of
+them.  That is the trade for `bottom: 0.0` meaning the bottom of the map and
+nothing else - the alternative was captions shifting by an amount that depends
+on which provider drew the map and how big the region is, which no config
+could predict.
+
+`text` reaches the whole namespace, and the map publishes into it:
+`{plugin-data.frame-time}` is the moment the frame showing was taken and takes
+a format, `{plugin-data.frame-caption}` is what the frame provider calls it,
+and `{plugin-data.frame-attribution}`, `{plugin-data.base-attribution}` and
+`{plugin-data.overlay-attribution}` are what each service is called.
+
+**A list replaces, and cannot be adjusted in part.**  The merge that assembles
+settings recurses into blocks but assigns a list outright, so one written on a
+widget replaces one written in `kind-settings:` entirely - restate the whole
+list rather than expecting to change one entry of it.  `label:` and its two
+settings are ignored once a list is given, and the log says so.
+
+**Attribution is the one thing to be careful about.**  A base map's own logo
+and credit are lifted back over the radar whatever the captions say, so no
+list can lose those; `ignore-attribution-mask: true` turns that off, and the
+provider's terms are the thing to read first.  The frame provider is not
+protected that way, because radar tiles carry no mark of their own - a list
+that never names it leaves RainViewer or LibreWXR uncredited, and the log
+warns when one does not.
+
+`examples/captions.yaml` is a clock with all of this on it, one treatment per
+radar.
+
 ## `locale:`
 
 A language file lists the locales it answers to, and the first one the

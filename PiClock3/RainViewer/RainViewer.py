@@ -13,7 +13,6 @@ INDEX_REFRESH = 300
 
 # facts about the service, not settings
 INDEX = 'https://api.rainviewer.com/public/weather-maps.json'
-ATTRIBUTION = 'RainViewer'
 
 
 class RainViewer(Plugin):
@@ -24,6 +23,8 @@ class RainViewer(Plugin):
     the other compatibility, and a shared base would absorb every divergence
     as a conditional.
     """
+
+    ATTRIBUTION = 'RainViewer'
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
@@ -44,19 +45,19 @@ class RainViewer(Plugin):
 
     def gotIndex(self, error, data, params):
         if error:
-            logger.warning("%s index %s failed: %s", ATTRIBUTION, INDEX, error)
+            logger.warning("%s index %s failed: %s", self.ATTRIBUTION, INDEX, error)
             return
         try:
             index = json.loads(bytes(data).decode('utf-8'))
         except ValueError:
-            logger.warning("%s index %s is not json", ATTRIBUTION, INDEX)
+            logger.warning("%s index %s is not json", self.ATTRIBUTION, INDEX)
             return
         self.host = index['host']
         radar = index.get('radar', {})
         frames = radar.get('past', []) + radar.get('nowcast', [])
         self.frames = {int(f['time']): f['path'] for f in frames}
         self.order = sorted(self.frames)
-        logger.info("%s index: %d frames, newest %s", ATTRIBUTION,
+        logger.info("%s index: %d frames, newest %s", self.ATTRIBUTION,
                     len(self.order),
                     time.asctime(time.localtime(self.order[-1]))
                     if self.order else 'none')
@@ -95,10 +96,12 @@ class RainViewer(Plugin):
         def tileurl(z, x, y):
             return tail % (z, x, y)
 
-        # the radar frame is stamped in the clock's zone, so a London
-        # config reads London time on the radar too
-        caption = "{0:%H:%M} ".format(
-            self.piclock.localtime(timeSlot)) + ATTRIBUTION
         TileFetcher(view.center, view.zoom,
                     view.rect.width(), view.rect.height(),
-                    tileurl, callback, caption=caption, params=timeSlot)
+                    tileurl, callback, params=timeSlot)
+
+    def frameCaption(self, timeSlot):
+        # the radar frame is stamped in the clock's zone, so a London
+        # config reads London time on the radar too
+        return "{0:%H:%M} ".format(
+            self.piclock.localtime(timeSlot)) + self.ATTRIBUTION

@@ -16,3 +16,17 @@ hold: 1200
 label: ''
 label-size: 0.10          # a fraction of the map's height
 label-color: '#bef'
+
+# text drawn over the finished map.  Empty builds the list from label: above
+# and the attribution line every map must carry; a list of your own replaces
+# both.  See docs/WRITING-A-CONFIG.md.
+captions: []
+caption-size: 0.018       # a fraction of the screen's height, not the map's
+caption-color: '#fff'
+
+# a base map arrives with the provider's own logo and credit drawn into it,
+# and they are lifted back over the radar so the weather cannot bury them.
+# Turn that off and the radar covers them - which is the provider's terms to
+# read, not ours, and is also the way out if a provider's mark is somewhere
+# this does not expect and the restored band covers weather for nothing.
+ignore-attribution-mask: false

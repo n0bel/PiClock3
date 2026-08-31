@@ -5,7 +5,6 @@ from ..Tiler import TileFetcher
 
 # facts about the service, not settings
 HOST = 'https://api.librewxr.net'
-ATTRIBUTION = 'LibreWXR'
 
 # Every frame is named after its own timestamp on a ten minute grid, so the
 # frame list is arithmetic and needs no index.  The current slot always
@@ -23,6 +22,8 @@ class LibreWXR(Plugin):
     opaque hash that can only be learned by fetching one.  Keeping them
     separate is what lets this one be arithmetic.
     """
+
+    ATTRIBUTION = 'LibreWXR'
 
     def start(self):
         return
@@ -59,10 +60,12 @@ class LibreWXR(Plugin):
         def tileurl(z, x, y):
             return tail % (z, x, y)
 
-        # the radar frame is stamped in the clock's zone, so a London
-        # config reads London time on the radar too
-        caption = "{0:%H:%M} ".format(
-            self.piclock.localtime(timeSlot)) + ATTRIBUTION
         TileFetcher(view.center, view.zoom,
                     view.rect.width(), view.rect.height(),
-                    tileurl, callback, caption=caption, params=timeSlot)
+                    tileurl, callback, params=timeSlot)
+
+    def frameCaption(self, timeSlot):
+        # the radar frame is stamped in the clock's zone, so a London
+        # config reads London time on the radar too
+        return "{0:%H:%M} ".format(
+            self.piclock.localtime(timeSlot)) + self.ATTRIBUTION

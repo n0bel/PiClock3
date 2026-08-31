@@ -18,6 +18,14 @@ logger = logging.getLogger(__name__)
 
 class GoogleMaps(Plugin):
 
+    ATTRIBUTION = 'Google'
+
+    # the static image carries the Google logo bottom left and a data credit
+    # bottom right, and the terms say they must never be obscured.  Measured
+    # 2026-08-31: exactly 20px at every size from 200x200 to 640x640 - it does
+    # not scale - and 16px at 160 wide, where the credit is dropped entirely.
+    BAND = 20
+
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
 
@@ -65,7 +73,9 @@ class GoogleMaps(Plugin):
     def gotMapPixmap(self, error, data, callback, params):
         logger.debug("googlemaps gotpixmap %s", error)
         frameRect = params['frameRect']
+        rsize = params['rsize']
         p = QPixmap()
+        mask = None
         if error == QNetworkReply.NoError:
             p.loadFromData(data)
             logger.debug("mapPixmap %s", p.size())
@@ -73,5 +83,7 @@ class GoogleMaps(Plugin):
                 p = p.scaled(frameRect.size(),
                     Qt.KeepAspectRatio,
                     Qt.SmoothTransformation)
-        callback(p)
+            if not p.isNull():
+                mask = self.bottomBandMask(p, rsize, self.BAND)
+        callback(p, mask)
         return

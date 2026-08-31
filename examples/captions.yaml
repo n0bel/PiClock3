@@ -1,0 +1,166 @@
+# PiClock3 - Captions.
+#
+# The same clock as default.yaml, with each of its four radars captioned a
+# different way, so the two ways of asking can be seen side by side.
+#
+# There are two, and they are mutually exclusive.  Say nothing and a list is
+# built for you from label: and the attribution line every map carries.  Write
+# captions: and that list is used instead - it replaces rather than adds to,
+# because a list is assigned outright rather than merged, so a narrower place
+# restates the whole list rather than adjusting one entry of it.
+#
+# What no config can remove: a base map arrives with the provider's own logo
+# and credit drawn into it, and those are lifted back over the radar whatever
+# the captions say.  ignore-attribution-mask: true turns that off, and the
+# provider's terms are the thing to read before doing so.
+#
+# clock page   radar1  nothing said - what every map does by default
+#              radar2  label: only - the older keys, still building a list
+# maps page    radar3  a written list, long form
+#              radar4  the short form, two entries stacked in one corner
+pages:
+  clock-page: {order: 0, layout: classic, theme: circuit}
+  maps-page:  {order: 1, layout: bigmaps, theme: circuit}
+
+language: en
+
+location:
+  latitude: 45
+  longitude: -93
+  timezone:
+
+providers:
+  openmeteo:  {plugin: PiClock3.OpenMeteo}
+  metar:      {plugin: PiClock3.Metar, METAR: KLVN}
+  mapbox:     {plugin: PiClock3.Mapbox}
+  googlemaps: {plugin: PiClock3.GoogleMaps}
+  rainviewer: {plugin: PiClock3.RainViewer}
+  librewxr:   {plugin: PiClock3.LibreWXR}
+
+kind-settings:
+  radar:
+    base-provider: mapbox
+    frame-provider: librewxr
+
+widgets:
+  clock:  {plugin: PiClock3.AnalogClock, region: clock}
+  date:   {plugin: PiClock3.Date,   region: date}
+  astral: {plugin: PiClock3.Astral, region: bottom}
+
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+
+  maps-caption:
+    plugin: PiClock3.DigitalClock
+    region: caption
+    format: "{plugin-data.now:%a %b} {plugin-data.now.day} {plugin-data.now.year}   {plugin-data.now:%H:%M:%S}"
+    lowercase: false
+    font-size: 0.75
+
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    conditions-provider: metar
+
+  # Nothing said about captions.  The line is the frame provider's own -
+  # '14:20 LibreWXR' - top left, outlined so it carries over bright radar.
+  # Only the frame provider is named: radar tiles have nothing of their own,
+  # while the base map's mark is already on the map and put back on top.
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
+    style: mapbox/satellite-streets-v10
+    zoom: 7
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          latitude: '{location.latitude}'
+          longitude: '{location.longitude}'
+        color: red
+        size: large
+        image: teardrop-home
+
+  # label: and its two settings still work and build the second entry, so a
+  # config written before captions: existed draws what it always drew.
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    style: mapbox/satellite-streets-v10
+    zoom: 11
+    label: Close in
+    label-size: 0.09
+    label-color: '#bef'
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+  # A written list.  Anything in braces is looked up when the caption is
+  # drawn, so these reach the config, the language, and what the map itself
+  # publishes - the frame's own time, and what each provider is called.
+  #
+  # Placement is a layout's: left, right, top, bottom and the two centers,
+  # all fractions of the map, and a side that would run off an edge is held
+  # at it.  size is the exception - a bare number there is a fraction of the
+  # screen, because a clock's radars are not all one size and a caption
+  # should read the same on all of them.  One with units is used as written.
+  #
+  # Nothing moves out of the way of anything: the bottom of the map is where
+  # the base map's own logo and credit sit, so a caption put there lands on
+  # top of them.
+  radar3:
+    plugin: PiClock3.MapLoop
+    region: radars.1
+    style: mapbox/satellite-streets-v10
+    zoom: 7
+    captions:
+      - text: '{plugin-data.frame-time:%H:%M} {plugin-data.frame-attribution}'
+        left: 0.02
+        top: 0.02
+        size: 18px
+        outline: true
+      - text: 'Regional'
+        right: 0.02
+        top: 0.02
+        size: 0.03
+        color: '#bef'
+        outline: '#012'
+      - text: 'over {plugin-data.base-attribution}'
+        horizontal-center: 0.0
+        top: 0.09
+        size: 0.014
+        color: '#ffd'
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+  # The short form: a bare string is an entry with everything else left to
+  # the defaults, which puts it in the top left.  Only one can be, so the
+  # second says where it goes - under the first, since nothing stacks by
+  # itself.  Neither asks for an outline, so both are drawn plain.
+  #
+  # Not along the bottom: that is where the base map's own logo and credit
+  # are, and a caption there would sit on top of them.
+  radar4:
+    plugin: PiClock3.MapLoop
+    region: radars.2
+    style: mapbox/satellite-streets-v10
+    zoom: 11
+    captions:
+      - '{plugin-data.frame-caption}'
+      - text: '{location.latitude}, {location.longitude}'
+        left: 0.02
+        top: 0.06
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+folders:
+  marker: PiClock3/markers
+
+logging-level: debug
+
+apikeys: !include ApiKeys.yaml

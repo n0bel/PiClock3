@@ -243,6 +243,65 @@ installed.
 gone; the Qt names arrive by themselves and everything else comes
 through `kind-settings`.
 
+## Say what your service must be credited as
+
+Every provider carries a name, and the default is nothing:
+
+```python
+class LibreWXR(Plugin):
+    ATTRIBUTION = 'LibreWXR'
+```
+
+A widget reaches it through `attribution()`, and a caption reaches it as
+`{plugin-data.frame-attribution}` or `{plugin-data.base-attribution}`.  A
+provider that needs no credit says nothing and appears nowhere.
+
+**A frame provider can stamp each frame itself.**  `frameCaption(timeSlot)`
+returns what to write over that frame, and the default is the time alone.
+Override it to add your name, or to tell an observation from a nowcast:
+
+```python
+def frameCaption(self, timeSlot):
+    # in the clock's zone, so a London config reads London time on the radar
+    return "{0:%H:%M} ".format(
+        self.piclock.localtime(timeSlot)) + self.ATTRIBUTION
+```
+
+This is the only credit a radar gets, because radar tiles carry no mark of
+their own.
+
+### If your images arrive with a mark already on them
+
+A base map from a static-image API usually has the provider's logo and credit
+drawn into the picture, and a radar painted over it would bury them - which
+both Mapbox and Google forbid in as many words.  So send a mask with the
+pixmap saying where your marks are, and core lifts exactly those pixels back
+over everything drawn on top:
+
+```python
+callback(p, self.bottomBandMask(p, rsize, 20))
+```
+
+`bottomBandMask` covers the common case, a full-width band across the bottom.
+The mask is an alpha `QImage` the size of the pixmap you are handing over, so
+a mark somewhere else, or one with a soft edge, is yours to paint.
+
+Two rules if you paint your own:
+
+- **Feather only edges that are inside the picture.**  An edge lying on the
+  pixmap's own boundary has nothing to fade into, and softening it lets the
+  radar bleed in at the very edge.
+- **Grow outward from your mark, never inward.**  Softening the inside of the
+  area your logo occupies makes the logo itself part-transparent, which is
+  the thing this exists to prevent.
+
+Measure rather than guess where your marks land, at several requested sizes:
+they are usually a fixed number of pixels anchored to an edge, so what
+fraction of the image they occupy changes with the size while the pixels do
+not.  Send the mask through the callback rather than storing it on yourself -
+one provider instance serves every map on the clock, so anything kept on
+`self` belongs to whichever request finished last.
+
 ## Two rules worth reading before you publish
 
 Keys travel in URLs, so anything logging a URL logs the key - see

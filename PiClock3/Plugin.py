@@ -5,8 +5,8 @@ import sys
 
 logger = logging.getLogger(__name__)
 
-from PyQt5.QtCore import (QObject)
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import (QObject, QPointF)
+from PyQt5.QtGui import QColor, QImage, QLinearGradient, QPainter
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect
 
 DASH = re.compile(r'%-([a-zA-Z])')
@@ -70,6 +70,53 @@ class Plugin(QObject):
         """the color this widget draws in, whoever answered."""
         found = self.config.get('color') or self.themeDefault('color')
         return self.piclock.expand(found) if found else default
+
+    # what this service must be credited as.  A service that needs no credit
+    # says nothing and contributes nothing to the line.
+    ATTRIBUTION = ''
+
+    def attribution(self):
+        return self.ATTRIBUTION
+
+    def frameCaption(self, timeSlot):
+        """what to write over the frame for this time slot.
+
+        A frame provider that knows more than the time - that this one is a
+        nowcast rather than an observation, say - overrides this.
+        """
+        return "{0:%H:%M}".format(self.piclock.localtime(timeSlot))
+
+    def bottomBandMask(self, pixmap, rsize, px, feather=0.35):
+        """an alpha mask over a full-width band across the bottom of pixmap.
+
+        `px` is measured in the response's own pixels, before whatever
+        gotMapPixmap scaled it by, so it is scaled the same way here.
+
+        The band is fully opaque and the softening is added *above* it: a mark
+        sitting at the top of the band would otherwise go partly transparent,
+        which is the obscuring this exists to prevent.  The left, right and
+        bottom edges stay hard because they lie on the pixmap's own boundary,
+        where there is nothing to fade into.
+        """
+        w, h = pixmap.width(), pixmap.height()
+        band = max(1, round(px * h / max(1, rsize.height())))
+        fade = max(0, round(band * feather))
+        top = h - band
+
+        mask = QImage(pixmap.size(), QImage.Format_Alpha8)
+        mask.fill(0)
+        painter = QPainter()
+        painter.begin(mask)
+        painter.fillRect(0, top, w, band, QColor(255, 255, 255, 255))
+        if fade:
+            ramp = QLinearGradient(QPointF(0, top - fade), QPointF(0, top))
+            ramp.setColorAt(0.0, QColor(255, 255, 255, 0))
+            ramp.setColorAt(1.0, QColor(255, 255, 255, 255))
+            painter.fillRect(0, top - fade, w, fade, ramp)
+        painter.end()
+        logger.debug("%s branding band %dpx, %dpx feather, in %dx%d",
+                     self.name, band, fade, w, h)
+        return mask
 
     def applyEffect(self, widget, height=None):
         """the effect: setting, on one widget.

@@ -1,7 +1,7 @@
 import logging
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor, QFont, QImage, QPainter, QPixmap
+from PyQt5.QtGui import QImage, QPainter, QPixmap
 from PyQt5.QtNetwork import QNetworkReply
 
 from .Projection import getCorners, getTileXY, LatLng
@@ -14,14 +14,13 @@ class TileFetcher():
     fetchers = []
 
     def __init__(self, center, zoom, width, height, tileurl, callback,
-                 caption=None, tilesize=256, params=None):
+                 tilesize=256, params=None):
         self.center = center
         self.zoom = zoom
         self.width = width
         self.height = height
         self.tileurl = tileurl
         self.callback = callback
-        self.caption = caption
         self.tilesize = tilesize
         self.params = params
 
@@ -100,21 +99,4 @@ class TileFetcher():
         yo = int((int(self.origin['Y']) - self.origin['Y']) * ts)
         cropped = full.copy(-xo, -yo, self.width, self.height)
 
-        if self.caption:
-            self.drawCaption(cropped)
         return QPixmap(cropped)
-
-    def drawCaption(self, image):
-        painter = QPainter()
-        painter.begin(image)
-        painter.setRenderHint(QPainter.TextAntialiasing)
-        painter.setFont(QFont("Arial", 8))
-        x = int(self.width * 0.03)
-        y = int(self.height * 0.03)
-        painter.setPen(QColor(63, 63, 63, 255))
-        painter.drawText(x - 1, y - 1, self.caption)
-        painter.drawText(x + 2, y + 1, self.caption)
-        painter.setPen(QColor(255, 255, 255, 255))
-        painter.drawText(x, y, self.caption)
-        painter.drawText(x + 1, y, self.caption)
-        painter.end()

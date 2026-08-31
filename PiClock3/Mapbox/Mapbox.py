@@ -18,6 +18,15 @@ logger = logging.getLogger(__name__)
 
 class MapBox(Plugin):
 
+    ATTRIBUTION = 'Mapbox'
+
+    # the static image carries its own logo and credit along the bottom, and
+    # the terms say they must not be obscured.  Measured 2026-08-31: 15px at
+    # 200 wide, 17px through 384, stepping to 22-25px at 450 where a larger
+    # asset takes over.  Rounded up past the spread - covering a little extra
+    # hides some weather, covering too little hides attribution.
+    BAND, WIDE_BAND, WIDE = 18, 26, 450
+
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
 
@@ -64,9 +73,11 @@ class MapBox(Plugin):
         return
 
     def gotMapPixmap(self, error, data, callback, params):
-        logger.debug("mapbox gotpixmap %s", error)   
+        logger.debug("mapbox gotpixmap %s", error)
         frameRect = params['frameRect']
+        rsize = params['rsize']
         p = QPixmap()
+        mask = None
         if error == QNetworkReply.NoError:
             p.loadFromData(data)
             logger.debug("mapPixmap %s", p.size())
@@ -74,5 +85,9 @@ class MapBox(Plugin):
                 p = p.scaled(frameRect.size(),
                     Qt.KeepAspectRatio,
                     Qt.SmoothTransformation)
-        callback(p)
+            if not p.isNull():
+                band = self.WIDE_BAND if rsize.width() >= self.WIDE \
+                    else self.BAND
+                mask = self.bottomBandMask(p, rsize, band)
+        callback(p, mask)
         return
