@@ -2,10 +2,11 @@
 
 ```
 python3 PyQtPiClock3.py [config.yaml] [--set key=value ...] [--at when]
+                        [--geometry WIDTHxHEIGHT]
 ```
 
-There are three, and `--help` prints them.  This page is mostly about why
-they exist, because that is what tells you when to reach for one.
+There are four, and `--help` prints them.  This page is mostly about why they
+exist, because that is what tells you when to reach for one.
 
 ## Why there are any
 
@@ -21,9 +22,10 @@ keys in it.  Trying a theme by editing that file means breaking the working
 clock to find out whether the theme is any good, and remembering to put it
 back afterwards.
 
-`--set` is that loop without the editing, and `--at` reaches the states you
-cannot reach by waiting.  Neither is needed to run a clock.  They exist for
-the person changing one.
+`--set` is that loop without the editing, `--at` reaches the states you
+cannot reach by waiting, and `--geometry` reaches the screens you do not
+have.  None is needed to run a clock.  They exist for the person changing
+one.
 
 ## `config.yaml` - which config to run
 
@@ -215,6 +217,33 @@ set to midwinter shows midwinter's sun over this afternoon's rain.  That is
 a limit of where the data comes from rather than a decision, and it is the
 one thing to remember before reading anything into a screenshot taken this
 way.
+
+## `--geometry WIDTHxHEIGHT` - a screen you do not have
+
+```
+python3 PyQtPiClock3.py --geometry 800x600
+python3 PyQtPiClock3.py examples/london.yaml --geometry 1920x1080+100+100
+```
+
+Runs in a window of that size instead of filling the screen.  `+X+Y` places
+it; without one it lands wherever the window manager puts it.  `geometry:` in
+a config is the permanent version, though a config is an odd place for it.
+
+**It is not a scaled picture of another screen.**  Every size in a layout or
+a theme is a fraction of the screen, and a layout is corrected for the shape
+it finds against the shape it says it was `designed-for`, so the clock lays
+itself out for the size given and what comes out is what that screen would
+show.  Text is sized and fitted against the regions that result, not shrunk
+afterwards.
+
+Which makes it the way to see whether a layout survives a shape it was not
+drawn for - `classic` says `16:9`, so `--geometry 1024x768` shows what the
+correction does with it, and `--set pages.clock-page.layout=panel` beside it
+shows a layout drawn for 4:3 instead.
+
+The one thing it cannot tell you is how the clock behaves on a machine that
+is not this one.  Fonts, Qt version and how fast the maps composite are all
+still this machine's.
 
 ## `--help`, `-h`
 

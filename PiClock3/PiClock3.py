@@ -105,7 +105,7 @@ class PiClock3(QWidget):
         super().__init__()
         # before anything asks the time
         self.offset = self.startAt()
-        self.screen = QApplication.desktop().screenGeometry()
+        self.screen = self.screenGeometry()
         logging.info("%s" % self.screen)
         # fontScale is per region; a region keeps the one it was built under
         self.pageRatio = 1.0
@@ -120,9 +120,32 @@ class PiClock3(QWidget):
         self.config['language'] = Words(self)
         self.initData()
         self.initWidgets()
-        self.showFullScreen()
+        if self.config.get('geometry'):
+            self.setGeometry(self.screen)
+            self.show()
+        else:
+            self.showFullScreen()
         self.nextPage(0)
         logging.info("Startup Finished.")
+
+    def screenGeometry(self):
+        """the rectangle the clock lays itself out in.
+
+        geometry: is how a clock drawn for a screen you do not have in front
+        of you can be looked at on the one you do - every size in a layout or
+        a theme is a fraction of this, so what comes out is what that screen
+        would show rather than a scaled picture of it.
+        """
+        want = self.config.get('geometry')
+        if not want:
+            return QApplication.desktop().screenGeometry()
+        size = re.match(r'^\s*(\d+)\s*[xX,]\s*(\d+)'
+                        r'(?:\s*\+\s*(\d+)\s*\+\s*(\d+))?\s*$', str(want))
+        if not size:
+            raise SystemExit(
+                "geometry wants WIDTHxHEIGHT, or WIDTHxHEIGHT+X+Y: %r" % want)
+        w, h, x, y = size.groups()
+        return QRect(int(x or 0), int(y or 0), int(w), int(h))
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_F4:

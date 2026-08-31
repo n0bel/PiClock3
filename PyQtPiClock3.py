@@ -37,6 +37,14 @@ USAGE = """
              Only the clock moves.  The radar still shows what the frame
              server has, because that is all it has.
 
+      --geometry  run in a window of this size instead of filling the
+             screen, which is how to see what a clock looks like on a
+             screen you do not have:
+                              --geometry 800x600
+                              --geometry 1920x1080+100+100
+             Every size in a layout or a theme is a fraction of this, so
+             what comes out is what that screen would show.
+
     Values are read as yaml, so 4 is a number and true is a boolean.  A word
     starting with # is a color rather than a comment.
 """
@@ -61,6 +69,11 @@ def readArgs(args):
             if i >= len(args):
                 raise SystemExit("\n--at wants a date and time\n" + USAGE)
             settings.append('start-at=' + args[i])
+        elif a == '--geometry':
+            i += 1
+            if i >= len(args):
+                raise SystemExit("\n--geometry wants WIDTHxHEIGHT\n" + USAGE)
+            settings.append('geometry=' + args[i])
         elif a.startswith('-'):
             raise SystemExit("\nno such option %r\n" % a + USAGE)
         else:

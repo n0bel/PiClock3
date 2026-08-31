@@ -39,6 +39,7 @@ defaults, or do nothing until you want them.
 | `kind-settings:` / `plugin-settings:` | settings for every widget of a kind, or of a plugin |
 | `folders:` | named paths a setting can expand |
 | `logging-level:` | `debug`, `info`, `warning` |
+| `geometry:` | run in a window of a given size rather than filling the screen |
 | `apikeys:` | pulled in from `ApiKeys.yaml` with `!include` |
 | `locale:` | overrides the locale the language file asks for |
 | `start-at:` | start the clock at another moment and let it run on |
