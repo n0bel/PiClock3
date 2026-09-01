@@ -276,7 +276,9 @@ caption's size follows.  `small`, `mid` and `tiny` are names for three
 proportions of the default.  A fraction rather than a count of pixels
 because a clock's radars are not one size: the classic page's is about a
 third the height of the bigmaps one, and a pin should take the same share of
-each.
+each.  `marker-size:` on the radar is what a marker that says nothing gets,
+so a map full of pins is sized once rather than pin by pin; it defaults
+to 0.2.
 
 **`color:`** tints the picture.  The shipped markers are grey so that
 multiplying them by your color keeps their shading, and the symbol inside
@@ -300,6 +302,27 @@ stamp, `14:20 LibreWXR`, top left and outlined - plus the map's `label:` top
 right if it has one.  Only the frame provider is named there: radar tiles
 carry nothing of their own, while a base map arrives with its own logo and
 credit already drawn into it.
+
+**`label:` is a name for the map**, for a clock showing more than one and no
+other reason - unset, nothing is drawn.  Three settings dress it:
+
+```yaml
+widgets:
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    label: 'Close in'
+    label-size:    0.10     # a fraction of the map's height
+    label-color:   '#bef'
+    label-outline: true     # black or white, taken from label-color
+```
+
+`label-outline:` is off unless asked for, and a color there names one
+outright instead of deriving it.  It is worth asking for over a base map
+light enough to swallow the text: the pale default suits satellite imagery
+and disappears on snow, which is why `examples/mcmurdo.yaml` turns it on.
+The line above it is outlined already, because that one has to survive
+whatever the radar puts underneath.
 
 Writing a list replaces that one rather than adding to it:
 
@@ -333,7 +356,7 @@ text's own size is what gets placed.
 | `text` | the only one needed.  Expanded when it is drawn, so `{...}` reaches anything |
 | `left` `right` `top` `bottom` | fractions of the map, as in a layout |
 | `horizontal-center` `vertical-center` | offset from the middle, as in a layout |
-| `size` | a bare number is a fraction of the **screen's** height, one with units is used as written |
+| `size` | a bare number is a fraction of the map's height, one with units is used as written |
 | `color` | anything Qt reads as a color |
 | `outline` | `true` for one derived from the text's own color, or name one.  Absent means none |
 
@@ -342,17 +365,17 @@ to the defaults - top left, `caption-size` and `caption-color`, which are also
 the fallback for any entry that omits them.  Only one caption can be the one
 that says nothing; give the others a place.
 
-**`size` is a fraction of the screen, not of the map**, which is the one place
-a caption departs from a layout.  A clock's radars are not all one size - the
-classic layout at 800x600 gives a 200px cell and bigmaps at 1080p an 850px one
-- so a fraction of the map that reads on one is unreadable or enormous on the
-other.  A caption should be a size on the screen you are looking at, the same
-reasoning behind a theme's `font-size` being a fraction of the page.  The
-default, `caption-size: 0.018`, is about 11px at 800x600 and 19px at 1080p.
+**`size` is a fraction of the map**, the same way a theme's `font-size` is a
+fraction of the region it lands in, so a caption keeps its share of a small
+radar and a large one.  A clock's radars are not all one size - the classic
+layout stacks two and gives each a third of the screen's height, where
+bigmaps sets two side by side and gives each four fifths - and a caption that
+is a fixed count of pixels is loud on the small one or lost on the large.
+The default, `caption-size: 0.06`, is about 12px on a classic radar at
+800x600 and 21px at 1080p.
 
-`label-size` keeps its old meaning, a fraction of the map, and is converted
-when it builds its entry - so a config written before this draws its map name
-at the size it always did.
+`label-size` means the same thing and always has, which is why it needs no
+conversion.  Every size a radar takes is a fraction of the map.
 
 **Nothing moves out of the way of anything.**  The bottom of a map is where a
 base map's own logo and credit sit, so a caption put there lands on top of
@@ -370,7 +393,7 @@ and `{plugin-data.frame-attribution}`, `{plugin-data.base-attribution}` and
 **A list replaces, and cannot be adjusted in part.**  The merge that assembles
 settings recurses into blocks but assigns a list outright, so one written on a
 widget replaces one written in `kind-settings:` entirely - restate the whole
-list rather than expecting to change one entry of it.  `label:` and its two
+list rather than expecting to change one entry of it.  `label:` and its three
 settings are ignored once a list is given, and the log says so.
 
 **Attribution is the one thing to be careful about.**  A base map's own logo

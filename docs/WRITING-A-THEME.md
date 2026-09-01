@@ -132,6 +132,30 @@ locations.  A config that names a `folders: marker:` of its own still wins,
 which is right: it said where its markers come from.  What the files have to
 look like is [MARKER-ART.md](MARKER-ART.md).
 
+**A set is not the only thing a theme can say about a radar.**  Anything a
+`MapLoop` reads can go in `kind-settings: radar:`, and the sizes are worth
+knowing about, because art of your own is rarely the same weight as the art
+it replaces:
+
+```yaml
+kind-settings:
+  radar:
+    marker-size:   0.15        # every pin that does not say otherwise
+    caption-size:  0.06        # the line the map carries
+    label-color:   '#bef'      # and the name a config gave the map
+    label-outline: false
+```
+
+Each is a fraction of the **map's** height, not the screen's, so a theme
+sets them once and they hold on a classic page's small radar and a bigmaps
+page's large one alike.  A pin drawn heavier or lighter than the shipped
+teardrop usually wants `marker-size:` moved with it; a marker's own `size:`
+in a config still wins, as it should.
+
+`label-outline:` is the one to reach for when a theme's base map is light -
+the pale default is meant for satellite imagery and disappears on snow or
+paper-styled maps.
+
 `default:` sets the page-wide cascade, so pick `color:` against your
 background - a pale blue reads well on the dark ones and is close to
 invisible on a bright one.

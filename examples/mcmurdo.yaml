@@ -87,6 +87,10 @@ widgets:
     base-provider: mapbox        # or googlemaps, if that is the key you got
     frame-provider: librewxr     # or rainviewer
     label: 'Ross Island'
+    # the pale default is meant for dark satellite imagery and is the same
+    # brightness as ice.  Outlining it keeps the color every other example
+    # uses and still reads here, on snow and on open water both.
+    label-outline: true
     zoom: 7
     center:
       latitude: '{location.latitude}'
@@ -112,6 +116,7 @@ widgets:
     base-provider: mapbox        # or googlemaps, if that is the key you got
     frame-provider: librewxr     # or rainviewer
     label: 'Ross Sea'
+    label-outline: true
     zoom: 4
     center:
       latitude: '{location.latitude}'

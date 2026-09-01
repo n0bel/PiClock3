@@ -33,6 +33,12 @@ label: ''
 label-size: 0.10          # a fraction of the map's height, as every size here is
 label-color: '#bef'
 
+# an outline behind the name, for a base map light enough or busy enough to
+# swallow it.  true takes black or white from the label's own color; a color
+# names one outright.  Off by default: the name sits in a corner a config
+# chose, where the caption has to survive whatever the radar puts under it.
+label-outline: false
+
 # text drawn over the finished map.  Empty builds the list from label: above
 # and the attribution line every map must carry; a list of your own replaces
 # both.  See docs/WRITING-A-CONFIG.md.

@@ -515,7 +515,8 @@ class MapLoop(Plugin):
             entries.append({'text': str(self.config['label']),
                             'right': MARGIN, 'top': MARGIN,
                             'size': self.config['label-size'],
-                            'color': self.config['label-color']})
+                            'color': self.config['label-color'],
+                            'outline': self.config['label-outline']})
         return entries
 
     def sizeInPixels(self, size, height):

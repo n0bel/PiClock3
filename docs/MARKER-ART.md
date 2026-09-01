@@ -60,10 +60,10 @@ be wrong, and look like you drew it off-center.
 ## Size is a fraction of the map
 
 `size:` is a height, and a bare number is a fraction of the **map's** height
-- 0.2 by default, which is what a marker takes up on a radar of any size.
-A value with units is used as written.  The three names `small`, `mid` and
-`tiny` are proportions of that default, kept from v1, which used 64, 70 and
-40 pixels against 80.
+- `marker-size:` on the radar sets it for every pin that says nothing, and
+is 0.2 unless a config or a theme says otherwise.  A value with units is
+used as written.  The three names `small`, `mid` and `tiny` are proportions
+of that default, kept from v1, which used 64, 70 and 40 pixels against 80.
 
 What this means for your drawing: **the number is the height of your whole
 image, not of the visible mark.**  A tip-anchored marker at `0.2` on a 350px
