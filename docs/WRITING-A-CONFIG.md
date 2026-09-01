@@ -76,7 +76,7 @@ A blank `timezone:` means the machine's own, which is right when the clock
 sits where it is pointed.  Name a zone - `Europe/London`, `Pacific/Auckland` -
 when it does not.
 
-Widgets reach these with `{location.latitude}`, so a radar centred on the
+Widgets reach these with `{location.latitude}`, so a radar centered on the
 clock's own position does not repeat the numbers.
 
 ## `providers:` and `widgets:`
@@ -211,7 +211,7 @@ provider uses: a Mapbox style id like `mapbox/satellite-streets-v10`, or one
 of Google's four maptypes - `roadmap`, `satellite`, `terrain` or `hybrid`.
 The two do not translate, so a config that changes `base-provider:` and
 leaves `style:` alone is naming something the new provider has never heard
-of.  Mapbox has no such style and no map arrives - the plain grey described
+of.  Mapbox has no such style and no map arrives - the plain gray described
 below.  Google answers 200 and quietly draws a roadmap instead, so
 `GoogleMaps` checks the name against the four first and says in the log what
 it did.
@@ -243,16 +243,16 @@ many words that their attribution must not be obscured.  That happens
 whatever your captions say.  `ignore-attribution-mask: true` turns it off,
 and the provider's terms are the thing to read before you do.
 
-**If the base map cannot be had, the radar is drawn on plain grey** and the
+**If the base map cannot be had, the radar is drawn on plain gray** and the
 map keeps asking for it - quickly at first, then backing off to hourly.
-Nothing is credited on the grey, because it is nobody's imagery.  A map that
+Nothing is credited on the gray, because it is nobody's imagery.  A map that
 has no radar yet still draws everything else, so the markers and the labels
 do not wait on the weather.
 
 ## `markers:` - pins on a radar
 
 A list of places to draw a picture.  Only `location:` is required; a marker
-with nothing else drawn is a grey teardrop.
+with nothing else drawn is a gray teardrop.
 
 ```yaml
 widgets:
@@ -291,7 +291,7 @@ each.  `marker-size:` on the radar is what a marker that says nothing gets,
 so a map full of pins is sized once rather than pin by pin; it defaults
 to 0.2.
 
-**`color:`** tints the picture.  The shipped markers are grey so that
+**`color:`** tints the picture.  The shipped markers are gray so that
 multiplying them by your color keeps their shading, and the symbol inside
 each is black, which no color changes - that is why the house stays black on
 a red pin.  A picture already colored can only be darkened by this.

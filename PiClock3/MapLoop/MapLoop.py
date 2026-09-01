@@ -610,7 +610,7 @@ class MapLoop(Plugin):
         """one caption, outlined only if it asked to be.
 
         A stroked path rather than text drawn several times at an offset: the
-        stroke is centred on the glyph outline, so it has to go down before
+        stroke is centered on the glyph outline, so it has to go down before
         the fill or it eats half its width out of the letter.
         """
         color = QColor(self.piclock.expand(str(

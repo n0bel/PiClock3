@@ -73,7 +73,7 @@ for free.
 
 **Quantities are named for what wants a different unit, not for dimension.**
 `depth`, `distance`, `altitude` and `height` are all length and none of them
-want the same one: rain in millimetres, a range in kilometres, a cloud base
+want the same one: rain in millimeters, a range in kilometers, a cloud base
 in feet.  The ten are `altimeter`, `altitude`, `depth`, `direction`,
 `distance`, `height`, `pressure`, `rate`, `speed` and `temperature`.
 

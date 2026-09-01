@@ -74,8 +74,8 @@ nothing at all.  A color is the likeliest thing anybody overrides, so an
 empty reading of a non-empty word is taken as the word, and `#ff8800`
 arrives as the string it obviously is.
 
-Two characters mean something different to yaml than they do here, and both
-are read the way this program means them rather than the way yaml would:
+Two characters mean one thing to yaml and another here, and both are read
+the way this program means them rather than the way yaml would:
 
     --set theme.default.color=#ff8800                   a color, not a comment
     --set kind-settings.clock.art={this-folder}/hands   a template, not a mapping

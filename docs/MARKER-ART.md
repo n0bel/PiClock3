@@ -77,19 +77,19 @@ The shipped art is 64 tall, so at the default it is usually being scaled
 **up** a little.  Draw yours larger than you need - the scale is smooth, and
 a 128 or 256 tall drawing costs nothing but disk and survives a big screen.
 
-## Greyscale, so `color:` can work
+## Grayscale, so `color:` can work
 
 `color:` multiplies each channel of your image by that color and keeps the
 alpha.  The consequences are worth knowing before you draw:
 
-- **Grey becomes that color at that brightness.**  A pin drawn in greys
+- **Gray becomes that color at that brightness.**  A pin drawn in grays
   keeps all its shading when tinted, which is why the shipped six are pure
-  greyscale - 510 inked pixels, not one of them off-grey.
+  grayscale - 510 inked pixels, not one of them off-gray.
 - **Black stays black.**  Zero times anything is zero, so a symbol drawn in
   `#000000` is never tinted.  That is how the house stays black on a red
   pin, and it is the way to keep part of a marker out of the tint.
 - **Color can only be darkened.**  Multiplying a red pin by green gives you
-  nearly nothing.  Draw in grey and let the config choose, or draw in the
+  nearly nothing.  Draw in gray and let the config choose, or draw in the
   color you want and never set `color:`.
 - **The brightest pixel caps the result.**  The shipped art tops out at 229,
   not 255, so `color: red` gives `#e50000` rather than pure red.  Draw to
@@ -118,7 +118,7 @@ another - and `.png` is added if you leave the extension off.
 A name with a path in it, `art/mine.png`, is read from where it says.  That
 is the way to use one drawing without shipping a whole set.
 
-One older route is still honoured ahead of both: a config that names
+One older route is still honored ahead of both: a config that names
 `folders: marker:` has that folder looked in first.  It is deprecated and
 nothing shipped uses it, but a config written before sets existed keeps
 drawing its own pins.
@@ -145,7 +145,7 @@ config has to be edited for it - see
 Run the clock and look at it; there is no preview tool.  Worth checking
 specifically:
 
-- **the anchor.** Put one marker on a coordinate you can recognise - a
+- **the anchor.** Put one marker on a coordinate you can recognize - a
   bridge, a runway, a lake's north tip - and look at two zoom levels.  The
   same feature should be under the same part of your art both times.  If it
   is off by half the marker's height, the ink is not where you think it is
@@ -153,7 +153,7 @@ specifically:
 - **a small radar and a large one on the same clock.** The classic layout
   gives a radar about a third the height of the bigmaps one, and `size:`
   being a fraction means your marker should look the same on both.
-- **the tint**, if you drew in grey: set `color:` to something saturated and
+- **the tint**, if you drew in gray: set `color:` to something saturated and
   check nothing that should have stayed black has taken the color.
 - **against weather.** A marker sits under nothing - it is drawn over the
   radar - so the thing to check is the reverse: that a storm behind it does
