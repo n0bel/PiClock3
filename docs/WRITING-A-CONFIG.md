@@ -33,7 +33,7 @@ defaults, or do nothing until you want them.
 | `pages:` | which pages exist, and the layout and theme each one wears |
 | `location:` | latitude, longitude, timezone |
 | `language:` | which language file the words come from |
-| `units:` | which unit table - `default`, `metric`, `SI` or `nautical` |
+| `units:` | which set of units - `default`, `metric`, `SI` or `nautical`, and see [WRITING-UNITS.md](WRITING-UNITS.md) |
 | `providers:` | plugins that fetch data and draw nothing |
 | `widgets:` | plugins that draw, each in a region its page's layout named |
 | `kind-settings:` / `plugin-settings:` | settings for every widget of a kind, or of a plugin |
@@ -104,10 +104,21 @@ and they are what a widget refers to:
     plugin: PiClock3.CurrentConditions
     region: current
     conditions-provider: metar        # the name from providers:
+
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo      # the same idea, its own key
 ```
 
 Which is how one clock shows a real observation from the field down the road
 beside a model's forecast: point two widgets at different providers.
+
+Each widget that needs a provider has its own key for it, so the two above
+can name different ones.  A radar names two, `base-provider:` for the map
+underneath and `frame-provider:` for the weather over it.  A name that is
+not in `providers:` stops the clock at startup with a `KeyError` holding
+the name it could not find - spelling is worth checking there first.
 
 A repeat gives a layout several regions from one entry, named `maps.1`,
 `maps.2` and so on.  A widget takes one cell, or the whole set - `Forecast`
@@ -406,6 +417,73 @@ warns when one does not.
 
 `examples/captions.yaml` is a clock with all of this on it, one treatment per
 radar.
+
+## What the widgets take
+
+Everything a plugin accepts is declared in its own `config.yaml` beside its
+code, each with a comment saying what it does - **that file is the list**.
+These are the ones worth saying out loud.  Any of them goes where any other
+setting goes: on the widget, in `kind-settings:`, or in a theme.
+
+**Any widget that shows a measurement** takes `precision:`, a block keyed by
+quantity, for when the unit table's own answer is wrong for the space:
+
+```yaml
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    precision:
+      temperature: 0        # whole degrees in a narrow column
+      pressure: 2
+```
+
+The quantities are `altimeter`, `altitude`, `depth`, `direction`,
+`distance`, `height`, `pressure`, `rate`, `speed` and `temperature`.  Each
+unit in `PiClock3/units/quantities.yaml` carries a precision of its own -
+one decimal for °C and °F - and this overrides it for one widget without
+touching the table everything else reads.  A quantity the block does not
+name keeps the table's answer.  The table, and how to add to it, is
+[WRITING-UNITS.md](WRITING-UNITS.md).
+
+**`PiClock3.Forecast`** draws one cell of its region per period.
+
+| | |
+|---|---|
+| `hourly` `daily` | how many cells of each - 3 and 6.  Asking for more than the region has warns and draws what fits |
+| `hourly-step` | hours between the hourly cells, 3, so three of them reach nine hours out |
+| `hour-format` `day-format` | strftime for the corner of a cell, `%A %-I:%M%p` and `%A` |
+
+**`PiClock3.CurrentConditions`**
+
+| | |
+|---|---|
+| `observed-format` | strftime for when the reading was taken, `%H:%M`, followed by whatever the source calls itself |
+
+**`PiClock3.Astral`**
+
+| | |
+|---|---|
+| `polar-format` | drawn instead of `format:` on a day the sun neither rises nor sets, where the usual line has no time to put in and would print its own braces.  It is why `arctic.yaml` and `mcmurdo.yaml` read correctly for the months either place has no sunrise |
+
+**`PiClock3.DigitalClock`**
+
+| | |
+|---|---|
+| `extra-font-attributes` | anything Qt understands that has no setting of its own, put into the stylesheet as written |
+
+**`PiClock3.MapLoop`**, beyond the radar and caption settings above
+
+| | |
+|---|---|
+| `dwell` | milliseconds a frame is on screen, 200 |
+| `hold` | milliseconds to rest on the newest frame before the loop starts again, 1200 |
+
+**Providers**
+
+| | |
+|---|---|
+| `refresh` | minutes between asks - 10 for `Metar`, whose stations report about hourly, and 30 for `OpenMeteo`, whose free tier is generous rather than unlimited |
+| `forecast-days` | how many days `OpenMeteo` is asked for, 9.  It will give up to 16 and the classic layout has room for 9 |
 
 ## `locale:`
 

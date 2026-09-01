@@ -58,6 +58,9 @@ quantities without editing the shipped tables:
     plugins/tides/languages/en.yaml      merged over the shipped English
     plugins/tides/units/quantities.yaml  merged over the shipped quantities
 
+What goes in that quantities file, and why a set that has never heard of your
+quantity still works, is [WRITING-UNITS.md](WRITING-UNITS.md).
+
 **If you mean to contribute the plugin to PiClock3 itself**, that is the
 other folder: put it in `PiClock3/Tides/` alongside the core plugins, name it
 `PiClock3.Tides.Tides` in the config, and open a pull request.  Being inside
@@ -231,13 +234,26 @@ which outrank a theme's `default:`.
 then white.  It exists because a graphics effect needs a real color in
 Python where a stylesheet would have inherited one.
 
-### `{this-folder}`
+### `{this-folder}` and `{plugin-folder}`
 
 Any path in any yaml can be written `{this-folder}/art/x.png`, meaning the
 folder that file was read from — your plugin's directory in your
 `config.yaml`, a theme's directory in its `theme.yaml`.  It is how art
 travels with whatever ships it, without anything knowing where it was
 installed.
+
+`{plugin-folder}` is the other one, and it means the folder of whatever
+code is asking.  The difference is when each is resolved: `{this-folder}`
+is substituted as a file is read, so it is fixed to the file that wrote it,
+while `{plugin-folder}` is worked out at the moment your code calls
+`expand()` and so follows your plugin rather than the yaml.
+
+That makes it the one to use for a default a theme is expected to move.
+`AnalogClock` ships `clock-images-base-folder: '{plugin-folder}'` beside
+`clock-images-folder: lightblue`, so the art is found in the plugin until a
+theme points the base folder at `{this-folder}` and the set at its own -
+which then resolves against the theme, because the theme's yaml is where
+that line was read.  `MapLoop` does the same for markers.
 
 `from-theme:` used to declare a mapping from theme names to your own.  It is
 gone; the Qt names arrive by themselves and everything else comes
