@@ -11,6 +11,10 @@ overlay-provider: ''
 dwell: 200
 hold: 1200
 
+# pins drawn on the map.  Each takes a location:, and optionally an image:,
+# a color: and a size:.  See docs/WRITING-A-CONFIG.md.
+markers: []
+
 # a name in the corner, for when more than one map is on the screen.  Unset
 # draws nothing, which is right for a clock with only one.
 label: ''

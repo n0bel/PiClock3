@@ -268,7 +268,7 @@ class MapLoop(Plugin):
         painter.begin(self.markerPixmap)
         #painter.fillRect(0, 0, self.mkpixmap.width(),
         #                 self.mkpixmap.height(), br)
-        markers = self.config.markers if 'markers' in self.config else []
+        markers = self.config['markers']
         for marker in markers:
             if 'visible' not in marker or marker['visible'] == 1:
                 loc = LatLng(float(self.piclock.expand(marker["location"]["latitude"])),

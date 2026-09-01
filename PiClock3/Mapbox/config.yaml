@@ -1,2 +1,6 @@
 kind: basemap
 apikey: '{apikeys.mbapi}'
+
+# the map drawn under a radar.  A radar names its own style: and overrides
+# this, which is what every shipped example does.
+style: mapbox/satellite-streets-v10

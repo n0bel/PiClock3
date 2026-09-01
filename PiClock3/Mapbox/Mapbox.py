@@ -39,17 +39,15 @@ class MapBox(Plugin):
         return
 
 
-    def getMapPixmap(self, view, radarConfig, callback):
+    def getMapPixmap(self, view, layerConfig, callback):
         frameRect = view.rect
         logger.debug("mapbox getpixmap")
         #  note we're using google maps zoom factor.
         #  Mapbox equivilant zoom is one less
         #  They seem to be using 512x512 tiles instead of 256x256
-        style = 'mapbox/satellite-streets-v10'
-        if 'style' in self.config:
-            style = self.config['style']
-        if 'style' in radarConfig:
-            style = radarConfig['style']
+        style = self.config['style']
+        if 'style' in layerConfig:
+            style = layerConfig['style']
         rsize = frameRect.size()
         zoom = view.zoom - 1
         if rsize.width() > 640 or rsize.height() > 640:
@@ -65,7 +63,7 @@ class MapBox(Plugin):
                str(rsize.width()) + 'x' + str(rsize.height()) + \
                '?access_token=' + self.piclock.expand(self.config.apikey)
         logger.info("mapbox url %s", safeurl(mapUrl)) 
-        params = { 'frameRect': frameRect, 'radarConfig': radarConfig, 'rsize': rsize }        
+        params = { 'frameRect': frameRect, 'rsize': rsize }        
         WebGet(mapUrl,
                 lambda error, data, parms: self.gotMapPixmap(error, data, callback, parms),
                 params)

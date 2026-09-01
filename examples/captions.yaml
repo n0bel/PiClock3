@@ -68,7 +68,7 @@ widgets:
     region: maps.1
     base-provider: mapbox
     frame-provider: librewxr
-    style: mapbox/satellite-streets-v10
+    style: mapbox/satellite-streets-v10   # or hybrid if you're using googlemaps
     zoom: 7
     center:
       latitude: '{location.latitude}'
@@ -88,7 +88,7 @@ widgets:
     region: maps.2
     base-provider: mapbox
     frame-provider: librewxr
-    style: mapbox/satellite-streets-v10
+    style: mapbox/satellite-streets-v10   # or hybrid if you're using googlemaps
     zoom: 11
     label: Close in
     label-size: 0.09
@@ -115,7 +115,7 @@ widgets:
     region: radars.1
     base-provider: mapbox
     frame-provider: librewxr
-    style: mapbox/satellite-streets-v10
+    style: mapbox/satellite-streets-v10   # or hybrid if you're using googlemaps
     zoom: 7
     captions:
       - text: '{plugin-data.frame-time:%H:%M} {plugin-data.frame-attribution}'
@@ -150,7 +150,7 @@ widgets:
     region: radars.2
     base-provider: mapbox
     frame-provider: librewxr
-    style: mapbox/satellite-streets-v10
+    style: mapbox/satellite-streets-v10   # or hybrid if you're using googlemaps
     zoom: 11
     captions:
       - '{plugin-data.frame-caption}'

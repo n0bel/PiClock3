@@ -15,6 +15,9 @@ from PyQt5.QtNetwork import (QNetworkReply, QNetworkRequest)
 
 logger = logging.getLogger(__name__)
 
+# what Google will accept as a maptype.  Facts about the service, not settings.
+MAPTYPES = ('roadmap', 'satellite', 'terrain', 'hybrid')
+
 
 class GoogleMaps(Plugin):
 
@@ -37,7 +40,7 @@ class GoogleMaps(Plugin):
     def pageChange(self):
         return
 
-    def getMapPixmap(self, view, radarConfig, callback):
+    def getMapPixmap(self, view, layerConfig, callback):
         frameRect = view.rect
         urlp = []
         if 'apikey' in self.config and len(self.config.apikey) > 0:
@@ -50,11 +53,18 @@ class GoogleMaps(Plugin):
             zoom -= 1
         urlp.append('zoom=' + str(zoom))
         urlp.append('size=' + str(rsize.width()) + 'x' + str(rsize.height()))
-        maptype = 'hybrid'
-        if 'style' in self.config:
+        maptype = self.config['style']
+        if 'style' in layerConfig:
+            maptype = layerConfig['style']
+        if maptype not in MAPTYPES:
+            # Google answers 200 and quietly draws a roadmap for anything it
+            # does not know, so a style meant for another provider - a config
+            # that swapped base-provider and left style: alone - would show a
+            # plain map with nothing anywhere saying why
+            logger.warning("%s: no Google maptype called '%s' - using %s.  "
+                           "Try one of %s", self.name, maptype,
+                           self.config['style'], ', '.join(sorted(MAPTYPES)))
             maptype = self.config['style']
-        if 'style' in radarConfig:
-            maptype = radarConfig['style']
         urlp.append('maptype=' + maptype)
 
         mapUrl = 'https://maps.googleapis.com/maps/api/staticmap?' + \
@@ -63,7 +73,7 @@ class GoogleMaps(Plugin):
         logger.info("googlemaps url %s", safeurl(mapUrl))   
         
         logger.debug("googlemaps getpixmap")
-        params = { 'frameRect': frameRect, 'radarConfig': radarConfig, 'rsize': rsize }
+        params = { 'frameRect': frameRect, 'rsize': rsize }
         WebGet(mapUrl,
                 lambda error, data, parms: self.gotMapPixmap(error, data, callback, parms),
                 params

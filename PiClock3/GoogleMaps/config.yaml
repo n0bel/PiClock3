@@ -1,2 +1,6 @@
 kind: basemap
 apikey: '{apikeys.googleapi}'
+
+# the map drawn under a radar - Google calls it a maptype.  A radar names its
+# own style: and overrides this.
+style: hybrid

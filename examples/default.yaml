@@ -63,7 +63,7 @@ widgets:
     region: maps.1
     base-provider: mapbox        # or googlemaps, if that is the key you got
     frame-provider: librewxr     # or rainviewer
-    style: mapbox/satellite-streets-v10
+    style: mapbox/satellite-streets-v10   # or hybrid if you're using googlemaps
     zoom: 7
     palette: 6
     smooth: 1
@@ -84,7 +84,7 @@ widgets:
     region: maps.2
     base-provider: mapbox        # or googlemaps, if that is the key you got
     frame-provider: librewxr     # or rainviewer
-    style: mapbox/satellite-streets-v10
+    style: mapbox/satellite-streets-v10   # or hybrid if you're using googlemaps
     zoom: 11
     palette: 6
     smooth: 1
@@ -105,7 +105,7 @@ widgets:
     region: radars.1
     base-provider: mapbox        # or googlemaps, if that is the key you got
     frame-provider: librewxr     # or rainviewer
-    style: mapbox/satellite-streets-v10
+    style: mapbox/satellite-streets-v10   # or hybrid if you're using googlemaps
     zoom: 7
     palette: 6
     smooth: 1
@@ -119,7 +119,7 @@ widgets:
     region: radars.2
     base-provider: mapbox        # or googlemaps, if that is the key you got
     frame-provider: librewxr     # or rainviewer
-    style: mapbox/satellite-streets-v10
+    style: mapbox/satellite-streets-v10   # or hybrid if you're using googlemaps
     zoom: 11
     palette: 6
     smooth: 1

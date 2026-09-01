@@ -70,7 +70,7 @@ widgets:
   radar1:
     plugin: PiClock3.MapLoop
     region: maps.1
-    base-provider: mapbox        # or googlemaps, if that is the key you got
+    base-provider: mapbox
     frame-provider: librewxr     # or rainviewer
     # Two Mapbox styles by SerBrynden, drawn from a dark theme so the radar
     # colors carry: ground and water under the radar, and boundaries, roads
@@ -96,7 +96,7 @@ widgets:
   radar2:
     plugin: PiClock3.MapLoop
     region: maps.2
-    base-provider: mapbox        # or googlemaps, if that is the key you got
+    base-provider: mapbox
     frame-provider: librewxr     # or rainviewer
     # Two Mapbox styles by SerBrynden, drawn from a dark theme so the radar
     # colors carry: ground and water under the radar, and boundaries, roads
@@ -122,7 +122,7 @@ widgets:
   radar3:
     plugin: PiClock3.MapLoop
     region: radars.1
-    base-provider: mapbox        # or googlemaps, if that is the key you got
+    base-provider: mapbox
     frame-provider: librewxr     # or rainviewer
     # Two Mapbox styles by SerBrynden, drawn from a dark theme so the radar
     # colors carry: ground and water under the radar, and boundaries, roads
@@ -141,7 +141,7 @@ widgets:
   radar4:
     plugin: PiClock3.MapLoop
     region: radars.2
-    base-provider: mapbox        # or googlemaps, if that is the key you got
+    base-provider: mapbox
     frame-provider: librewxr     # or rainviewer
     # Two Mapbox styles by SerBrynden, drawn from a dark theme so the radar
     # colors carry: ground and water under the radar, and boundaries, roads
