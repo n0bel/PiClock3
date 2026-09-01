@@ -250,9 +250,14 @@ class MapLoop(Plugin):
         above the radar and keeps its own.
 
         Masked here rather than in composite() so it happens once per map
-        instead of once per frame.
+        instead of once per frame.  The caller has already established that
+        the pixmap is real; this only checks that there is a mask to cut
+        with.
         """
-        if mask is None or pixmap.isNull():
+        # DestinationIn against a null mask is a no-op rather than a full
+        # cut, so the copy would stay opaque and brandMark would put the
+        # whole base map back over the finished frame
+        if mask is None or mask.isNull():
             return
         if self.config.get('ignore-attribution-mask'):
             logger.info("%s: ignore-attribution-mask - the radar will cover "
