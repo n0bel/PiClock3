@@ -78,7 +78,6 @@ widgets:
           latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: red
-        size: large
         image: teardrop-home
 
   # label: and its two settings still work and build the second entry, so a
@@ -103,9 +102,9 @@ widgets:
   #
   # Placement is a layout's: left, right, top, bottom and the two centers,
   # all fractions of the map, and a side that would run off an edge is held
-  # at it.  size is the exception - a bare number there is a fraction of the
-  # screen, because a clock's radars are not all one size and a caption
-  # should read the same on all of them.  One with units is used as written.
+  # at it.  size is a fraction of the map too, the same way a theme's
+  # font-size is a fraction of the region it lands in - so a caption keeps
+  # its share of a small radar and a large one.  Units are used as written.
   #
   # Nothing moves out of the way of anything: the bottom of the map is where
   # the base map's own logo and credit sit, so a caption put there lands on
@@ -126,13 +125,13 @@ widgets:
       - text: 'Regional'
         right: 0.02
         top: 0.02
-        size: 0.03
+        size: 0.0375
         color: '#bef'
         outline: '#012'
       - text: 'over {plugin-data.base-attribution}'
         horizontal-center: 0.0
         top: 0.09
-        size: 0.014
+        size: 0.0175
         color: '#ffd'
     center:
       latitude: '{location.latitude}'
@@ -156,13 +155,13 @@ widgets:
       - '{plugin-data.frame-caption}'
       - text: '{location.latitude}, {location.longitude}'
         left: 0.02
-        top: 0.06
+        # clear of the line above: that one starts at 0.02 and caption-size
+        # is 0.06 of the map, so it ends at 0.08.  Nothing measures this for
+        # you - a stacked caption is placed, not flowed.
+        top: 0.10
     center:
       latitude: '{location.latitude}'
       longitude: '{location.longitude}'
-
-folders:
-  marker: PiClock3/markers
 
 logging-level: debug
 

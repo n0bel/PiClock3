@@ -114,7 +114,23 @@ kind-settings:               # what the plugins should use
   analog-clock:       {clock-images-folder: darkblue}
   current-conditions: {icons-folder: icons-darkblue}
   forecast:           {icons-folder: icons-darkblue}
+  radar:              {marker-images-folder: markers,
+                       marker-images-base-folder: '{this-folder}'}
 ```
+
+Those four lines are every picture a theme chooses: the clock's face and
+hands, the weather icons the two widgets share, and the pins a radar draws.
+Each names a **set** - a folder holding files under known names - so a theme
+supplies its own by shipping a folder of the same names and saying where it
+is.  `{this-folder}` is the theme's own directory, so `marker-images-folder:
+markers` above means `themes/mine/markers/`.
+
+Markers are the one worth a note.  Which pins a radar draws, and where they
+go, are the config's - a theme that named the list would be dictating where
+somebody lives.  Naming the *set* restyles all of them and touches nobody's
+locations.  A config that names a `folders: marker:` of its own still wins,
+which is right: it said where its markers come from.  What the files have to
+look like is [MARKER-ART.md](MARKER-ART.md).
 
 `default:` sets the page-wide cascade, so pick `color:` against your
 background - a pale blue reads well on the dark ones and is close to

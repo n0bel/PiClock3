@@ -34,6 +34,18 @@ DEFAULT_CAPTION = '{plugin-data.frame-caption}'
 # how far off the edge the built-in captions sit, as a fraction of the map
 MARGIN = 0.02
 
+# the names a marker's size: can carry.  Fractions of the map's height, as
+# every size here is: v1 gave them 64, 70 and 40 pixels against a default of
+# 80, and these are those same proportions of the default below - so the
+# four keep their order and their spacing on a map of any size.
+MARKER_SIZES = {'small': 0.16, 'mid': 0.175, 'tiny': 0.10}
+
+# last resorts, if the config.yaml key is missing or unreadable.  Fractions
+# of the map's height, as every size here is.  0.2 is what v1 meant a marker
+# to be - its code says rect.height() / 5 beside the 80 pixels it used.
+DEFAULT_MARKER_SIZE = 0.2
+DEFAULT_CAPTION_SIZE = 0.06
+
 # how long to wait before asking again for a base map or overlay that did not
 # arrive.  Neither is on a timer of its own the way radar frames are, so this
 # is the only thing that fetches them again.
@@ -260,6 +272,58 @@ class MapLoop(Plugin):
         self.brandMark = cut
         logger.debug("maploop keeping brand mark")
 
+    def markerPath(self, name):
+        """the file a marker's image: names.
+
+        A name with a path in it is where it says it is.  A bare one is
+        looked for in the folder a config named with `folders: marker:`
+        before the set this radar draws from, so a config that says where
+        its markers come from outranks a theme that restyles them.  The
+        extension is optional and means png.
+        """
+        if os.path.splitext(name)[1] == '':
+            name += '.png'
+        if os.path.dirname(name) != '':
+            where = [name]
+        else:
+            where = []
+            # a folder that holds nothing by this name is not an error - each
+            # step falls through, so naming one that no longer exists costs
+            # a stat and lands on the set
+            folder = self.piclock.expand('{folders.marker}')
+            if folder:
+                where.append(os.path.join(folder, name))
+            where.append(os.path.join(
+                self.piclock.expand(self.config['marker-images-base-folder']),
+                self.config['marker-images-folder'], name))
+        for path in where:
+            if os.path.isfile(path):
+                return path
+        logger.warning("%s: no marker called %s, looked in %s",
+                       self.name, name, ', '.join(where))
+        return ''
+
+    def markerHeight(self, marker, height):
+        """how tall to draw one marker, in pixels.
+
+        A name is one of the sizes v1 shipped with, kept as its proportion of
+        the default rather than its pixel count.  Anything else is read the
+        way a caption's size is: a pin should take the same share of a small
+        radar as it does of a large one.
+        """
+        size = marker.get('size', self.config.get('marker-size'))
+        if size in MARKER_SIZES:
+            px = MARKER_SIZES[size] * height
+        else:
+            px = self.sizeInPixels(size, height)
+        if px is None:
+            px = DEFAULT_MARKER_SIZE * height
+            logger.warning("%s: no marker size called %r - using %d.  Try one "
+                           "of %s, a fraction of the map's height, or a "
+                           "size with units", self.name, size, px,
+                           ', '.join(sorted(MARKER_SIZES)))
+        return max(1, int(round(px)))
+
     def makeMarkerPixmap(self):
         self.markerPixmap = QPixmap(self.mapPixmap.size())
         self.markerPixmap.fill(Qt.transparent)
@@ -276,26 +340,18 @@ class MapLoop(Plugin):
                 pt = getPoint(
                     loc, self.view.center, self.view.zoom,
                     self.mapPixmap.width(), self.mapPixmap.height())
-                mk2 = QImage()
-                mkfile = 'teardrop'
+                name = 'teardrop'
                 if 'image' in marker:
-                    mkfile = self.piclock.expand(marker['image'])
-                if os.path.dirname(mkfile) == '':
-                    mkfile = os.path.join(self.piclock.expand('{folders.marker}'), mkfile)
-                if os.path.splitext(mkfile)[1] == '':
-                    mkfile += '.png'
+                    name = self.piclock.expand(marker['image'])
+                mkfile = self.markerPath(name)
+                if not mkfile:
+                    continue
+                mk2 = QImage()
                 mk2.load(mkfile)
                 if mk2.format != QImage.Format_ARGB32:
                     mk2 = mk2.convertToFormat(QImage.Format_ARGB32)
                 logger.debug("yy size %s", mk2.size())
-                mkh = 80  # self.rect.height() / 5
-                if 'size' in marker:
-                    if marker['size'] == 'small':
-                        mkh = 64
-                    if marker['size'] == 'mid':
-                        mkh = 70
-                    if marker['size'] == 'tiny':
-                        mkh = 40
+                mkh = self.markerHeight(marker, self.mapPixmap.height())
                 if 'color' in marker:
                     c = QColor(marker['color'])
                     (cr, cg, cb, ca) = c.getRgbF()
@@ -309,7 +365,9 @@ class MapLoop(Plugin):
                             mk2.setPixel(x, y, QColor.fromRgbF(r, g, b, a)
                                          .rgba())
                 mk2 = mk2.scaledToHeight(mkh, 1)
-                x = int(pt.x - mkh / 2)
+                # the location goes under the middle of the picture, so art
+                # that is not square needs its own width here rather than mkh
+                x = int(pt.x - mk2.width() / 2)
                 y = int(pt.y - mkh / 2)
                 logger.debug("drawImage %d %d", x, y)
                 painter.drawImage(x, y, mk2)
@@ -454,49 +512,50 @@ class MapLoop(Plugin):
         entries = [{'text': DEFAULT_CAPTION,
                     'left': MARGIN, 'top': MARGIN, 'outline': True}]
         if self.config.get('label'):
-            # label-size is a fraction of the map, which is what it has always
-            # meant, and a caption's size is a fraction of the screen - so it
-            # is converted rather than passed on, and a config written before
-            # captions existed draws its name at the size it always did
-            mapHeight = self.region.contentsRect().height()
-            screenHeight = max(1, self.piclock.screen.height())
-            try:
-                size = float(self.config['label-size']) * mapHeight / screenHeight
-            except (TypeError, ValueError):
-                size = None
-            entry = {'text': str(self.config['label']),
-                     'right': MARGIN, 'top': MARGIN,
-                     'color': self.config['label-color']}
-            if size:
-                entry['size'] = size
-            entries.append(entry)
+            entries.append({'text': str(self.config['label']),
+                            'right': MARGIN, 'top': MARGIN,
+                            'size': self.config['label-size'],
+                            'color': self.config['label-color']})
         return entries
 
-    def captionFont(self, entry):
-        """a bare size is a fraction of the screen's height, one with units is
-        used as written.
+    def sizeInPixels(self, size, height):
+        """a bare number is a fraction of the map's height, one with units is
+        used as written.  None if it reads as neither.
 
-        The screen rather than the map, because one clock's radars are not one
-        size - classic at 800x600 gives a 200px cell and bigmaps at 1080p an
-        850px one, and no single fraction of the map reads on both.  What a
-        caption should be is a size on the screen you are looking at, which is
-        the same reasoning behind a theme's font-size being a fraction of the
-        page.
+        The map because everything here is drawn inside it, and because that
+        is what a fraction means everywhere else in the clock - a theme's
+        font-size is a fraction of the region it lands in, not of the screen.
+        A classic page's radar is a third of the height a bigmaps one is, so
+        the same fraction is a different count of pixels on each, which is
+        the point rather than a problem.
         """
-        size = entry.get('size', self.config.get('caption-size'))
-        px = None
-        if isinstance(size, str) and not size.replace('.', '', 1).isdigit():
-            digits = ''.join(c for c in size if c.isdigit() or c == '.')
+        if size is None:
+            return None
+        text = str(size)
+        if not text.replace('.', '', 1).isdigit():
+            digits = ''.join(c for c in text if c.isdigit() or c == '.')
             try:
-                px = float(digits)
+                return float(digits)
             except ValueError:
-                logger.warning("%s: cannot read caption size %r",
-                               self.name, size)
+                return None
+        number = float(text)
+        if number > 1:
+            # nothing is more than the whole of what holds it, so this was
+            # meant as pixels.  Saying so is better than drawing something
+            # hundreds of times too big and leaving them to work out why
+            logger.warning("%s: %s is not a fraction - reading it as %dpx.  "
+                           "Write the units to say so", self.name, text,
+                           number)
+            return number
+        return number * height
+
+    def captionFont(self, entry, height):
+        """the font one caption is drawn in, sized by sizeInPixels."""
+        size = entry.get('size', self.config.get('caption-size'))
+        px = self.sizeInPixels(size, height)
         if px is None:
-            try:
-                px = float(size) * self.piclock.screen.height()
-            except (TypeError, ValueError):
-                px = 0.018 * self.piclock.screen.height()
+            logger.warning("%s: cannot read caption size %r", self.name, size)
+            px = DEFAULT_CAPTION_SIZE * height
         font = QFont()
         family = (entry.get('font-family') or self.config.get('font-family')
                   or self.themeDefault('font-family'))
@@ -537,7 +596,7 @@ class MapLoop(Plugin):
             text = self.piclock.expand(str(entry.get('text', ''))).strip()
             if not text:
                 continue
-            font = self.captionFont(entry)
+            font = self.captionFont(entry, height)
             metrics = QFontMetrics(font)
             box = dict(entry)
             box['width'] = metrics.horizontalAdvance(text) / float(width)

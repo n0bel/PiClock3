@@ -15,17 +15,29 @@ hold: 1200
 # a color: and a size:.  See docs/WRITING-A-CONFIG.md.
 markers: []
 
+# the set a marker's image: is found in, and where sets live.  A theme names
+# a set of its own to restyle the pins without touching anybody's locations.
+marker-images-folder: markers
+marker-images-base-folder: '{plugin-folder}'
+
+# how tall a marker is drawn when its own size: says nothing.  A fraction of
+# the map's height rather than a count of pixels, so a pin takes the same
+# share of a small radar as of a large one.  A size with units is used as
+# written; small, mid and tiny are v1's three names, each a proportion of
+# this.
+marker-size: 0.2
+
 # a name in the corner, for when more than one map is on the screen.  Unset
 # draws nothing, which is right for a clock with only one.
 label: ''
-label-size: 0.10          # a fraction of the map's height
+label-size: 0.10          # a fraction of the map's height, as every size here is
 label-color: '#bef'
 
 # text drawn over the finished map.  Empty builds the list from label: above
 # and the attribution line every map must carry; a list of your own replaces
 # both.  See docs/WRITING-A-CONFIG.md.
 captions: []
-caption-size: 0.018       # a fraction of the screen's height, not the map's
+caption-size: 0.06        # a fraction of the map's height
 caption-color: '#fff'
 
 # a base map arrives with the provider's own logo and credit drawn into it,

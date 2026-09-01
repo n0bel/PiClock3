@@ -283,6 +283,7 @@ Seven guides, each answering one question:
 | [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md) | a widget that draws or a provider that fetches, and what a theme can reach in it |
 | [docs/WRITING-A-LANGUAGE.md](docs/WRITING-A-LANGUAGE.md) | a translation - one yaml file, no code |
 | [docs/FRAME-ART.md](docs/FRAME-ART.md) | drawing the nine-slice sheets a frame is made of |
+| [docs/MARKER-ART.md](docs/MARKER-ART.md) | drawing the pins a radar puts on a map |
 | [docs/COMMAND-LINE-OPTIONS.md](docs/COMMAND-LINE-OPTIONS.md) | `--set` and `--at`, and why a clock needs them |
 
 A theme, a layout and a plugin are separate on purpose: any theme works with

@@ -96,7 +96,6 @@ widgets:
           latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: red
-        size: large
         image: teardrop-home
 
   # the same weather from the other kind of source.  The station is the
@@ -137,9 +136,6 @@ widgets:
     center:
       latitude: '{location.latitude}'
       longitude: '{location.longitude}'
-
-folders:
-  marker: PiClock3/markers
 
 logging-level: debug
 

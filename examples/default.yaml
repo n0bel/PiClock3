@@ -76,7 +76,6 @@ widgets:
           latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: red
-        size: large
         image: teardrop-home
 
   radar2:
@@ -97,7 +96,7 @@ widgets:
           latitude: '{location.latitude}'
           longitude: '{location.longitude}'
         color: green
-        size: medium
+        size: mid
         image: teardrop-home
 
   radar3:
@@ -127,9 +126,6 @@ widgets:
     center:
       latitude: '{location.latitude}'
       longitude: '{location.longitude}'
-
-folders:
-  marker: PiClock3/markers
 
 logging-level: debug
 

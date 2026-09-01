@@ -238,6 +238,58 @@ Nothing is credited on the grey, because it is nobody's imagery.  A map that
 has no radar yet still draws everything else, so the markers and the labels
 do not wait on the weather.
 
+## `markers:` - pins on a radar
+
+A list of places to draw a picture.  Only `location:` is required; a marker
+with nothing else drawn is a grey teardrop.
+
+```yaml
+widgets:
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
+    markers:
+      - location:
+          latitude: '{location.latitude}'
+          longitude: '{location.longitude}'
+        image: teardrop-home
+        color: red
+      - location: {latitude: 44.88, longitude: -93.22}
+        image: teardrop-work
+        color: '#8cf'
+        size: mid
+```
+
+A marker outside what the map covers is simply not drawn, which is what lets
+one list serve a zoomed-out radar and a zoomed-in one.
+
+**`image:`** names the picture.  A bare name comes from the set the radar
+draws from, so `teardrop-home` finds the shipped one and a theme that ships
+a file of that name stands in for it.  A name with a path in it is read from
+where it says, and `.png` is added if you leave the extension off.  Six
+ship: `teardrop`, `teardrop-dot`, `teardrop-home`, `teardrop-work`,
+`teardrop-school` and `teardrop-family`.
+
+**`size:`** is how tall the picture is drawn.  A bare number is a fraction of
+the map's height and one with units is used as written, the same rule a
+caption's size follows.  `small`, `mid` and `tiny` are names for three
+proportions of the default.  A fraction rather than a count of pixels
+because a clock's radars are not one size: the classic page's is about a
+third the height of the bigmaps one, and a pin should take the same share of
+each.
+
+**`color:`** tints the picture.  The shipped markers are grey so that
+multiplying them by your color keeps their shading, and the symbol inside
+each is black, which no color changes - that is why the house stays black on
+a red pin.  A picture already colored can only be darkened by this.
+
+**`visible:`** drawn unless it is set to something other than 1, so
+`visible: false` puts a marker away without deleting it.
+
+The middle of the picture is what lands on the location.  Drawing your own,
+and what that rule means for how you draw it, is
+[MARKER-ART.md](MARKER-ART.md).
+
 ## `captions:` - text over a radar
 
 A `MapLoop` draws its own text, composited into each frame rather than laid
@@ -408,16 +460,27 @@ A name that is not there comes back empty rather than complaining, so
 instead of failing on the format specifier.  That cuts both ways: a brace you
 meant literally is eaten too.
 
-## `folders:`
+## `folders:` - deprecated
 
 ```yaml
 folders:
-  marker: PiClock3/markers
+  marker: mymarkers
 ```
 
-Named paths that a setting can expand.  `MapLoop` builds a marker's file
-name against `{folders.marker}`, so pointing that at a folder of your own is
-how a radar gets a pin you drew without editing anything inside `PiClock3/`.
+**Do not write this in anything new.**  It still works, and no shipped
+config uses it any more.
+
+Named paths that a setting can expand.  One thing ever read one: a marker's
+`image:` is looked for in `{folders.marker}` before the set its radar draws
+from, which is how a config supplied pins of its own before marker sets
+existed.  A config that still names it keeps working, and still wins over a
+theme's set - having said where its markers come from, it should.
+
+The two ways that replace it: a **set**, which is a folder of pins a theme
+names and which restyles every radar at once, or a **path** in a marker's
+own `image:`, which is read from where it says.  Both are in
+[MARKER-ART.md](MARKER-ART.md).  Left out entirely - the ordinary case - a
+marker comes from `PiClock3/MapLoop/markers`.
 
 This is not the same as the search path that finds layouts, themes, units and
 languages - those are found by looking in your folder before the shipped one,
