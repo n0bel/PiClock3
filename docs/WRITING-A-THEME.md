@@ -149,6 +149,13 @@ follows is merged into the settings of every plugin wearing it.  A kind means
 them.  `plugin-settings:` does the same for one plugin named exactly, as
 `PiClock3.AnalogClock`, for when a kind is too broad.
 
+**A kind is the only handle a theme has.**  Widget names belong to whoever
+wrote the config - one person's radar is `radar1`, another's is `north` - so a
+theme cannot address one directly and has no business trying.  What it can say
+is what a thing is, which is the whole reason these two blocks exist.  A
+config has them as well, where they are a convenience rather than the only
+road.
+
 An instance keeps the last word: a widget that names a value in the config
 holds it, whatever the theme says.
 

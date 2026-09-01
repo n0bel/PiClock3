@@ -37,11 +37,6 @@ providers:
   rainviewer: {plugin: PiClock3.RainViewer}
   librewxr:   {plugin: PiClock3.LibreWXR}
 
-kind-settings:
-  radar:
-    base-provider: mapbox
-    frame-provider: librewxr
-
 widgets:
   clock:  {plugin: PiClock3.AnalogClock, region: clock}
   date:   {plugin: PiClock3.Date,   region: date}
@@ -71,6 +66,8 @@ widgets:
   radar1:
     plugin: PiClock3.MapLoop
     region: maps.1
+    base-provider: mapbox
+    frame-provider: librewxr
     style: mapbox/satellite-streets-v10
     zoom: 7
     center:
@@ -89,6 +86,8 @@ widgets:
   radar2:
     plugin: PiClock3.MapLoop
     region: maps.2
+    base-provider: mapbox
+    frame-provider: librewxr
     style: mapbox/satellite-streets-v10
     zoom: 11
     label: Close in
@@ -114,6 +113,8 @@ widgets:
   radar3:
     plugin: PiClock3.MapLoop
     region: radars.1
+    base-provider: mapbox
+    frame-provider: librewxr
     style: mapbox/satellite-streets-v10
     zoom: 7
     captions:
@@ -147,6 +148,8 @@ widgets:
   radar4:
     plugin: PiClock3.MapLoop
     region: radars.2
+    base-provider: mapbox
+    frame-provider: librewxr
     style: mapbox/satellite-streets-v10
     zoom: 11
     captions:

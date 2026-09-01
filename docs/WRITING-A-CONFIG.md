@@ -124,41 +124,35 @@ word over the one before:
 4. the config's `kind-settings:`, then its `plugin-settings:`
 5. the widget's own entry under `widgets:`
 
-### `kind-settings:` is shorthand
+### `kind-settings:` belongs to themes.  A config may borrow it
 
-Anything a widget takes can be written on the widget itself.  These two say
-the same thing:
-
-```yaml
-widgets:
-  radar1:
-    plugin: PiClock3.MapLoop
-    region: maps.1
-    base-provider: mapbox          # said here
-    frame-provider: librewxr       # and here
-    zoom: 7
-  radar2:
-    plugin: PiClock3.MapLoop
-    region: maps.2
-    base-provider: mapbox          # and again
-    frame-provider: librewxr       # and again
-    zoom: 11
-```
+These two blocks were made for themes, and a theme has no alternative to
+them.  It cannot name your widgets, because you chose those names - one
+person's radar is `radar1` and another's is `north`.  So a theme names what a
+thing *is* instead:
 
 ```yaml
+# PiClock3/themes/circuit/theme.yaml
 kind-settings:
-  radar:
-    base-provider: mapbox          # said once
-    frame-provider: librewxr
-
-widgets:
-  radar1: {plugin: PiClock3.MapLoop, region: maps.1, zoom: 7}
-  radar2: {plugin: PiClock3.MapLoop, region: maps.2, zoom: 11}
+  analog-clock:       {clock-images-folder: lightblue}
+  current-conditions: {icons-folder: icons-lightblue}
+  forecast:           {icons-folder: icons-lightblue}
 ```
 
-The second says it once.  With four radars on two pages, which is
-what most of the examples have, that is the difference between one block and
-eight repeated lines - and between changing a provider in one place or four.
+Every shipped theme has a block like that, and it is the only way one can say
+which hands a clock draws or which icons a forecast uses.
+
+**The same two blocks work in a config**, where they are a convenience rather
+than a necessity: you *can* name your widgets, so anything written in one
+could have been written on the widget itself.  What they save is repetition -
+four radars on two pages is what most clocks have, and that is the difference
+between saying `frame-provider` once or four times.
+
+**The shipped examples do not use them.**  Every setting sits on the thing it
+affects, so a radar's entry shows everything about that radar in one place and
+can be edited without knowing this section exists.  Reach for `kind-settings:`
+in a config when the repeating annoys you, which is a fine reason and a later
+one.
 
 **`radar` is not the plugin's name.**  It is the plugin's *kind*, declared in
 its own `config.yaml`:
@@ -189,8 +183,10 @@ frame, bottom to top: the base map, the radar, an overlay if you asked for
 one, your markers, the base map's own logo and credit, and the captions.
 
 ```yaml
-kind-settings:
-  radar:
+widgets:
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
     base-provider: mapbox
     frame-provider: librewxr
     style:           serbrynden/cmtb05qoy000401sk73c24q61
@@ -239,8 +235,10 @@ credit already drawn into it.
 Writing a list replaces that one rather than adding to it:
 
 ```yaml
-kind-settings:
-  radar:
+widgets:
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
     captions:
       - text: '{plugin-data.frame-time:%H:%M} {plugin-data.frame-attribution}'
         left: 0.02
