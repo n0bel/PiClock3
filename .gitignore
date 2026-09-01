@@ -142,6 +142,11 @@ env*.bat
 /ApiKeys.yaml*
 /Config*.yaml
 
+# instructions for whatever AI tool you use.  Yours, about how you work -
+# the conventions everyone follows are in CONTRIBUTING.md instead.
+/CLAUDE.md
+/AGENTS.md
+
 # installed plugins
 /plugins/*
 !/plugins/.gitkeep

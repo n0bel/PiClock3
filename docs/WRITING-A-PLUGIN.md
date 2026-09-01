@@ -51,6 +51,12 @@ Nothing is registered anywhere.  The `config.yaml` next to your code is found
 from the imported module rather than from a path anybody writes down - which
 is what makes a clone work the moment it lands.
 
+**Declare every setting you read there, with a comment saying what it does.**
+That file is the list of what your plugin accepts - a default that exists
+only inside your `.py` is one nobody can find, and a theme cannot set what
+it cannot see.  The documents here explain the settings whose behavior needs
+explaining; the rest are documented by being declared.
+
 A plugin brings its own `languages/` and `units/` folders with it if it has
 them, and both are merged rather than first-wins, so a plugin adds words and
 quantities without editing the shipped tables:

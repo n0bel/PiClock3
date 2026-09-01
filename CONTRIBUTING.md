@@ -60,6 +60,20 @@ Please don't reformat code you aren't changing.  Optimize-imports and
 reformat-on-save turn a ten line fix into a two hundred line diff, and the ten
 lines get lost in it.
 
+### Writing
+
+Documentation wraps at 78 columns, so a diff of a paragraph is the sentence
+that changed rather than the whole paragraph reflowed.  Tables are exempt.
+
+Comments say why something is the way it is, or state a fact that isn't
+obvious from the code.  They don't narrate what the code used to be — that's
+what the history is for.  A docstring can say what a thing is for.
+
+Commit messages say what changed.  Why, only where the change would look
+wrong without it.  Never what you tried on the way, and never how far along
+the work is — "part 2 of 3" and "still needs testing" are true for a day and
+misleading forever.
+
 ## The floor
 
 **Python 3.9, which means Raspberry Pi OS Bullseye.**  Older Pis that can't
