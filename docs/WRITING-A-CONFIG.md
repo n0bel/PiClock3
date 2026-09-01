@@ -195,6 +195,23 @@ widgets:
     frame-opacity:   1.0
 ```
 
+**`style:` is the base map itself**, named in whatever vocabulary the
+provider uses: a Mapbox style id like `mapbox/satellite-streets-v10`, or one
+of Google's four maptypes - `roadmap`, `satellite`, `terrain` or `hybrid`.
+The two do not translate, so a config that changes `base-provider:` and
+leaves `style:` alone is naming something the new provider has never heard
+of.  Mapbox has no such style and no map arrives - the plain grey described
+below.  Google answers 200 and quietly draws a roadmap instead, so
+`GoogleMaps` checks the name against the four first and says in the log what
+it did.
+
+**Say nothing and the provider uses its own** - satellite streets for
+Mapbox, hybrid for Google, each declared in the plugin's `config.yaml` and
+reachable from your config like anything else a plugin carries.  Most of the
+shipped examples say nothing, which is what lets them run on either
+provider: name a style and the config belongs to the one that understands
+it.
+
 **`overlay-style:` is a second base map drawn *over* the radar**, so the
 boundaries, roads and place names a storm would otherwise bury stay readable.
 It is a style whose ground and water are transparent, leaving only the lines
