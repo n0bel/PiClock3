@@ -19,9 +19,9 @@ from PiClock3.Frames import Frames      # timestamped tiles, animated
 from PiClock3.Weather import Weather    # what the sky is doing, or will be
 ```
 
-What each one asks of you is written beside it in that file.  A method you
-leave out raises an error naming your plugin, rather than failing in the
-middle of a redraw.
+What each one asks of you is written beside it in that file.  Leave out
+something the role cannot answer on your behalf and you get an error naming
+your plugin, rather than a failure in the middle of a redraw.
 
 ## Where a plugin goes
 
