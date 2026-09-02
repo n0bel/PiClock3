@@ -16,7 +16,7 @@ from PyQt5.QtNetwork import (QNetworkReply, QNetworkRequest)
 logger = logging.getLogger(__name__)
 
 
-class MapBox(Plugin):
+class Mapbox(Plugin):
 
     ATTRIBUTION = 'Mapbox'
 

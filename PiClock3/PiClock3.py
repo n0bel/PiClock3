@@ -873,6 +873,15 @@ class PiClock3(QWidget):
         cls = None
         clsName = ''
         for cname, obj in inspect.getmembers(mod, inspect.isclass):
+            # defined here, not imported.  A plugin that imports a base class
+            # to subclass it puts a second Plugin subclass in this namespace,
+            # and picking by "most derived" cannot tell the two apart when
+            # neither descends from the other.  `plugin:` names the package,
+            # so the class arrives from a module inside it rather than from
+            # the package itself
+            if not (obj.__module__ == mod.__name__
+                    or obj.__module__.startswith(mod.__name__ + '.')):
+                continue
             if not issubclass(obj, Plugin) or obj is Plugin:
                 continue
             if cls is not None and issubclass(cls, obj):

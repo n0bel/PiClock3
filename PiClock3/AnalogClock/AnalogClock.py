@@ -10,7 +10,7 @@ from ..Plugin import Plugin
 logger = logging.getLogger(__name__)
 
 
-class Plugin(Plugin):
+class AnalogClock(Plugin):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
