@@ -17,6 +17,23 @@ class BaseMap(Provider):
     sends along with the pixmap.
     """
 
+    def getMapPixmap(self, view, layerConfig, callback):
+        """fetch the map for `view` and answer callback(pixmap, mask).
+
+        `mask` is where this service's own logo and credit sit, in the
+        pixmap's own coordinates, or None where there is nothing to
+        protect.  Whatever draws frames over the map lifts that much of it
+        back on top, so a mark a provider does not describe is a mark that
+        gets covered.  bottomBandMask builds the usual one.
+
+        The mask travels with the pixmap rather than sitting on the
+        provider, because one instance serves every map on the clock and
+        the next response would overwrite it.
+        """
+        raise NotImplementedError(
+            '%s: %s is a base map and has no getMapPixmap'
+            % (self.name, type(self).__name__))
+
     def bottomBandMask(self, pixmap, rsize, px, feather=0.35):
         """an alpha mask over a full-width band across the bottom of pixmap.
 

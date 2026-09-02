@@ -9,6 +9,20 @@ They come in two sorts.  A **widget** draws in a region a layout named.  A
 which is why no theme reaches a provider, and why anything a theme should be
 able to say belongs on a widget.
 
+Each sort is a class to subclass, and a provider picks the one that says
+what it supplies:
+
+```python
+from PiClock3.Widget import Widget      # draws in a region
+from PiClock3.BaseMap import BaseMap    # the map under the frames
+from PiClock3.Frames import Frames      # timestamped tiles, animated
+from PiClock3.Weather import Weather    # what the sky is doing, or will be
+```
+
+What each one asks of you is written beside it in that file.  A method you
+leave out raises an error naming your plugin, rather than failing in the
+middle of a redraw.
+
 ## Where a plugin goes
 
 There is a `plugins` folder beside `Config.yaml`, at the top of the checkout,
@@ -43,9 +57,11 @@ the class into it:
 from .Tides import *
 ```
 
-The loader imports that name and finds the `Plugin` subclass inside by
-inspection, so the class can be called whatever suits.  `plugins` itself
-needs no `__init__.py`.
+The loader imports that name and finds your class inside by inspection, so
+it can be called whatever suits.  It takes the class your module *defines*
+rather than the role class your module imports: both are `Plugin`
+subclasses, and only one of them is yours.  `plugins` itself needs no
+`__init__.py`.
 
 Nothing is registered anywhere.  The `config.yaml` next to your code is found
 from the imported module rather than from a path anybody writes down - which
@@ -76,7 +92,7 @@ locations exist rather than one.  See [CONTRIBUTING.md](../CONTRIBUTING.md).
 ### What a plugin repository holds
 
     __init__.py         from .Tides import *
-    Tides.py            the module, holding a Plugin subclass
+    Tides.py            the module, holding your Widget or Provider subclass
     config.yaml         its defaults, and the list of what a theme may set
     README.md           what it does, and any key it needs
     languages/en.yaml   optional, words of its own
@@ -88,9 +104,11 @@ account.  A key belongs in the user's `ApiKeys.yaml`, never in your
 
 ## Weather providers say what the sky is doing, not what to call it
 
-A weather provider answers `current()`, `hourly(count, step)` and
-`daily(count)`, and answers empty for whatever it cannot know — a station has
-no forecast.  Each entry carries its condition as **WMO code table 4678
+A weather provider answers `conditions()`, `hourly(count, step)` and
+`daily(count)`.  Implement the ones your source can answer and leave the
+rest: `Weather` answers them with nothing - `None` for conditions, an empty
+list for the other two - so a station says it has no forecast by not
+writing one.  Each entry carries its condition as **WMO code table 4678
 notation**, the present-weather codes a METAR is written in, and never as
 words:
 
@@ -117,9 +135,10 @@ Showers" even though 4678 has no such code.
     cloudy        fog            rain                 sleet
     snow          thunderstorm   wind
 
-`Weather.variant()` swaps a `-day` name for its `-night` one, and
-`Weather.daytime()` will tell you which applies from the sun rather than from
-the hour.
+`self.variant()` swaps a `-day` name for its `-night` one - it comes with
+the `Weather` class, along with `self.humidity()` and `self.feelsLike()`.
+Which one applies is `Sun.daytime()`, from `PiClock3.Sun`, which answers
+from the sun rather than from the hour.
 
 `raw` is the service's own record for that entry, in whatever shape the
 service uses.  It is deliberately not normalized — it exists so that anything
@@ -148,8 +167,8 @@ of them in the stylesheet it builds.**  `DigitalClock` declares none and its
 stylesheet is one line:
 
 ```python
-props = self.piclock.scaleFont({'font-size': self.config['font-size']},
-                               self.clockrect.height())
+props = self.scaleFont({'font-size': self.config['font-size']},
+                       self.clockrect.height())
 ```
 
 Set one on your own widget only when you want it to differ from what the
@@ -270,24 +289,22 @@ through `kind-settings`.
 Every provider carries a name, and the default is nothing:
 
 ```python
-class LibreWXR(Plugin):
-    ATTRIBUTION = 'LibreWXR'
+class LibreWXR(Frames):
+    attribution = 'LibreWXR'
 ```
 
-A widget reaches it through `attribution()`, and a caption reaches it as
+A widget reads it straight, and a caption reaches it as
 `{plugin-data.frame-attribution}` or `{plugin-data.base-attribution}`.  A
-provider that needs no credit says nothing and appears nowhere.
+provider that needs no credit says nothing and appears nowhere.  One whose
+credit is only known at run time - a station reporting its own id - sets
+`self.attribution` in `__init__` instead.
 
-**A frame provider can stamp each frame itself.**  `frameCaption(timeSlot)`
-returns what to write over that frame, and the default is the time alone.
-Override it to add your name, or to tell an observation from a nowcast:
-
-```python
-def frameCaption(self, timeSlot):
-    # in the clock's zone, so a London config reads London time on the radar
-    return "{0:%H:%M} ".format(
-        self.piclock.localtime(timeSlot)) + self.ATTRIBUTION
-```
+**A frame provider hands over a time and a name, never a caption.**  The
+slot comes back through the callback, and whatever draws the frames turns it
+into a line - `MapLoop` writes the time in its own `caption-time-format:`
+and puts your `attribution` after it.  The format is the clock's to choose,
+the same way words for a weather condition are, so a provider that formats a
+time has made itself as untranslatable as one that hands over English.
 
 This is the only credit a radar gets, because radar tiles carry no mark of
 their own.

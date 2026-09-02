@@ -79,17 +79,12 @@ class Metar(Weather):
         if self.observation:
             fn()
 
-    def current(self):
+    def conditions(self):
         """the latest observation, or None before the first one arrives"""
         return self.observation
 
-    def hourly(self, count, step):
-        """a station reports what is happening, not what will"""
-        return []
-
-    def daily(self, count):
-        """a station reports what is happening, not what will"""
-        return []
+    # no hourly() or daily(): a station reports what is happening rather
+    # than what will, and Weather answers both with an empty list already.
 
     # ------------------------------------------------------------ fetching
 
@@ -113,7 +108,7 @@ class Metar(Weather):
         logger.info('wxmetar: %s', line)
 
         f = MetarModule.Metar(line, strict=False)
-        notation, cover = self.conditions(f)
+        notation, cover = self.decode(f)
         when = f.time.replace(tzinfo=TimeZoneUTC()).astimezone(
             self.piclock.timezone())
         temp = f.temp.value('C') if f.temp else None
@@ -154,7 +149,7 @@ class Metar(Weather):
     # amount, so these codes are carried as themselves.
     SKY = ('SKC', 'CLR', 'NCD', 'NSC', 'FEW', 'SCT', 'BKN', 'OVC', 'VV')
 
-    def conditions(self, f):
+    def decode(self, f):
         """the report as a WMO 4678 notation, and the sky cover beside it.
 
         Present weather wins over cloud: a station reporting fog at half a

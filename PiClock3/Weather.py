@@ -17,6 +17,34 @@ class Weather(Provider):
     and none of them formats.
     """
 
+    def subscribe(self, fn):
+        """call fn() whenever fresh data lands.
+
+        A widget draws from what conditions(), hourly() and daily() answer, so
+        this is how it learns there is anything new to draw.
+        """
+        raise NotImplementedError(
+            '%s: %s reports weather and has no subscribe'
+            % (self.name, type(self).__name__))
+
+    # The three below are each a question a source may not be able to
+    # answer, so each has an answer meaning it cannot: a station reports
+    # what is happening rather than what will, and a model can forecast
+    # without observing anything.  A provider says which it does by
+    # implementing those and leaving the rest alone.
+
+    def conditions(self):
+        """what the sky is doing now, or None."""
+        return None
+
+    def hourly(self, count, step):
+        """`count` entries from now, `step` hours apart, or empty."""
+        return []
+
+    def daily(self, count):
+        """`count` days ahead, today first, or empty."""
+        return []
+
     @staticmethod
     def humidity(temp, dew):
         """relative humidity from temperature and dew point, both Celsius"""

@@ -8,10 +8,25 @@ class Frames(Provider):
     sea ice all arrive the same way: tiles, each stamped with a time.
     """
 
-    def frameCaption(self, timeSlot):
-        """what to write over the frame for this time slot.
+    def frameTimes(self, count):
+        """the newest `count` time slots, oldest first.
 
-        A provider that knows more than the time - that this one is a
-        nowcast rather than an observation, say - overrides this.
+        The caller animates them in the order given, so the last one is the
+        most recent.  A slot is whatever this service stamps its tiles
+        with, and only this provider need understand it.
         """
-        return "{0:%H:%M}".format(self.piclock.localtime(timeSlot))
+        raise NotImplementedError(
+            '%s: %s supplies frames and has no frameTimes'
+            % (self.name, type(self).__name__))
+
+    def getFramePixmap(self, timeSlot, view, layerConfig, callback):
+        """fetch one slot's tiles for `view` and answer
+        callback(pixmap, timeSlot).
+
+        The slot comes back so the caller can file a frame that arrives out
+        of order, which they do: the tiles go out at once and land as they
+        land.
+        """
+        raise NotImplementedError(
+            '%s: %s supplies frames and has no getFramePixmap'
+            % (self.name, type(self).__name__))

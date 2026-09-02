@@ -106,6 +106,8 @@ class MapLoop(Widget):
         self.mapLabel.setAlignment(Qt.AlignCenter)
         logger.debug("maploop geom %s", rr)
 
+        self.captionTimeFormat = self.strftimePortableFormat(
+            self.config['caption-time-format'])
         self.captions = self.captionList()
 
         logger.debug("maploop get map pixmap")
@@ -472,6 +474,19 @@ class MapLoop(Widget):
             logger.warning("%s: %s is not a number: %r", self.name, name, value)
             return 1.0
 
+    def frameCaption(self, timeSlot):
+        """the built-in line over a frame: its time, then who supplied it.
+
+        Stamped in the clock's zone, so a London config reads London time on
+        the radar.  A provider hands over a time and a name and never a
+        formatted string: the format is the clock's to choose, the way words
+        for a weather condition are.
+        """
+        return ' '.join(
+            p for p in (format(self.piclock.localtime(timeSlot),
+                               self.captionTimeFormat),
+                        self.frameProvider.attribution) if p)
+
     def captionList(self):
         """the captions to draw, from captions: or from the older keys.
 
@@ -588,7 +603,7 @@ class MapLoop(Widget):
             self.piclock.localtime(timeSlot) if timeSlot is not None
             else Missing())
         self.pluginData['frame-caption'] = (
-            self.frameProvider.frameCaption(timeSlot)
+            self.frameCaption(timeSlot)
             if timeSlot is not None else Missing())
         self.pluginData['frame-attribution'] = self.frameProvider.attribution
         self.pluginData['base-attribution'] = self.baseProvider.attribution

@@ -63,9 +63,3 @@ class LibreWXR(Frames):
         TileFetcher(view.center, view.zoom,
                     view.rect.width(), view.rect.height(),
                     tileurl, callback, params=timeSlot)
-
-    def frameCaption(self, timeSlot):
-        # the radar frame is stamped in the clock's zone, so a London
-        # config reads London time on the radar too
-        return "{0:%H:%M} ".format(
-            self.piclock.localtime(timeSlot)) + self.attribution

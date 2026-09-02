@@ -1,7 +1,7 @@
 """What the weather is doing now, from whichever source is pointed at it.
 
 The source is named by conditions-provider and can be a station report or a
-model: both answer current() with the same shape, in Celsius, millibars and
+model: both answer conditions() with the same shape, in Celsius, millibars and
 km/h.  The bottom line carries the time of the observation and whatever the
 source calls itself - a station id, or the name of a service.
 
@@ -58,7 +58,7 @@ class CurrentConditions(Widget):
         return label
 
     def draw(self):
-        c = self.provider.current()
+        c = self.provider.conditions()
         if not c:
             return
         L = self.piclock.language

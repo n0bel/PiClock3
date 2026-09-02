@@ -308,11 +308,16 @@ and what that rule means for how you draw it, is
 A `MapLoop` draws its own text, composited into each frame rather than laid
 over it, so nothing that happens to the radar can fade it or cover it.
 
-Say nothing and you get the line every map carries - the frame provider's own
-stamp, `14:20 LibreWXR`, top left and outlined - plus the map's `label:` top
-right if it has one.  Only the frame provider is named there: radar tiles
-carry nothing of their own, while a base map arrives with its own logo and
-credit already drawn into it.
+Say nothing and you get the line every map carries - the frame's time and
+who supplied it, `14:20 LibreWXR`, top left and outlined - plus the map's
+`label:` top right if it has one.  Only the frame provider is named there:
+radar tiles carry nothing of their own, while a base map arrives with its
+own logo and credit already drawn into it.
+
+**`caption-time-format:` is the time on that line**, `'%H:%M'` unless you
+say otherwise, and `'%-I:%M %p'` for a twelve-hour clock.  Write it the
+glibc way and it is turned round for Windows.  It reaches only the built-in
+line; a `captions:` list of your own carries its formats inside its braces.
 
 **`label:` is a name for the map**, for a clock showing more than one and no
 other reason - unset, nothing is drawn.  Three settings dress it:

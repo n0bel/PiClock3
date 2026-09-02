@@ -46,6 +46,11 @@ captions: []
 caption-size: 0.06        # a fraction of the map's height
 caption-color: '#fff'
 
+# the time on the built-in caption line.  Written the glibc way - %-I for a
+# leading zero dropped - and turned round for Windows here.  A list of your
+# own carries its own formats inside its braces and ignores this.
+caption-time-format: '%H:%M'
+
 # a base map arrives with the provider's own logo and credit drawn into it,
 # and they are lifted back over the radar so the weather cannot bury them.
 # Turn that off and the radar covers them - which is the provider's terms to

@@ -88,7 +88,7 @@ class OpenMeteo(Weather):
         if self.now or self.days or self.hours:
             fn()
 
-    def current(self):
+    def conditions(self):
         """conditions now, or None before the first answer arrives"""
         return self.now
 
