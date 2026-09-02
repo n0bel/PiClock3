@@ -254,3 +254,39 @@ class Plugin(QObject):
         if isinstance(want, dict) and quantity in want:
             return want[quantity]
         return None
+
+
+# ---------------------------------------------------------------- the roles
+#
+# What a plugin is.  A widget draws in a region a layout named, and a theme
+# reaches it there.  A provider supplies data and occupies no region, which
+# is why no theme reaches one.
+
+
+class Widget(Plugin):
+    """draws in a region.  A theme reaches it."""
+
+
+class Provider(Plugin):
+    """supplies data and occupies no region."""
+
+
+class BaseMap(Provider):
+    """the map drawn under the frames."""
+
+
+class Frames(Provider):
+    """timestamped map tiles, animated by whatever draws them.
+
+    Nothing here is weather.  Precipitation, cloud cover, satellite IR and
+    sea ice all arrive the same way: tiles, each stamped with a time.
+    """
+
+
+class Weather(Provider):
+    """what the sky is doing, or will be.
+
+    One interface behind two kinds - `weather-source` and `forecast-source`
+    - because a station reports what is happening and a model reports what
+    will.  Which of those a provider can answer is its own to declare.
+    """
