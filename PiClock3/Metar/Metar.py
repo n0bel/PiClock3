@@ -19,8 +19,8 @@ import random
 from PyQt5.QtCore import QTimer
 from metar import Metar as MetarModule
 
-from .. import Weather
-from ..Plugin import Plugin
+from .. import Sun
+from ..Weather import Weather
 from ..WebGet import WebGet
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class TimeZoneUTC(datetime.tzinfo):
         return datetime.timedelta(hours=0, minutes=0)
 
 
-class Metar(Plugin):
+class Metar(Weather):
     # present weather onto the eleven icon names the shipped sets have,
     # tried in order so the first match wins
     ICONS = [
@@ -123,7 +123,7 @@ class Metar(Plugin):
         self.observation = {
             'when': when,
             'station': self.config.METAR,
-            'icon': Weather.variant(self.iconFor(notation, cover),
+            'icon': self.variant(self.iconFor(notation, cover),
                                     self.daytime(when)),
             'condition': notation or cover,
             'temp': temp,
@@ -134,8 +134,8 @@ class Metar(Plugin):
             'gust': f.wind_gust.value('KMH') if f.wind_gust else None,
             # a station reports temperature and dew point and leaves the rest
             # to the reader; the reader should not have to be a widget
-            'humidity': Weather.humidity(temp, dew),
-            'feels-like': Weather.feelsLike(temp, dew, wind),
+            'humidity': self.humidity(temp, dew),
+            'feels-like': self.feelsLike(temp, dew, wind),
             'raw': line,
         }
         for fn in self.listeners:
@@ -143,7 +143,7 @@ class Metar(Plugin):
 
     def daytime(self, when):
         """was the sun up over the station when it reported"""
-        return Weather.daytime(
+        return Sun.daytime(
             when,
             self.piclock.expand(self.piclock.config.location.latitude),
             self.piclock.expand(self.piclock.config.location.longitude),

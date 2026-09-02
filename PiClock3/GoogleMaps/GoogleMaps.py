@@ -1,6 +1,6 @@
 import logging
 
-from ..Plugin import Plugin
+from ..BaseMap import BaseMap
 from ..WebGet import WebGet, safeurl
 
 from PyQt5 import (QtGui, QtNetwork)
@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 MAPTYPES = ('roadmap', 'satellite', 'terrain', 'hybrid')
 
 
-class GoogleMaps(Plugin):
+class GoogleMaps(BaseMap):
 
-    ATTRIBUTION = 'Google'
+    attribution = 'Google'
 
     # the static image carries the Google logo bottom left and a data credit
     # bottom right, and the terms say they must never be obscured.  Measured

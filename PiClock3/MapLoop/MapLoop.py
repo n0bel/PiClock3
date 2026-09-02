@@ -2,7 +2,7 @@ import logging
 import os
 import time
 
-from ..Plugin import Plugin
+from ..Widget import Widget
 
 from PyQt5 import (QtGui, QtNetwork)
 from PyQt5.QtCore import (QObject, QThread, pyqtSlot, pyqtSignal, Qt,
@@ -62,7 +62,7 @@ RETRY_TRIES = 4
 NO_MAP = '#3a3a3a'
 
 
-class MapLoop(Plugin):
+class MapLoop(Widget):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
@@ -511,7 +511,7 @@ class MapLoop(Plugin):
                 logger.warning(
                     "%s: no caption names the frame provider - %s asks to be "
                     "credited and nothing else on the map does it",
-                    self.name, self.frameProvider.attribution() or 'it')
+                    self.name, self.frameProvider.attribution or 'it')
             return entries
 
         entries = [{'text': DEFAULT_CAPTION,
@@ -590,10 +590,10 @@ class MapLoop(Plugin):
         self.pluginData['frame-caption'] = (
             self.frameProvider.frameCaption(timeSlot)
             if timeSlot is not None else Missing())
-        self.pluginData['frame-attribution'] = self.frameProvider.attribution()
-        self.pluginData['base-attribution'] = self.baseProvider.attribution()
+        self.pluginData['frame-attribution'] = self.frameProvider.attribution
+        self.pluginData['base-attribution'] = self.baseProvider.attribution
         self.pluginData['overlay-attribution'] = \
-            self.overlayProvider.attribution()
+            self.overlayProvider.attribution
 
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.TextAntialiasing)

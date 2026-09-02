@@ -3,7 +3,7 @@ import logging
 
 from PyQt5.QtCore import QTimer
 
-from ..Plugin import Plugin
+from ..Widget import Widget
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ class TimeZoneUTC(datetime.tzinfo):
         return datetime.timedelta(hours=0, minutes=0)
 
 
-class Date(Plugin):
+class Date(Widget):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)

@@ -15,12 +15,12 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLabel
 
-from ..Plugin import Plugin
+from ..Widget import Widget
 
 logger = logging.getLogger(__name__)
 
 
-class CurrentConditions(Plugin):
+class CurrentConditions(Widget):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
@@ -89,7 +89,7 @@ class CurrentConditions(Plugin):
         self.parts['wdate'].setText(
             '' if when is None
             else '%s %s' % (when.strftime(self.observedFormat),
-                            getattr(self.provider, 'attribution', '')))
+                            self.provider.attribution))
 
     def humidity(self, c, temp, dew):
         given = c.get('humidity')

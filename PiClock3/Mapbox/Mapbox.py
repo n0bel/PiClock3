@@ -1,6 +1,6 @@
 import logging
 
-from ..Plugin import Plugin
+from ..BaseMap import BaseMap
 from ..WebGet import WebGet, safeurl
 
 from PyQt5 import (QtGui, QtNetwork)
@@ -16,9 +16,9 @@ from PyQt5.QtNetwork import (QNetworkReply, QNetworkRequest)
 logger = logging.getLogger(__name__)
 
 
-class Mapbox(Plugin):
+class Mapbox(BaseMap):
 
-    ATTRIBUTION = 'Mapbox'
+    attribution = 'Mapbox'
 
     # the static image carries its own logo and credit along the bottom, and
     # the terms say they must not be obscured.  Measured 2026-08-31: 15px at

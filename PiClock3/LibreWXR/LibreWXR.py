@@ -1,6 +1,6 @@
 import time
 
-from ..Plugin import Plugin
+from ..Frames import Frames
 from ..Tiler import TileFetcher
 
 # facts about the service, not settings
@@ -13,7 +13,7 @@ HOST = 'https://api.librewxr.net'
 INTERVAL = 600
 
 
-class LibreWXR(Plugin):
+class LibreWXR(Frames):
     """LibreWXR's radar tiles.
 
     RainViewer has a plugin of its own, and the two have grown apart: this
@@ -23,7 +23,7 @@ class LibreWXR(Plugin):
     separate is what lets this one be arithmetic.
     """
 
-    ATTRIBUTION = 'LibreWXR'
+    attribution = 'LibreWXR'
 
     def start(self):
         return
@@ -68,4 +68,4 @@ class LibreWXR(Plugin):
         # the radar frame is stamped in the clock's zone, so a London
         # config reads London time on the radar too
         return "{0:%H:%M} ".format(
-            self.piclock.localtime(timeSlot)) + self.ATTRIBUTION
+            self.piclock.localtime(timeSlot)) + self.attribution

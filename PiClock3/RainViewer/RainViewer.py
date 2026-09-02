@@ -3,7 +3,7 @@ import json
 import logging
 import time
 
-from ..Plugin import Plugin
+from ..Frames import Frames
 from ..Tiler import TileFetcher
 from ..WebGet import WebGet
 
@@ -15,7 +15,7 @@ INDEX_REFRESH = 300
 INDEX = 'https://api.rainviewer.com/public/weather-maps.json'
 
 
-class RainViewer(Plugin):
+class RainViewer(Frames):
     """RainViewer's radar tiles.
 
     LibreWXR serves an index of the same shape and has a plugin of its own.
@@ -24,7 +24,7 @@ class RainViewer(Plugin):
     as a conditional.
     """
 
-    ATTRIBUTION = 'RainViewer'
+    attribution = 'RainViewer'
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
@@ -45,19 +45,19 @@ class RainViewer(Plugin):
 
     def gotIndex(self, error, data, params):
         if error:
-            logger.warning("%s index %s failed: %s", self.ATTRIBUTION, INDEX, error)
+            logger.warning("%s index %s failed: %s", self.attribution, INDEX, error)
             return
         try:
             index = json.loads(bytes(data).decode('utf-8'))
         except ValueError:
-            logger.warning("%s index %s is not json", self.ATTRIBUTION, INDEX)
+            logger.warning("%s index %s is not json", self.attribution, INDEX)
             return
         self.host = index['host']
         radar = index.get('radar', {})
         frames = radar.get('past', []) + radar.get('nowcast', [])
         self.frames = {int(f['time']): f['path'] for f in frames}
         self.order = sorted(self.frames)
-        logger.info("%s index: %d frames, newest %s", self.ATTRIBUTION,
+        logger.info("%s index: %d frames, newest %s", self.attribution,
                     len(self.order),
                     time.asctime(time.localtime(self.order[-1]))
                     if self.order else 'none')
@@ -104,4 +104,4 @@ class RainViewer(Plugin):
         # the radar frame is stamped in the clock's zone, so a London
         # config reads London time on the radar too
         return "{0:%H:%M} ".format(
-            self.piclock.localtime(timeSlot)) + self.ATTRIBUTION
+            self.piclock.localtime(timeSlot)) + self.attribution

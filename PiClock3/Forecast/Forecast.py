@@ -16,7 +16,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLabel
 
-from ..Plugin import Plugin
+from ..Widget import Widget
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ ALIGN = {
 }
 
 
-class Forecast(Plugin):
+class Forecast(Widget):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
@@ -56,7 +56,7 @@ class Forecast(Plugin):
             })
 
         # Open-Meteo's data is CC-BY and the credit is required
-        credit = getattr(self.provider, 'attribution', '')
+        credit = self.provider.attribution
         if credit and 'attribution' in self.config['layout']:
             self.part(self.regions[-1], 'attribution').setText(credit)
 

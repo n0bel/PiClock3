@@ -6,8 +6,8 @@ from PyQt5.QtCore import QTimer
 from astral import LocationInfo
 from astral import moon
 
-from .. import Weather
-from ..Plugin import Plugin
+from .. import Sun
+from ..Widget import Widget
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class TimeZoneUTC(datetime.tzinfo):
         return datetime.timedelta(hours=0, minutes=0)
 
 
-class Astral(Plugin):
+class Astral(Widget):
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
@@ -51,9 +51,9 @@ class Astral(Plugin):
                                     self.piclock.expand(
                                         self.config.location.latitude),
                                     self.piclock.expand(self.config.location.longitude))
-        s = Weather.sunTimes(now, locationInfo.latitude,
+        s = Sun.sunTimes(now, locationInfo.latitude,
                              locationInfo.longitude, locationInfo.timezone)
-        for key, _ in Weather.EVENTS:
+        for key, _ in Sun.EVENTS:
             if key not in s:
                 logger.info("no %s at %s,%s today", key,
                             locationInfo.latitude, locationInfo.longitude)
@@ -71,7 +71,7 @@ class Astral(Plugin):
         # which of the two it is and a different format is used.
         polar = 'sunrise' not in s or 'sunset' not in s
         if polar:
-            up = Weather.daytime(now, locationInfo.latitude,
+            up = Sun.daytime(now, locationInfo.latitude,
                                  locationInfo.longitude,
                                  locationInfo.timezone)
             self.pluginData['sun'] = self.piclock.language(

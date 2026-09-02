@@ -15,14 +15,12 @@ import datetime
 import json
 import logging
 
-from .. import Weather
-from ..Plugin import Plugin
+from ..Weather import Weather
 from ..WebGet import WebGet
 
 logger = logging.getLogger(__name__)
 
 HOST = 'https://api.open-meteo.com/v1/forecast'
-ATTRIBUTION = 'Open-Meteo'
 
 # Open-Meteo's weather codes onto an icon and a WMO 4678 notation.  The
 # codes are not 4678 and not quite 4677 either - 0 to 3 are sky cover, which
@@ -59,10 +57,10 @@ WMO = {
 }
 
 
-class OpenMeteo(Plugin):
+class OpenMeteo(Weather):
 
     # CC-BY 4.0: no key, but the credit is required
-    attribution = ATTRIBUTION
+    attribution = 'Open-Meteo'
 
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
@@ -135,7 +133,7 @@ class OpenMeteo(Plugin):
 
     def getForecast(self):
         u = self.url()
-        logger.info('%s url %s', ATTRIBUTION, u)
+        logger.info('%s url %s', self.attribution, u)
         WebGet(u, self.gotForecast)
 
     @staticmethod
@@ -150,12 +148,12 @@ class OpenMeteo(Plugin):
 
     def gotForecast(self, error, data, params):
         if error:
-            logger.warning('%s failed: %s', ATTRIBUTION, error)
+            logger.warning('%s failed: %s', self.attribution, error)
             return
         try:
             index = json.loads(bytes(data).decode('utf-8'))
         except ValueError:
-            logger.warning('%s did not answer with json', ATTRIBUTION)
+            logger.warning('%s did not answer with json', self.attribution)
             return
 
         # Celsius, percent and millimeters throughout; converting is the
@@ -184,7 +182,7 @@ class OpenMeteo(Plugin):
             icon, notation = WMO.get(code, ('cloudy', ''))
             self.now = {
                 'when': datetime.datetime.fromisoformat(now['time']),
-                'icon': Weather.variant(icon, now.get('is_day')),
+                'icon': self.variant(icon, now.get('is_day')),
                 'condition': notation,
                 'temp': now.get('temperature_2m'),
                 'dew': None,
@@ -204,7 +202,7 @@ class OpenMeteo(Plugin):
             icon, notation = WMO.get(code, ('cloudy', ''))
             hours.append({
                 'when': datetime.datetime.fromisoformat(when),
-                'icon': Weather.variant(icon, self.at(hourly, 'is_day', i)),
+                'icon': self.variant(icon, self.at(hourly, 'is_day', i)),
                 'condition': notation,
                 'temp': self.at(hourly, 'temperature_2m', i),
                 'precip': self.at(hourly, 'precipitation_probability', i),
@@ -214,7 +212,7 @@ class OpenMeteo(Plugin):
             })
         self.hours = hours
 
-        logger.info('%s: %d days and %d hours, first day %s', ATTRIBUTION,
+        logger.info('%s: %d days and %d hours, first day %s', self.attribution,
                     len(days), len(hours),
                     days[0]['when'] if days else 'none')
         for fn in self.listeners:
