@@ -93,6 +93,9 @@ class PiClock3(QWidget):
     styles = DottedDict()
     plugins = DottedDict()
     pluginData = DottedDict()
+    # which tier last set each of a plugin's settings, keyed the way
+    # pluginData is.  Beside the config because it cannot live on one.
+    pluginTiers = {}
     slideshows = []
 
     regionName = 'PiClock3'
@@ -715,15 +718,20 @@ class PiClock3(QWidget):
         self.regionTheme[name] = theme
         logging.debug("Region %s %s", name, rect)
 
-    def pluginConfig(self, mod, entry):
+    def pluginConfig(self, mod, entry, name):
         """the plugin's own defaults with this instance merged over them.
 
         the defaults live beside the plugin's code, so they are found from
         the imported module rather than from a path anybody has to write
         down - which is what makes a third-party plugin work the moment it
         is cloned into plugins/.
+
+        Each tier is named as it is merged, into pluginTiers[name], because
+        the merge is the last moment anything can tell a shipped default
+        from an answer somebody wrote.
         """
         config = DottedDict()
+        tiers = self.pluginTiers[name] = {}
         defaults = {}
         path = os.path.join(os.path.dirname(os.path.abspath(mod.__file__)),
                             'config.yaml')
@@ -731,27 +739,41 @@ class PiClock3(QWidget):
             with open(path, encoding='utf-8') as fh:
                 defaults = yaml.safe_load(fh) or {}
             defaults = thisFolder(defaults, os.path.dirname(path))
-            self.config._merge(defaults, config)
+            self.config._merge(defaults, config, tiers, 'plugin')
 
         # the theme of the page this instance draws on, if it draws at all.
         # a provider occupies no region, so no theme reaches it - which is
         # why anything a theme should be able to say belongs on a widget.
         theme = self.instanceTheme(entry)
         if theme:
-            self.cascade(theme, defaults, config)
-            self.settingsFor(theme, defaults, entry, config)
+            self.cascade(theme, defaults, config, tiers)
+            self.settingsFor(theme, defaults, entry, config, tiers, 'theme')
 
         # the config has the same two blocks and the last word over the theme
-        self.settingsFor(self.config, defaults, entry, config)
-        self.config._merge(entry, config)
+        self.settingsFor(self.config, defaults, entry, config, tiers,
+                         'config')
+        self.config._merge(entry, config, tiers, 'widget')
+        # only what somebody wrote; the shipped defaults are the rest of it
+        # and saying so for every setting of every plugin buries this
+        chosen = {k: v for k, v in tiers.items() if v != 'plugin'}
+        if chosen:
+            logger.debug('%s settings from %s', name, chosen)
         return config
+
+    def setBy(self, name, setting):
+        """which tier last set this setting of this plugin, or None.
+
+        'plugin' means nothing but the plugin's own config.yaml answered,
+        which is the shipped default rather than anybody's choice.
+        """
+        return self.pluginTiers.get(name, {}).get(setting)
 
     # Qt's own property names, which mean here what they mean in Qt.  A
     # widget declaring one is asking for the page's answer to it.
     CASCADE = ('color', 'background-color', 'font-family', 'font-style',
                'font-weight')
 
-    def cascade(self, theme, defaults, config):
+    def cascade(self, theme, defaults, config, tiers=None):
         """the theme's default: reaching every widget that takes the name.
 
         font-size is deliberately not among them.  It is a fraction of
@@ -762,8 +784,11 @@ class PiClock3(QWidget):
         for name in self.CASCADE:
             if name in page and name in defaults:
                 config[name] = page[name]
+                if tiers is not None:
+                    tiers[name] = 'theme default'
 
-    def settingsFor(self, source, defaults, entry, config):
+    def settingsFor(self, source, defaults, entry, config,
+                    tiers=None, where=''):
         """kind-settings: then plugin-settings:, from a theme or the config.
 
         A kind is what a plugin is interchangeable with, so a kind-setting
@@ -774,7 +799,8 @@ class PiClock3(QWidget):
                            ('plugin-settings', entry.get('plugin'))):
             settings = source.get(block)
             if isinstance(settings, dict) and isinstance(settings.get(key), dict):
-                self.config._merge(settings[key], config)
+                self.config._merge(settings[key], config, tiers,
+                                   ('%s %s' % (where, block)).strip())
 
     def instanceTheme(self, entry):
         """the theme of the page an instance draws on"""
@@ -866,7 +892,7 @@ class PiClock3(QWidget):
             raise SystemExit("%s does not say which plugin it is.  Add"
                              " plugin: <module>\n" % name)
         mod = importlib.import_module(entry['plugin'])
-        moduleConfig = self.pluginConfig(mod, entry)
+        moduleConfig = self.pluginConfig(mod, entry, name)
         self.broadcast(entry, moduleConfig)
         logging.info('loading %s %s', mod, name)
         self.pluginData[name] = DottedDict()

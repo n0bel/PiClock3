@@ -7,6 +7,9 @@ logger = logging.getLogger(__name__)
 class DottedDict(dict):
     def __init__(self):
         super().__init__(self)
+        # what lets x.some reach x['some'].  It also means this has no
+        # attributes of its own: anything set on one is a key, so what
+        # belongs beside a DottedDict cannot be kept on it.
         self.__dict__ = self
 
     # also allow x['some.deeper.path']

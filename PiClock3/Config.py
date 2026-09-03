@@ -132,11 +132,23 @@ class Config(DottedDict):
                 else:
                     self._overrides(value)
 
-    def _merge(self, source, destination):
+    def _merge(self, source, destination, tiers=None, tier=None, path=''):
+        """source over destination, recursing into dicts.
+
+        Anything that is not a dict is assigned outright, so a list replaces
+        a list rather than extending one.
+
+        `tiers` collects which tier last wrote each dotted path, for a
+        caller assembling one config out of several.  It travels as an
+        argument because a DottedDict has no attributes to hang it on.
+        """
         for key, value in source.items():
+            where = path + key
             if isinstance(value, dict):
                 node = destination.setdefault(key, DottedDict())
-                self._merge(value, node)
+                self._merge(value, node, tiers, tier, where + '.')
             else:
                 destination[key] = value
+                if tiers is not None:
+                    tiers[where] = tier
         return destination
