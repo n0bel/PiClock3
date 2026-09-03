@@ -67,11 +67,37 @@ Nothing is registered anywhere.  The `config.yaml` next to your code is found
 from the imported module rather than from a path anybody writes down - which
 is what makes a clone work the moment it lands.
 
-**Declare every setting you read there, with a comment saying what it does.**
-That file is the list of what your plugin accepts - a default that exists
-only inside your `.py` is one nobody can find, and a theme cannot set what
-it cannot see.  The documents here explain the settings whose behavior needs
-explaining; the rest are documented by being declared.
+**Declare every setting you read there, and give each one a default.**  That
+file is the list of what your plugin accepts - a default that exists only
+inside your `.py` is one nobody can find, and a theme cannot set what it
+cannot see.  A value the user has to supply still declares: empty, or the
+`{apikeys.mbapi}` sort of name that reaches their config.
+
+It is read by more than a person.  A setting missing from it is one no
+editor can offer and no check can validate, so `self.config.get('format')`
+against a `config.yaml` that never mentions `format` is a setting that does
+not exist as far as anything outside your code can tell.
+
+Comment the ones whose *value* means something a reader cannot infer -
+`font-family: ''  # empty takes the page's`.  Not what the setting is for;
+its name does that, and how to choose a value belongs in a document rather
+than beside a default.
+
+**A default can be a name rather than a value.**  Anything in braces is
+looked up when the setting is used, so a plugin declares where its answer
+comes from instead of copying it:
+
+```yaml
+apikey:   '{apikeys.mbapi}'          # the user's key
+latitude: '{location.latitude}'      # where the clock is pointed
+format:   '{language.date-format}'   # the language's own date line
+```
+
+That last one is why `Date` has no fallback in its code.  `{language.*}`
+follows the language file's shape - `{language.strings.sunrise}` for a word,
+a setting beside the tables by its own name - so a translation supplies the
+answer and the plugin declares only that it wants it.  Details are in
+[WRITING-A-LANGUAGE.md](WRITING-A-LANGUAGE.md).
 
 A plugin brings its own `languages/` and `units/` folders with it if it has
 them, and both are merged rather than first-wins, so a plugin adds words and

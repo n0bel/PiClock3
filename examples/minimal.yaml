@@ -1,0 +1,56 @@
+# PiClock3 - Minimal.
+#
+# The smallest clock that works, and a place to start from.  Everything
+# with a default is left to it: no zoom, no center, no station, no date
+# format, no markers, no captions, no label.  Each of those is answered by
+# the plugin's own config.yaml, so what is written here is only what
+# nothing else can know - where you are, which services to use, and which
+# region each widget draws in.
+#
+# Both radars draw the same picture on purpose.  Neither says where to
+# point or how far in, so both take the clock's own location and zoom 7.
+# Give one a zoom: of its own to see the near view the other examples show.
+
+pages:
+  clock-page: {order: 0, layout: classic, theme: circuit}
+
+language: en
+
+location:
+  latitude: 44.735428
+  longitude: -93.163912
+
+providers:
+  openmeteo: {plugin: PiClock3.OpenMeteo}
+  metar:     {plugin: PiClock3.Metar}
+  mapbox:    {plugin: PiClock3.Mapbox}
+  librewxr:  {plugin: PiClock3.LibreWXR}
+
+widgets:
+  clock:  {plugin: PiClock3.AnalogClock, region: clock}
+  date:   {plugin: PiClock3.Date,        region: date}
+  astral: {plugin: PiClock3.Astral,      region: bottom}
+
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    conditions-provider: metar
+
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
+    base-provider: mapbox
+    frame-provider: librewxr
+
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    base-provider: mapbox
+    frame-provider: librewxr
+
+apikeys: !include ApiKeys.yaml

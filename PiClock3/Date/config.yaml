@@ -1,1 +1,3 @@
 kind: date
+
+format: '{language.date-format}'

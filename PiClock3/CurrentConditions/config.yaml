@@ -1,5 +1,7 @@
 kind: current-conditions
 
+conditions-provider: ''
+
 # Where the parts sit inside the region, as fractions of it - the same
 # geometry keys a page layout uses, against this region instead of a page.
 # A bare-number font-size is a fraction of the height it sits in.

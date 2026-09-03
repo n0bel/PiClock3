@@ -42,6 +42,11 @@ Then name it in a config, or leave it - `en` is the default:
 language: de
 ```
 
+**A config or a plugin can read any of it**, by the path this file already
+has: `{language.strings.sunrise}` for a word, `{language.date-format}` for a
+setting beside the tables.  That is how `PiClock3/Date/config.yaml` declares
+`format: '{language.date-format}'` rather than hiding the answer in code.
+
 **If you mean to contribute the translation to PiClock3 itself**, put it in
 `PiClock3/languages/` and open a pull request.  Translations are the most
 useful thing to contribute and the easiest to review, so they are welcome.

@@ -1,5 +1,7 @@
 kind: forecast
 
+forecast-provider: ''
+
 # How many cells show what.  The near hours come first, because what the
 # weather does this afternoon matters more than what Thursday looks like.
 # These two should add up to the number of cells the region has - the classic

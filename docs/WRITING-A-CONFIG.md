@@ -206,6 +206,12 @@ widgets:
     frame-opacity:   1.0
 ```
 
+**`center:` and `zoom:` point the map.**  Unset, as above, a map sits on the
+clock's own `location:` at zoom 7.  Between the two sits the frame provider:
+a service covering one country knows its extent better than a config does,
+so if it declares a `center:` or a `zoom:` of its own, a map that says
+nothing takes it.  Say either on the widget and yours wins.
+
 **`style:` is the base map itself**, named in whatever vocabulary the
 provider uses: a Mapbox style id like `mapbox/satellite-streets-v10`, or one
 of Google's four maptypes - `roadmap`, `satellite`, `terrain` or `hybrid`.
@@ -426,9 +432,16 @@ radar.
 ## What the widgets take
 
 Everything a plugin accepts is declared in its own `config.yaml` beside its
-code, each with a comment saying what it does - **that file is the list**.
-These are the ones worth saying out loud.  Any of them goes where any other
-setting goes: on the widget, in `kind-settings:`, or in a theme.
+code, with a default for each - **that file is the list**.  These are the
+ones worth saying out loud.  Any of them goes where any other setting goes:
+on the widget, in `kind-settings:`, or in a theme.
+
+**Read it, do not edit it.**  It is the plugin's declaration of what it
+takes and what it ships, which is what a configuration editor will read to
+know your options.  Change one to suit your clock and the change is invisible
+to anyone reading your config, and gone the next time you update.  Your own
+config has the last word over it, which is the whole point of the order
+above.
 
 **Any widget that shows a measurement** takes `precision:`, a block keyed by
 quantity, for when the unit table's own answer is wrong for the space:
@@ -476,18 +489,26 @@ name keeps the table's answer.  The table, and how to add to it, is
 |---|---|
 | `extra-font-attributes` | anything Qt understands that has no setting of its own, put into the stylesheet as written |
 
+**`PiClock3.Date`**
+
+| | |
+|---|---|
+| `format` | strftime for the date line.  The default is `{language.date-format}` - the language's own line, which knows where the day belongs in the sentence.  Beside strftime's codes it understands `{day}`, the day with no leading zero, and `{sup}`, the ordinal after it: `en` writes `%A %B {day}<sup>{sup}</sup> %Y` and gets *Thursday September 3rd 2026* |
+
 **`PiClock3.MapLoop`**, beyond the radar and caption settings above
 
 | | |
 |---|---|
 | `dwell` | milliseconds a frame is on screen, 200 |
 | `hold` | milliseconds to rest on the newest frame before the loop starts again, 1200 |
+| `font-family` | the face the captions and the label are drawn in.  Empty, the default, takes the page's |
 
 **Providers**
 
 | | |
 |---|---|
 | `refresh` | minutes between asks - 10 for `Metar`, whose stations report about hourly, and 30 for `OpenMeteo`, whose free tier is generous rather than unlimited |
+| `METAR` | the airfield `Metar` reads, by ICAO id - `KMSP` unless you say, and the nearest field to you is almost certainly better.  It is also what the reading is credited as, which is why the conditions block ends in a station id rather than a service name |
 | `forecast-days` | how many days `OpenMeteo` is asked for, 9.  It will give up to 16 and the classic layout has room for 9 |
 
 ## `locale:`
@@ -557,9 +578,22 @@ format: '{plugin-data.now:%H:%M:%S}'   # what the widget published
 
 `{location.*}` and `{apikeys.*}` reach the config's own blocks.
 `{plugin-data.*}` reaches whatever the widget itself has published - the
-digital clock's `now`, for instance.  `{language.*}` reaches the words of the
-current language, and `{this-folder}` is the folder of the file that said it,
-so art travels with whatever ships it.
+digital clock's `now`, for instance.  `{this-folder}` is the folder of the
+file that said it, so art travels with whatever ships it.
+
+**`{language.*}` follows the language file's own shape.** A word is in the
+`strings:` table and reaches as `{language.strings.sunrise}`; a setting
+beside the tables reaches by its own name, `{language.date-format}`:
+
+```yaml
+format: '{language.date-format}'          # PiClock3/Date/config.yaml
+```
+
+The two miss differently, on purpose.  A word nobody has translated yet
+comes back spaced and capitalized, so a plugin naming one still reads.  A
+setting nobody has comes back empty - a format string is not a word, and one
+that answered with its own name would draw `Date-Format` across the clock
+and look deliberate.
 
 A name that is not there comes back empty rather than complaining, so
 `{plugin-data.sunrise:%H:%M}` draws nothing on a day the sun does not rise

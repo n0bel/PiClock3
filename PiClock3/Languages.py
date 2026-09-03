@@ -203,9 +203,9 @@ class Languages():
     def chosen(self):
         """the code the config asked for.
 
-        Read once and remembered, because config['language'] is replaced by
-        the table itself after loading - so that {language.sunrise} in a
-        format string means the word, which is what it reads like.
+        Read once and remembered, because config['language'] is replaced
+        after loading by the file itself, so that a format string can reach
+        {language.strings.sunrise} and {language.date-format}.
         """
         if self.requested:
             return self.requested

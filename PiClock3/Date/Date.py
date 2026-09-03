@@ -23,10 +23,11 @@ class Date(Widget):
         self.ordinal = {}
 
     def start(self):
+        # the language's own line, unless a config said otherwise: the
+        # default in config.yaml is {language.date-format}, so which one
+        # arrives here is the merge's business rather than this method's
         self.format = self.strftimePortableFormat(
-            self.config.get('format')
-            or self.piclock.languages.setting('date-format',
-                                              '%A %B {day} %Y'))
+            self.piclock.expand(self.config['format']))
         self.ordinal = self.piclock.languages.setting('date-ordinal') or {}
         self.timer = QTimer()
         self.timer.timeout.connect(self.doDate)

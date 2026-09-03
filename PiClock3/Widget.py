@@ -116,17 +116,21 @@ class Widget(Plugin):
             return off
         return kind, blur, color, o, light
 
-    def setting(self, name, provider, default):
-        """this instance, then the provider it is asking, then the default.
+    def setting(self, name, provider):
+        """whoever answered for this instance, then the provider, then the
+        plugin's own default.
 
         The provider tier is what lets a service that knows its own coverage
         supply a sensible center or zoom for any widget that does not say.
+        It sits under a theme and a config and over a shipped default, which
+        is a distinction the merge flattens away - so which tier answered is
+        asked of the clock, which recorded it as it merged.
         """
-        if name in self.config:
+        if self.piclock.setBy(self.name, name) not in (None, 'plugin'):
             return self.config[name]
         if provider is not None and name in provider.config:
             return provider.config[name]
-        return default
+        return self.config.get(name)
 
     def icon(self, name, folder=None):
         """the file for a weather icon, yours before the shipped one.

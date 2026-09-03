@@ -20,11 +20,6 @@ from ..Projection import (getCorners, getPoint, getTileXY, LatLng,
 
 logger = logging.getLogger(__name__)
 
-# no data source has an opinion about where you live
-DEFAULT_CENTER = {'latitude': '{location.latitude}',
-                  'longitude': '{location.longitude}'}
-DEFAULT_ZOOM = 7
-
 # the line every map carries when nothing else is asked for.  Only the frame
 # provider is named: radar tiles carry nothing of their own, while a base map
 # arrives with its own mark already on it and that mark is put back on top.
@@ -86,8 +81,8 @@ class MapLoop(Widget):
 
     def mapView(self):
         """the one view every layer of this map uses"""
-        c = self.setting('center', self.frameProvider, DEFAULT_CENTER)
-        zoom = self.setting('zoom', self.frameProvider, DEFAULT_ZOOM)
+        c = self.setting('center', self.frameProvider)
+        zoom = self.setting('zoom', self.frameProvider)
         return MapView(
             LatLng(float(self.piclock.expand(str(c['latitude']))),
                    float(self.piclock.expand(str(c['longitude'])))),

@@ -1,4 +1,13 @@
 kind: radar
+
+base-provider: ''
+frame-provider: ''
+
+center:
+    latitude: '{location.latitude}'
+    longitude: '{location.longitude}'
+zoom: 7
+
 interval: 10
 frames: 7
 frame-opacity: 1.0
@@ -45,6 +54,8 @@ label-outline: false
 captions: []
 caption-size: 0.06        # a fraction of the map's height
 caption-color: '#fff'
+
+font-family: ''           # empty takes the page's
 
 # the time on the built-in caption line.  Written the glibc way - %-I for a
 # leading zero dropped - and turned round for Windows here.  A list of your

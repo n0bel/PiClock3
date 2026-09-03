@@ -18,7 +18,7 @@ from PyQt5.QtGui import (QImage, QFontMetrics)
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
 from .Config import thisFolder
-from .DottedDict import DottedDict
+from .DottedDict import DottedDict, Missing
 from .Languages import Languages
 from .Plugin import Plugin
 from .Slideshow import Slideshow
@@ -65,19 +65,50 @@ class FitLabel(QLabel):
                     self.objectName(), size, shown, room)
 
 
-class Words():
-    """the language table, as something a format string can reach into.
+class Table():
+    """one table inside a language file, reached by name.
 
-    {language.sunrise} asks the same question as piclock.language('sunrise')
-    and gets the same answer - including the same fallback for a word no
-    table has - so the two ways of asking cannot drift apart.
+    {language.strings.sunrise} asks the same question as
+    piclock.language('sunrise') and gets the same answer, including the same
+    fallback for a word no table has, so the two ways of asking cannot drift
+    apart.
     """
+
+    def __init__(self, piclock, which):
+        self.piclock = piclock
+        self.which = which
+
+    def __getattr__(self, name):
+        if self.which == 'strings':
+            return self.piclock.language(name)
+        found = self.piclock.languages.conditions().get(name)
+        return found if found is not None else Missing()
+
+
+class Words():
+    """a language file, as something a format string can reach into.
+
+    The path is the file: {language.strings.pressure} for a word,
+    {language.date-format} for a setting beside the tables.  That is what
+    lets a plugin declare a language's answer as its own default rather
+    than reaching for one in code nobody can see.
+
+    A word nobody has translated yet still reads, because language() spaces
+    and capitalizes it.  A setting nobody has is Missing instead: a format
+    string is not a word, and one that came back as its own name would draw
+    'Date-Format' across the clock and look deliberate.
+    """
+
+    TABLES = ('strings', 'conditions')
 
     def __init__(self, piclock):
         self.piclock = piclock
 
     def __getattr__(self, name):
-        return self.piclock.language(name)
+        if name in self.TABLES:
+            return Table(self.piclock, name)
+        found = self.piclock.languages.setting(name)
+        return found if found is not None else Missing()
 
 
 class PiClock3(QWidget):
@@ -765,8 +796,19 @@ class PiClock3(QWidget):
 
         'plugin' means nothing but the plugin's own config.yaml answered,
         which is the shipped default rather than anybody's choice.
+
+        A setting that is a block of its own - center, location - answers
+        for what is inside it, since the merge records leaves.  Whoever
+        wrote any part of the block wrote the block.
         """
-        return self.pluginTiers.get(name, {}).get(setting)
+        tiers = self.pluginTiers.get(name, {})
+        if setting in tiers:
+            return tiers[setting]
+        inside = [t for k, t in tiers.items() if k.startswith(setting + '.')]
+        for tier in inside:
+            if tier != 'plugin':
+                return tier
+        return inside[0] if inside else None
 
     # Qt's own property names, which mean here what they mean in Qt.  A
     # widget declaring one is asking for the page's answer to it.

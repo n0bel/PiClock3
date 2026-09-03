@@ -1,5 +1,7 @@
 kind: weather-source
 
+METAR: KMSP
+
 # minutes.  Stations report about hourly, so asking more often than this
 # mostly re-reads the same line.
 refresh: 10
