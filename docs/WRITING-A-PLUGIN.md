@@ -120,9 +120,13 @@ locations exist rather than one.  See [CONTRIBUTING.md](../CONTRIBUTING.md).
     __init__.py         from .Tides import *
     Tides.py            the module, holding your Widget or Provider subclass
     config.yaml         its defaults, and the list of what a theme may set
+    schema.yaml         the shape of those settings
     README.md           what it does, and any key it needs
     languages/en.yaml   optional, words of its own
     units/*.yaml        optional, quantities of its own
+
+A `schema.yaml` is required, and `description:` is the only part of one that
+is - see [WRITING-A-SCHEMA.md](WRITING-A-SCHEMA.md).
 
 Ship a `README` that says which service it talks to and whether that needs an
 account.  A key belongs in the user's `ApiKeys.yaml`, never in your

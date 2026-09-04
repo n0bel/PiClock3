@@ -21,15 +21,9 @@
 #     required: true      must be set; blank is a problem
 #     inherits: <where>   blank takes it from there
 #     range: [low, high]  inclusive
-#     unit: <what>        what a bare number counts, where nothing in
-#                         units/quantities.yaml covers it - minutes,
-#                         milliseconds.  No suffix is accepted.
-#     quantity: <what>    an entry in units/quantities.yaml, which says
-#                         the same thing but leaves the table to define
-#                         it.  A bare number is that quantity's base and
-#                         a measure may name any unit it lists, so
-#                         altitude takes 1600 and '5280ft' alike.  A
-#                         units: set converts what is shown, never this.
+#     unit: <what>        what a bare number counts - minutes, milliseconds
+#     quantity: <what>    an entry in units/quantities.yaml: a bare number
+#                         is its base, and any unit it lists may be written
 #     names: <what>       must name something that exists, which is what
 #                         lets an editor offer a list rather than a box:
 #
@@ -54,10 +48,8 @@ types:
     is: scalar
     of: [string]
     # a number carrying its own unit, '20px' or '5280ft'.  Which units are
-    # legal comes from the setting: with quantity: they are that table's
-    # in units/quantities.yaml, and without one they are Qt's, since Qt is
-    # what parses those.  Beside a bare number - a fraction of whatever
-    # holds it, or the quantity's base where there is one.
+    # legal comes from the setting's quantity:, or from Qt where it has
+    # none.  Beside a bare number, a fraction of whatever holds it.
 
   size:
     is: scalar
