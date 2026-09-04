@@ -71,5 +71,16 @@ class Expander(string.Formatter):
             logger.debug('nothing to expand for %s', name)
             return Missing(), name
 
+    def format_field(self, value, spec):
+        """a setting that is there and blank reads as one that is not.
+
+        yaml gives None for `timezone:` with nothing after it, and str()
+        would put the word None in a label.  Blank means none, so it
+        expands to nothing, which is what an absent name already does.
+        """
+        if value is None:
+            return ''
+        return super().format_field(value, spec)
+
 
 EXPANDER = Expander()

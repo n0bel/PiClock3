@@ -31,7 +31,7 @@ defaults, or do nothing until you want them.
 | | |
 |---|---|
 | `pages:` | which pages exist, and the layout and theme each one wears |
-| `location:` | latitude, longitude, timezone |
+| `location:` | latitude, longitude, timezone, elevation |
 | `language:` | which language file the words come from |
 | `units:` | which set of units - `default`, `metric`, `SI` or `nautical`, and see [WRITING-UNITS.md](WRITING-UNITS.md) |
 | `providers:` | plugins that fetch data and draw nothing |
@@ -58,10 +58,11 @@ Each page names a **layout**, which says where the regions are, and a
 **theme**, which says what they look like.  `order` is the sequence they
 rotate in; the space bar steps through them.
 
-The names on the left are yours.  What matters is that the regions a layout
-`provides:` are the names your widgets ask for - `classic` provides `current`,
-`maps`, `clock`, `date`, `bottom` and `forecast`, so those are the regions a
-widget on that page can sit in.
+The names on the left are yours.  What matters is that the names under a
+layout's `regions:` are the ones your widgets ask for - `classic` has
+`current`, `maps`, `clock`, `date`, `bottom` and `forecast`, so those are
+where a widget on that page can sit.  One that repeats offers its cells as
+well, `maps.1` and `maps.2`, which is what a single radar names.
 
 ## `location:`
 
@@ -70,11 +71,22 @@ location:
   latitude: 45
   longitude: -93
   timezone:
+  elevation:
 ```
+
+Only the two coordinates are needed; the other two can be left blank or left
+out.
 
 A blank `timezone:` means the machine's own, which is right when the clock
 sits where it is pointed.  Name a zone - `Europe/London`, `Pacific/Auckland` -
 when it does not.
+
+A blank `elevation:` lets a weather service work it out from the
+coordinates, which it does better than a guess - give one only where that is
+wrong, as it is on a peak.  A bare number is meters however `units:` is set,
+because a set converts what is shown and never what you type; write `5280ft`
+to say otherwise, or any other unit `altitude` defines in
+[WRITING-UNITS.md](WRITING-UNITS.md).
 
 Widgets reach these with `{location.latitude}`, so a radar centered on the
 clock's own position does not repeat the numbers.

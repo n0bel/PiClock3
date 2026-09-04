@@ -1,0 +1,14 @@
+description: >
+  The time as text.  It draws whatever its format says, so it serves as a
+  caption strip as readily as a clock face.
+
+settings:
+
+  font-size: {is: font-size}
+  effect:    {of: [string, effect]}
+  # any widget takes one; this is where the glowing face comes from
+  format:    {is: template}
+  lowercase: {is: boolean}
+  extra-font-attributes: {is: string}
+  # anything Qt understands that has no setting of its own, put into the
+  # stylesheet as written

@@ -1,0 +1,30 @@
+# What a widget accepts by being a widget, whatever it draws.  Widget.py
+# reads these, so every plugin that subclasses Widget takes them and no
+# provider does - a provider has no region for a theme to reach.
+#
+# The defaults are in widget-config.yaml beside this, and merge under a
+# plugin's own.  A plugin declaring one of these is giving itself a
+# different default rather than claiming the setting.
+
+settings:
+
+  color:            {is: color}
+  background-color: {is: color}
+  font-family:      {is: string}
+  font-style:       {is: string}
+  font-weight:      {is: string}
+  # the five names Qt owns.  A theme's default: cascades them onto the
+  # region and Qt carries them into whatever a widget draws there, so
+  # saying one here is overruling the page for this widget alone.
+
+  effect: {of: [string, effect]}
+  # core applies it to the regions a layout named, before start() runs, and
+  # the glow takes its color from the one above
+
+  icons-folder: {is: string}
+  units:        {is: string, inherits: clock}
+  precision:    {is: block, of: {}}
+  # and these three only mean anything to a plugin that asks - icon(),
+  # units() and precision() are helpers rather than something core calls.
+  # precision is keyed by quantity: temperature, pressure, and the rest of
+  # the table in units/quantities.yaml

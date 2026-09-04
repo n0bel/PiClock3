@@ -1,0 +1,11 @@
+description: >
+  Google's static map, as the picture under a radar.  It arrives with
+  Google's own logo and credit drawn into it, and sends a mask saying where
+  they sit so whatever draws over it can put them back on top.
+
+settings:
+
+  apikey: {is: template, required: true}
+  style:  {is: scalar, one-of: [roadmap, satellite, terrain, hybrid]}
+  # Google's four maptypes, and nothing else.  A Mapbox style id here is
+  # answered with 200 and a roadmap, so the name is checked before asking.

@@ -126,6 +126,30 @@ adding a quantity it has never heard of - a tide plugin's new `tide` shows in
 its base unit under all four sets, and each set adds a line for it or does
 not.
 
+## What a config writes, which a set never touches
+
+A set decides what a number is **shown** in.  It has nothing to say about
+what you **type**, and that is deliberate: a location's elevation is a fact
+about the place, so switching to `metric` must not move a mountain.
+
+A setting the schema marks with a quantity is written in that quantity's
+base, or carries any unit the quantity defines:
+
+```yaml
+location:
+  elevation: 1600        # meters, the base of altitude
+  elevation: '5280ft'    # the same setting, said the other way
+```
+
+So the `units:` block of a quantity is two lists at once - what a set may
+ask to see, and what a config may write.  Adding a unit adds both.  An
+unknown one is a startup message naming the ones there are:
+
+    unknown unit 'yd' for quantity 'altitude'.  Known: ft, m
+
+Case is significant, because the table's own names are: `K` is kelvin and
+`inHg` is not `inhg`.
+
 ## `precision:` where the table is wrong for the space
 
 The table's precision suits the unit.  A widget may want something else,

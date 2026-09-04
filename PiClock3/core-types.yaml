@@ -1,0 +1,158 @@
+# The types nobody owns - the shapes more than one plugin needs.  A plugin
+# invents its own beside its settings; these are the ones invented for
+# everybody, and a name may not be redefined.
+#
+# Four kinds, which is what a type is made of:
+#
+#     scalar   a string, a number, a boolean
+#     block    an object whose keys are known    marker {location, color}
+#     table    an object whose keys you invent   widgets {radar1, radar2}
+#     list     an array
+#
+# A setting says one of:
+#
+#     is: <type>          exactly this
+#     of: [<type>, ...]   any one of these types
+#     with: <type>        that type's fields sit beside these, not under
+#
+# and may add:
+#
+#     one-of: [v, ...]    these values, and nothing else
+#     required: true      must be set; blank is a problem
+#     inherits: <where>   blank takes it from there
+#     range: [low, high]  inclusive
+#     unit: <what>        what a bare number counts, where nothing in
+#                         units/quantities.yaml covers it - minutes,
+#                         milliseconds.  No suffix is accepted.
+#     quantity: <what>    an entry in units/quantities.yaml, which says
+#                         the same thing but leaves the table to define
+#                         it.  A bare number is that quantity's base and
+#                         a measure may name any unit it lists, so
+#                         altitude takes 1600 and '5280ft' alike.  A
+#                         units: set converts what is shown, never this.
+#     names: <what>       must name something that exists, which is what
+#                         lets an editor offer a list rather than a box:
+#
+#         providers   an entry of the config's own providers:
+#         regions     one a page's layout declares, cells included
+#         layouts     a file in layouts/
+#         themes      a folder in themes/
+#         unit-sets   a set in units/sets.yaml, or one added to it
+#
+# of: is always type names and one-of: is always values, so neither has to
+# be read in context.
+#
+# Silence means optional, and blank means none.  Those three - required,
+# optional, inherited - are what a blank default cannot say by itself.
+
+# what every type is built from
+primitives: [number, string, boolean]
+
+types:
+
+  measure:
+    is: scalar
+    of: [string]
+    # a number carrying its own unit, '20px' or '5280ft'.  Which units are
+    # legal comes from the setting: with quantity: they are that table's
+    # in units/quantities.yaml, and without one they are Qt's, since Qt is
+    # what parses those.  Beside a bare number - a fraction of whatever
+    # holds it, or the quantity's base where there is one.
+
+  size:
+    is: scalar
+    of: [number, measure]
+    # a bare number is a fraction of the height it sits in; above 1 it was
+    # almost certainly meant as pixels, and the plugin says so in the log
+
+  font-size:
+    is: scalar
+    of: [number, measure]
+    # size, and 0 besides: text as large as fits across, which is what
+    # FitLabel is for
+
+  color:
+    is: scalar
+    of: [string]
+    # anything Qt reads: a name, #rgb, #rrggbb, rgba()
+
+  strftime:
+    is: scalar
+    of: [string]
+    portable: true
+    # written the glibc way - %-d drops a leading zero - and turned round
+    # for Windows by strftimePortableFormat
+
+  template:
+    is: scalar
+    of: [string]
+    # a line with {names} in it, looked up when it is drawn:
+    # {location.*}, {apikeys.*}, {language.*}, {plugin-data.*},
+    # {this-folder}, {plugin-folder}.  A name that is not there comes back
+    # empty rather than complaining.
+
+  provider:
+    is: scalar
+    of: [string]
+    names: providers
+    # one of the config's own providers:.  A widget naming something else
+    # is a config that cannot work
+
+  effects:
+    is: scalar
+    one-of: [glow, shadow, none]
+
+  effect:
+    # a glow or a drop shadow, which are one Qt effect with only the offset
+    # telling them apart.  Widget.applyEffect reads it, so any widget takes
+    # one; a plugin declaring effect: is giving itself a default rather than
+    # claiming the setting.
+    #
+    # The string shorthand - 'glow 0.125 150', kind blur lighten - writes a
+    # glow and cannot carry a color, because yaml reads a space then # as
+    # a comment.
+    is: block
+    of:
+      type:    {is: effects}
+      blur:    {is: number}
+      color:   {is: color}
+      offset:  {is: number}
+      lighten: {is: number}
+
+  location:
+    is: block
+    of:
+      latitude:  {is: number, range: [-90, 90], required: true}
+      longitude: {is: number, range: [-180, 180], required: true}
+      timezone:  {is: string}
+      elevation: {of: [number, measure], quantity: altitude}
+    # an IANA name - Europe/Oslo - and how high, as 1600 for meters or
+    # '5280ft' to say otherwise.  Blank takes the machine's zone, and
+    # lets a service work the elevation out from the coordinates, which
+    # it does better than a guess.  A plugin reads what it has a use for.
+
+  placement:
+    # where a box sits inside the box holding it, each value a fraction of
+    # that one.  Signed: a center is an offset from the middle, and a part
+    # may hang above its region.  A side that would run past an edge is
+    # held at it.
+    is: block
+    of:
+      left:              {is: number}
+      right:             {is: number}
+      top:               {is: number}
+      bottom:            {is: number}
+      horizontal-center: {is: number}
+      vertical-center:   {is: number}
+
+  geometry:
+    # placement, and how big.  Two of left/right/width give the third, and
+    # the same downward.  PiClock3._regionRect reads all of it, for a page's
+    # regions and a widget's own parts alike - but something sized by its
+    # own contents, a caption by its text, takes placement instead.
+    is: block
+    with: placement
+    of:
+      width:  {is: number}
+      height: {is: number}
+      aspect: {is: number}

@@ -1,0 +1,13 @@
+description: >
+  Sunrise, sunset and the moon phase, worked out rather than fetched.  It
+  needs a latitude and a longitude and nothing else, which is why it is the
+  one widget that is its own source.
+
+settings:
+
+  format:       {is: template}
+  polar-format: {is: template}
+  # drawn instead on a day the sun neither rises nor sets, where the usual
+  # line has no time to put in and would print its own braces
+
+  location: {is: location}

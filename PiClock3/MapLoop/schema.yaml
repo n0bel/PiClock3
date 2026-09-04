@@ -1,0 +1,77 @@
+description: >
+  An animated map - a base map with timestamped tiles drawn over it, one
+  frame at a time.  Usually radar, but a frame provider supplies whatever it
+  has: cloud cover, satellite, sea ice.  Everything is composited into one
+  picture per frame, so the captions and the base map's own credit sit above
+  the weather rather than under it.
+
+types:
+
+  marker-sizes:
+    is: scalar
+    one-of: [small, mid, tiny]
+    # v1's three names, each a proportion of marker-size
+
+  marker:
+    is: block
+    of:
+      location: {is: location, required: true}
+      image:    {is: string}
+      color:    {is: color}
+      size:     {of: [number, measure, marker-sizes]}
+      visible:  {of: [boolean, number]}
+      # drawn unless set to something other than 1
+
+  caption-entry:
+    of: [template, caption]
+    # a bare string is the whole entry, everything else defaulted - the
+    # same shorthand-or-block shape effect: has
+
+  caption:
+    is: block
+    with: placement
+    # placement rather than geometry: a caption is as big as its text
+    of:
+      text:        {is: string, required: true}
+      size:        {is: size}
+      color:       {is: color}
+      font-family: {is: string, inherits: page}
+      outline:     {of: [boolean, color]}
+      # true takes black or white from the text's own color
+
+settings:
+
+  base-provider:    {is: provider, required: true}
+  frame-provider:   {is: provider, required: true}
+  overlay-provider: {is: provider}
+
+  center: {is: location}
+  zoom:   {is: number, range: [0, 20]}
+
+  interval: {is: number, unit: minutes}
+  frames:   {is: number}
+  dwell:    {is: number, unit: milliseconds}
+  hold:     {is: number, unit: milliseconds}
+
+  frame-opacity:   {is: number, range: [0, 1]}
+  overlay-opacity: {is: number, range: [0, 1]}
+  overlay-style:   {is: string}
+
+  markers:                   {is: list, of: marker}
+  marker-size:               {of: [number, measure, marker-sizes]}
+  marker-images-folder:      {is: string}
+  marker-images-base-folder: {is: string}
+
+  label:         {is: string}
+  label-size:    {is: size}
+  label-color:   {is: color}
+  label-outline: {of: [boolean, color]}
+
+  captions:            {is: list, of: caption-entry}
+  caption-size:        {is: size}
+  caption-color:       {is: color}
+  caption-time-format: {is: strftime}
+
+  font-family: {is: string, inherits: page}
+
+  ignore-attribution-mask: {is: boolean}

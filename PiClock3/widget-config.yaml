@@ -1,0 +1,16 @@
+# What every widget starts with, under whatever its own config.yaml says.
+# Described in widget-schema.yaml beside this.
+
+color: white
+
+# absent and 'none' mean the same to applyEffect: no effect at all
+effect: none
+
+# the shipped set.  Only a plugin that draws icons ever asks.
+icons-folder: icons-lightblue
+
+# empty takes the clock's own set
+units: ''
+
+# empty takes each quantity's own precision from the unit table
+precision: {}

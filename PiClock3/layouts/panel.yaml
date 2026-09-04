@@ -1,8 +1,6 @@
 name: Panel
 description: Designed for a 4:3 panel - conditions and radars left, clock center, forecast right
 
-provides: [current, maps, clock, date, bottom, forecast]
-
 designed-for: '4:3'
 
 regions:

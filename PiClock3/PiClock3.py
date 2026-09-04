@@ -21,6 +21,7 @@ from .Config import thisFolder
 from .DottedDict import DottedDict, Missing
 from .Languages import Languages
 from .Plugin import Plugin
+from .Widget import Widget
 from .Slideshow import Slideshow
 from .Units import Units
 
@@ -749,7 +750,7 @@ class PiClock3(QWidget):
         self.regionTheme[name] = theme
         logging.debug("Region %s %s", name, rect)
 
-    def pluginConfig(self, mod, entry, name):
+    def pluginConfig(self, mod, entry, name, cls):
         """the plugin's own defaults with this instance merged over them.
 
         the defaults live beside the plugin's code, so they are found from
@@ -757,12 +758,22 @@ class PiClock3(QWidget):
         down - which is what makes a third-party plugin work the moment it
         is cloned into plugins/.
 
+        Under those, what the role itself takes: a widget accepts color and
+        effect whether or not the plugin ever heard of them, and a provider
+        accepts neither, having no region for a theme to reach.
+
         Each tier is named as it is merged, into pluginTiers[name], because
         the merge is the last moment anything can tell a shipped default
         from an answer somebody wrote.
         """
         config = DottedDict()
         tiers = self.pluginTiers[name] = {}
+        if issubclass(cls, Widget):
+            path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                'widget-config.yaml')
+            with open(path, encoding='utf-8') as fh:
+                self.config._merge(yaml.safe_load(fh) or {}, config,
+                                   tiers, 'role')
         defaults = {}
         path = os.path.join(os.path.dirname(os.path.abspath(mod.__file__)),
                             'config.yaml')
@@ -934,10 +945,11 @@ class PiClock3(QWidget):
             raise SystemExit("%s does not say which plugin it is.  Add"
                              " plugin: <module>\n" % name)
         mod = importlib.import_module(entry['plugin'])
-        moduleConfig = self.pluginConfig(mod, entry, name)
-        self.broadcast(entry, moduleConfig)
         logging.info('loading %s %s', mod, name)
         self.pluginData[name] = DottedDict()
+        # the class first: which role it is decides whether the widget tier
+        # is merged under its own config.yaml, and finding it needs only
+        # the module
         cls = None
         clsName = ''
         for cname, obj in inspect.getmembers(mod, inspect.isclass):
@@ -959,6 +971,8 @@ class PiClock3(QWidget):
         if cls is None:
             raise TypeError('%s defines no Plugin subclass' % entry['plugin'])
         logger.debug('found %s %s', cls, clsName)
+        moduleConfig = self.pluginConfig(mod, entry, name, cls)
+        self.broadcast(entry, moduleConfig)
         instance = cls(self, name, moduleConfig)
         self.plugins[name] = instance
         # effect: on the region, before start() draws anything into it.  An

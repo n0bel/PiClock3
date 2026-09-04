@@ -1,0 +1,10 @@
+description: >
+  The date, in the language's own shape.  strftime localizes the names but
+  never the order, so the sentence comes from the language rather than from
+  here.
+
+settings:
+
+  format: {is: template}
+  # expanded, then run through strftime.  Beside strftime's codes it takes
+  # {day}, the day with no leading zero, and {sup}, the ordinal after it.

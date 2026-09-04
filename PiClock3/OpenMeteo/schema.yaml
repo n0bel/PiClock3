@@ -1,0 +1,12 @@
+description: >
+  Open-Meteo's forecast - the hours ahead and the days ahead, and what it
+  is doing now, in one request.  No key and no account.
+
+provides: [conditions, hourly, daily]
+
+settings:
+
+  refresh:       {is: number, unit: minutes}
+  forecast-days: {is: number, range: [1, 16]}
+  # the service gives up to 16; the classic layout has room for 9
+  location:      {is: location}

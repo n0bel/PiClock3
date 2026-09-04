@@ -1,0 +1,37 @@
+description: >
+  What the weather is doing now, from a station report or a model - both
+  answer the same way.  A picture, a temperature, and the readings under it,
+  ending in the time of the observation and whatever the source calls
+  itself.
+
+types:
+
+  part:
+    is: block
+    with: geometry
+    # a fraction of this widget's region rather than of the page.  Color
+    # and family arrive on the region and Qt inherits them, so only the
+    # size is said here.
+    of:
+      font-size: {is: font-size}
+
+settings:
+
+  conditions-provider: {is: provider, required: true}
+
+  layout:
+    is: block
+    # the parts this plugin draws.  The names are its own and fixed - it
+    # asks for each by name - so a layout naming anything else is ignored.
+    of:
+      wxicon:    {is: part}
+      wxdesc:    {is: part}
+      temper:    {is: part}
+      pressure:  {is: part}
+      humidity:  {is: part}
+      wind:      {is: part}
+      feelslike: {is: part}
+      wdate:     {is: part}
+
+  observed-format: {is: strftime}
+  icons-folder:    {is: string}

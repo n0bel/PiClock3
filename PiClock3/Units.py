@@ -20,6 +20,7 @@ rather than a KeyError inside a Qt callback with nothing in the log.
 import glob
 import logging
 import os
+import re
 
 import yaml
 from compassheadinglib import Compass
@@ -33,6 +34,10 @@ def compass(value, unit):
 
 
 VIA = {'compass': compass}
+
+# a number, then whatever is left is the unit.  Not letters-only: a unit
+# may hold anything the table's own key does, and rate: is mm/h.
+MEASURE = re.compile(r'^([-+]?(?:[0-9]*\.)?[0-9]+(?:[eE][-+]?[0-9]+)?)\s*(.*)$')
 
 
 class Units():
@@ -132,6 +137,45 @@ class Units():
                                  % (name, quantity, ', '.join(sorted(q['units']))))
         base = (value - a.get('offset', 0)) / a.get('factor', 1)
         return base * b.get('factor', 1) + b.get('offset', 0)
+
+    def measure(self, quantity, value, default=None):
+        """what a config wrote, as a number in `quantity`'s base unit.
+
+        The other way round from format(): that takes a number a provider
+        gave us and shows it the way the set asks, this takes what somebody
+        typed and gets a number out of it.  A bare one is already the base,
+        so altitude: 1600 is 1600 meters; '5280ft' names a unit the
+        quantity defines and is converted.  A set converts what is shown
+        and never this, or choosing metric would move a mountain.
+
+        Blank is `default`, which is how a setting says it was not given
+        rather than saying zero.  Case matters, because the table's own
+        names do - K is kelvin, and inHg is not inhg.
+        """
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return default
+
+        q = self.quantities.get(quantity)
+        if q is None:
+            raise SystemExit('\nunknown quantity %r.  Known: %s\n'
+                             % (quantity, ', '.join(sorted(self.quantities))))
+
+        # bool first: yaml reads yes and on as True, and True is an int
+        if isinstance(value, bool):
+            raise SystemExit('\ncannot read %r as %s\n' % (value, quantity))
+        if isinstance(value, (int, float)):
+            return float(value)
+
+        found = MEASURE.match(str(value).strip())
+        if found is None:
+            raise SystemExit("\ncannot read %r as %s: give a number, or a"
+                             " number with a unit as '900%s' is\n"
+                             % (value, quantity, q['base']))
+
+        number, unit = float(found.group(1)), found.group(2).strip()
+        if not unit:
+            return number
+        return self.convert(quantity, unit, q['base'], number)
 
     def format(self, quantity, frm, value, setName=None, precision=None):
         """a value in `frm`, shown the way the set asks for it"""

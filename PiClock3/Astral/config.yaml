@@ -7,3 +7,5 @@ polar-format: "{plugin-data.sun} {language.strings.moon_phase} {plugin-data.moon
 location:
     latitude: "{location.latitude}"
     longitude: "{location.longitude}"
+    timezone: "{location.timezone}"
+    elevation: "{location.elevation}"

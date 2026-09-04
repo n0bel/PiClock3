@@ -1,0 +1,80 @@
+# The shape of your Config.yaml - the document, rather than what any one
+# plugin accepts.  A plugin's own settings are in its schema.yaml; this says
+# where they go and what has to be around them.
+#
+# Types are the ones in core-types.yaml.  The three tables are tables
+# because you invent the keys: a page, a provider and a widget are all named
+# by you and referred to by that name elsewhere.
+
+types:
+
+  page:
+    is: block
+    of:
+      order:  {is: number, required: true}
+      layout: {is: string, names: layouts, required: true}
+      theme:  {is: string, names: themes, required: true}
+    # order is what the pages step through, not what the file lists
+
+  provider-entry:
+    is: block
+    of:
+      plugin: {is: string, required: true}
+    # and whatever that plugin's schema.yaml declares, over its defaults
+
+  widget-entry:
+    is: block
+    of:
+      plugin: {is: string, required: true}
+      region: {of: [region-name, region-names], required: true}
+    # and whatever that plugin's schema.yaml declares, plus everything in
+    # widget-schema.yaml.  region names one of the layout's, or several
+
+  region-name:
+    is: scalar
+    of: string
+    names: regions
+    # a region some page's layout declares, including a repeat's cells -
+    # maps.1 and maps.2 exist, the bare maps gathers both
+
+  region-names:
+    is: list
+    of: region-name
+
+  levels:
+    is: scalar
+    one-of: [debug, info, warning]
+
+settings:
+
+  pages:     {is: table, of: page, required: true}
+  providers: {is: table, of: provider-entry}
+  widgets:   {is: table, of: widget-entry, required: true}
+  apikeys:   {is: table, of: string}
+  # apikeys: !include ApiKeys.yaml is the usual shape, so a key never sits
+  # in the file you would show somebody
+
+  location: {is: location, required: true}
+  # where the clock is pointed, and what a plugin's own location: defaults
+  # from
+  language: {is: string}
+  locale:   {is: string}
+  # a code the language file answers to, and the locale strftime is asked
+  # to use for day and month names.  Empty locale takes the machine's.
+
+  units: {is: string, names: unit-sets}
+  # a set in units/sets.yaml, or one a plugin or you added
+
+  logging-level: {is: levels}
+  geometry:      {is: string}
+  # WIDTHxHEIGHT, or WIDTHxHEIGHT+X+Y: a window rather than full screen,
+  # for looking at a clock built for a screen you do not have here
+
+  start-at: {is: string}
+  # a date and time the clock pretends it is, for seeing a page as it will
+  # look later.  Only the clock moves; a radar still asks for now.
+
+  kind-settings:   {is: table, of: block}
+  plugin-settings: {is: table, of: block}
+  # the same two blocks a theme has, keyed by kind and by plugin name, so a
+  # config has the last word over one

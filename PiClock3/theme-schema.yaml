@@ -1,0 +1,67 @@
+# What a theme file says: how a page looks, and nothing about where things
+# sit.  A theme is a folder under themes/ holding theme.yaml and its art,
+# and a page names one.
+#
+# Everything here is reachable from a config too, which has the last word -
+# a theme is where an answer belongs, not where it is enforced.
+
+types:
+
+  border:
+    is: block
+    of:
+      art:   {is: template, required: true}
+      width: {is: number}
+      inset: {is: number}
+    # art is a template so {this-folder} finds the picture beside the theme
+    # that named it.  width is a fraction of the region, inset how far the
+    # frame's own edge sits inside its picture.
+
+  slideshow:
+    is: block
+    # more than one picture behind a page.  Name a folder of them, or the
+    # files one by one - each theme ships its own background.png, so a
+    # slideshow across themes has to name them.
+    of:
+      folder:   {is: template}
+      files:    {is: list, of: template}
+      interval: {is: number, unit: seconds}
+      order:    {is: scalar, one-of: [sorted, random]}
+      fit:      {is: scalar, one-of: [cover, contain]}
+      color:    {is: color}
+
+  qt-defaults:
+    is: block
+    # the five names Qt owns, and font-size beside them.  Only the five
+    # cascade, and only into a widget that declares the name; font-size is
+    # here for the page itself, being a fraction of whatever it lands in.
+    of:
+      color:            {is: color}
+      background-color: {is: color}
+      font-family:      {is: string}
+      font-style:       {is: string}
+      font-weight:      {is: string}
+      font-size:        {is: font-size}
+
+settings:
+
+  name:        {is: string, required: true}
+  description: {is: string}
+
+  default: {is: qt-defaults}
+  # what every widget on the page starts with
+
+  styles:  {is: table, of: block}
+  # raw Qt properties, by name.  A layout region's style: names one.
+
+  borders: {is: table, of: border}
+  # by name.  A layout region's border: names one, or true for default.
+
+  background: {of: [template, slideshow]}
+  # one picture, or the block above for several
+
+  kind-settings:   {is: table, of: block}
+  plugin-settings: {is: table, of: block}
+  # settings for every plugin of a kind, and for one plugin by name.  A
+  # kind means interchangeable with, so a kind-setting means the same thing
+  # to each plugin wearing it.

@@ -12,3 +12,5 @@ forecast-days: 9
 location:
     latitude: "{location.latitude}"
     longitude: "{location.longitude}"
+    timezone: "{location.timezone}"
+    elevation: "{location.elevation}"

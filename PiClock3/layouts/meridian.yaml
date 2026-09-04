@@ -1,8 +1,6 @@
 name: Meridian
 description: Clock centered in the sun diagram, forecast in a row along the foot
 
-provides: [current, model, maps, radar, clock, date, foot, forecast]
-
 designed-for: '16:9'
 
 regions:

@@ -1,8 +1,6 @@
 name: Big Maps
 description: Two large radars side by side, caption strip along the bottom
 
-provides: [radars, caption]
-
 designed-for: '16:9'
 
 regions:

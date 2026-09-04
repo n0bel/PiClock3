@@ -1,0 +1,53 @@
+# What a layout file says: the boxes a page has and where they sit, and
+# nothing about how they look.  Files are in layouts/, and a page names one.
+#
+# The region names here are what a widget's region: points at, so this file
+# is the far end of that reference.
+
+types:
+
+  repeat:
+    is: block
+    # one region divided into cells, registered as name.1 .. name.N.  The
+    # bare name gathers them, which is how a forecast fills nine cells from
+    # one entry.
+    of:
+      count:     {is: number, required: true}
+      direction: {is: scalar, one-of: [down, across]}
+      gap:       {is: number}
+      # a fraction of the span, left between cells for a rule
+
+  border-name:
+    is: scalar
+    of: string
+    names: borders
+    # an entry of the theme's borders:.  true takes its default
+
+  style-name:
+    is: scalar
+    of: string
+    names: styles
+    # an entry of the theme's styles:, or of layout-style-settings: below
+
+  region:
+    is: block
+    with: geometry
+    of:
+      border: {of: [boolean, border-name]}
+      style:  {is: style-name}
+      repeat: {is: repeat}
+
+settings:
+
+  name:        {is: string, required: true}
+  description: {is: string}
+
+  designed-for: {is: string}
+  # the shape it was drawn for, '16:9', quoted so yaml does not read it as
+  # a number.  A page on a different shape is fitted rather than stretched.
+
+  regions: {is: table, of: region, required: true}
+
+  layout-style-settings: {is: table, of: block}
+  # what a style name means when a theme does not say.  A theme's styles:
+  # of the same name wins.

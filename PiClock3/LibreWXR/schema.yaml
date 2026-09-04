@@ -1,0 +1,13 @@
+description: >
+  Radar frames from LibreWXR, as timestamped tiles.  Its frame list is
+  arithmetic on a fixed interval rather than an index it has to fetch, so it
+  can answer the moment it is asked.
+
+settings:
+
+  palette: {is: number}
+  smooth:  {is: number}
+  snow:    {is: number}
+  # the three the service takes in a tile's path.  smooth and snow are 0 or
+  # 1; the palettes are the service's own numbering, and which exist is its
+  # to say rather than ours.

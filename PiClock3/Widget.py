@@ -37,9 +37,16 @@ class Widget(Plugin):
         theme = self.piclock.instanceTheme(self.config) or {}
         return (theme.get('default') or {}).get(name)
 
-    def color(self, default='white'):
-        """the color this widget draws in, whoever answered."""
-        found = self.config.get('color') or self.themeDefault('color')
+    def color(self, default=None):
+        """the color this widget draws in, whoever answered.
+
+        The page is asked before the widget tier, which is white and is
+        nobody's choice - a theme coloring its widgets should not have to
+        beat a default that ships.
+        """
+        found = self.config.get('color')
+        if self.piclock.setBy(self.name, 'color') in (None, 'role'):
+            found = self.themeDefault('color') or found
         return self.piclock.expand(found) if found else default
 
     def applyEffect(self, widget, height=None):
@@ -139,7 +146,7 @@ class Widget(Plugin):
         whether the sun was up, which is not something a widget can work
         out from a picture.
         """
-        folder = folder or self.config.get('icons-folder') or 'icons-lightblue'
+        folder = folder or self.config.get('icons-folder')
         # a bare name is a set that ships; anything with a path in it is a
         # set somebody supplied, so it is where it says it is
         where = [folder] if '/' in folder.replace(os.sep, '/') else []

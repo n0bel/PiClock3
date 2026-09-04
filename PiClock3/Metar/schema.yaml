@@ -1,0 +1,11 @@
+description: >
+  A METAR station report - what the sky is actually doing at one airfield,
+  rather than what a model expects.  Hourly, and no forecast of any kind.
+
+provides: [conditions]
+
+settings:
+
+  METAR:   {is: string, required: true}
+  refresh: {is: number, unit: minutes}
+  # a station reports about hourly, so asking oftener re-reads one line

@@ -1,0 +1,10 @@
+description: >
+  A clock face with hands, drawn from four pictures - the face and three
+  hands.  The hands are rotated, so each is drawn pointing at twelve.
+
+settings:
+
+  clock-images-folder:      {is: string}
+  clock-images-base-folder: {is: template}
+  # the set, and where sets live.  Base folder is a template so a theme can
+  # point it at {this-folder} and carry a face of its own.

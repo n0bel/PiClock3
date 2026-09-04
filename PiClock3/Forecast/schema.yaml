@@ -1,0 +1,46 @@
+description: >
+  The days and hours ahead, one cell of its region per period.  The near
+  hours come first, because what the weather does this afternoon matters
+  more than what Thursday looks like.
+
+types:
+
+  alignments:
+    is: scalar
+    one-of: [left-top, right-bottom, center]
+
+  part:
+    is: block
+    with: geometry
+    # a fraction of one cell rather than of the page.  Color and family
+    # arrive on the region and Qt inherits them, so only the size is said
+    # here.
+    of:
+      font-size: {is: font-size}
+      align:     {is: alignments}
+      wrap:      {is: boolean}
+
+settings:
+
+  forecast-provider: {is: provider, required: true}
+
+  hourly:      {is: number}
+  daily:       {is: number}
+  hourly-step: {is: number}
+  # hourly and daily should add up to the cells the region has
+
+  hour-format: {is: strftime}
+  day-format:  {is: strftime}
+
+  layout:
+    is: block
+    # the parts this plugin draws.  The names are its own and fixed - it
+    # asks for each by name - so a layout naming anything else is ignored.
+    # attribution is drawn in the last cell only.
+    of:
+      icon:        {is: part}
+      wx:          {is: part}
+      day:         {is: part}
+      attribution: {is: part}
+
+  icons-folder: {is: string}

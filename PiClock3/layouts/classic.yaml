@@ -1,8 +1,6 @@
 name: Classic
 description: Conditions and two radars left, clock center, forecast right
 
-provides: [current, maps, clock, date, bottom, forecast]
-
 designed-for: '16:9'
 
 regions:

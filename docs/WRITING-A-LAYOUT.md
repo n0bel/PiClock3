@@ -9,8 +9,6 @@ rewriting the widgets.
 name: Classic
 description: Conditions and two radars left, clock center, forecast right
 
-provides: [current, maps, clock, date, bottom, forecast]
-
 regions:
 
   current:  {left: 0.0,  top: 0.0,    width: 0.2, height: 0.3333}
@@ -212,12 +210,6 @@ The difference matters most where a region is wider than the text needs.  A
 
 If a layout names a style and nothing defines it, the region simply gets no
 extra styling, and the log says so.
-
-## `provides`
-
-`provides:` lists the region names a config can use.  It is documentation
-rather than enforcement, but keep it truthful - it is the first thing
-somebody reads when working out what to put where.
 
 ## Overriding one while trying things
 
