@@ -21,6 +21,7 @@ this cannot know.
 import glob
 import logging
 import os
+import re
 
 import yaml
 
@@ -29,6 +30,9 @@ logger = logging.getLogger(__name__)
 PROBLEM, WARNING = 'problem', 'warning'
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+# what a plugin writes to say it needs a key: apikey: '{apikeys.mbapi}'
+APIKEY = re.compile(r'\{apikeys\.([A-Za-z0-9_-]+)\}')
 
 
 def isTemplate(value):
@@ -63,6 +67,7 @@ class Check():
         self.found = []
         self.types = {}
         self.regions = {}          # layout name -> the regions it declares
+        self.used = set()          # providers a widget actually names
 
     # ------------------------------------------------------------ saying
 
@@ -309,7 +314,53 @@ class Check():
             for name, entry in (self.config.get(kind) or {}).items():
                 self.checkPlugin('%s.%s' % (kind, name), entry,
                                  kind == 'widgets')
+
+        # last, because it only asks about providers a widget named, and
+        # that is not known until every widget has been read
+        self.checkKeys()
         return self.found
+
+    def checkKeys(self):
+        """a key a provider needs, for the providers something actually uses.
+
+        Reachable rather than declared: a config may list six providers and
+        point at four, and a key the other two want is nobody's problem.
+
+        A key is found by looking for {apikeys.name} in what the provider
+        will be handed, so a plugin that wants one says so in its own
+        config.yaml and nothing here has to know its name.
+        """
+        keys = self.config.get('apikeys') or {}
+        # beside the tree rather than beside the working directory, the way
+        # every other shipped file here is found
+        shipped = readYaml(os.path.join(HERE, os.pardir, 'examples',
+                                        'ApiKeys.yaml')) or {}
+        for name in sorted(self.used):
+            entry = (self.config.get('providers') or {}).get(name)
+            if not isinstance(entry, dict) or not entry.get('plugin'):
+                continue
+            folder = pluginFolder(entry['plugin'])
+            if folder is None:
+                continue            # checkPlugin has already said so
+            merged = dict(readYaml(os.path.join(folder, 'config.yaml')) or {})
+            merged.update(entry)
+            for setting, value in merged.items():
+                for wanted in APIKEY.findall(str(value)):
+                    self.checkKey('providers.%s.%s' % (name, setting),
+                                  wanted, keys, shipped)
+
+    def checkKey(self, where, wanted, keys, shipped):
+        """one {apikeys.name}, against what the config's apikeys: holds"""
+        if wanted not in keys:
+            self.warning(where, 'wants apikeys.%s and the config has no'
+                                ' such key' % wanted)
+        elif not str(keys[wanted] or '').strip():
+            self.warning(where, 'apikeys.%s is empty' % wanted)
+        elif shipped.get(wanted) is not None \
+                and keys[wanted] == shipped[wanted]:
+            self.warning(where, 'apikeys.%s is still %r, the placeholder'
+                                ' examples/ApiKeys.yaml ships'
+                         % (wanted, keys[wanted]))
 
     def checkPlugin(self, where, entry, isWidget):
         """one provider or widget entry, against its plugin's schema"""
@@ -347,6 +398,8 @@ class Check():
             spec = self.resolve(settings.get(name) or {})
             if spec.get('names') != 'providers' or isTemplate(value):
                 continue
+            if isWidget:
+                self.used.add(value)
             named = (self.config.get('providers') or {}).get(value) or {}
             theirs = self.pluginSchema(named.get('plugin') or '')
             if theirs is None:
