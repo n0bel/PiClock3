@@ -1,5 +1,6 @@
 import collections
 import logging
+import os
 import re
 import time
 from PyQt5 import (QtNetwork)
@@ -24,6 +25,13 @@ TIMEOUT = 15000
 # never got sent.  Per host, so a radar server cannot delay the metar.
 INFLIGHT = 6
 
+# and a second limit across every host together, because what runs out first
+# is not the far end but this machine: a TLS handshake is most of a second of
+# arithmetic on a Pi Zero, so twenty at once on one core is twenty requests
+# each taking twenty seconds rather than one.  Scaled by cores, since a core
+# is what they are queuing for.
+TOTAL = max(4, (os.cpu_count() or 1) * 4)
+
 def safeurl(url):
     """a key in a query parameter becomes <key>; one in a path would not"""
     return re.sub(r'((?:apikey|appid|key|access_token)=)[^&]*',
@@ -37,6 +45,8 @@ class WebGet(QObject):
     # host -> those waiting to be sent, and how many are out
     waiting = {}
     inflight = {}
+    # and how many are out altogether, against TOTAL
+    outstanding = 0
 
     def __init__(self, url, callback, params=None, manager=None):
         super().__init__()
@@ -58,15 +68,38 @@ class WebGet(QObject):
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.timedOut)
         WebGet.waiting.setdefault(self.host, collections.deque()).append(self)
-        WebGet.send(self.host)
+        WebGet.send()
 
     @classmethod
-    def send(cls, host):
-        """start as many as this host is allowed to have out at once"""
-        while (cls.inflight.get(host, 0) < INFLIGHT
-               and cls.waiting.get(host)):
-            cls.inflight[host] = cls.inflight.get(host, 0) + 1
-            cls.waiting[host].popleft().dispatch()
+    def send(cls):
+        """start whatever is allowed to go now, wherever it is waiting.
+
+        Posted to the event loop rather than called from here, because a
+        timeout is only fair if the loop is free to answer it.  A request
+        sent while the loop is busy building the clock is timed against
+        that work and aborted for it, with its reply sitting undelivered
+        in the queue.  A dispatch that is posted has simply not happened
+        while the loop is blocked, so there is nothing being timed.
+
+        One from each host in turn rather than draining a queue at a time,
+        because a radar asks for tiles by the hundred and the metar asks
+        once, and in order would put that one request behind all of them.
+        Not per host: a slot freed anywhere may be taken anywhere, which
+        is what having a total at all means.
+        """
+        while cls.outstanding < TOTAL:
+            moved = False
+            for name in list(cls.waiting):
+                if cls.outstanding >= TOTAL:
+                    break
+                if (cls.inflight.get(name, 0) < INFLIGHT
+                        and cls.waiting.get(name)):
+                    cls.outstanding += 1
+                    cls.inflight[name] = cls.inflight.get(name, 0) + 1
+                    QTimer.singleShot(0, cls.waiting[name].popleft().dispatch)
+                    moved = True
+            if not moved:
+                break
 
     def dispatch(self):
         # the clock starts here, not when this was asked for: what is being
@@ -83,8 +116,13 @@ class WebGet(QObject):
         path reports it and the callback runs exactly once.
         """
         if self.reply is not None and self.reply.isRunning():
-            logger.warning("WebGet TIMEOUT after %.0fs (queued %.1fs): %s",
-                           TIMEOUT / 1000.0,
+            # what it actually took, not TIMEOUT: a timer only fires when
+            # the event loop is free, so a number well past TIMEOUT says
+            # the loop was busy rather than the far end slow, and that is
+            # the difference between a network to blame and a clock to.
+            logger.warning("WebGet TIMEOUT after %.1fs (timer %.0fs,"
+                           " queued %.1fs): %s",
+                           time.monotonic() - self.started, TIMEOUT / 1000.0,
                            self.started - self.queued, safeurl(self.url))
             self.reply.abort()
 
@@ -96,10 +134,11 @@ class WebGet(QObject):
         error = self.reply.error()
         took = time.monotonic() - self.started
         queued = len(WebGet.waiting.get(self.host, ()))
-        # let the next one for this host go before the callback runs, which
-        # may well ask for another
+        # let the next one go before the callback runs, which may well ask
+        # for another
         WebGet.inflight[self.host] = max(0, WebGet.inflight.get(self.host, 1) - 1)
-        WebGet.send(self.host)
+        WebGet.outstanding = max(0, WebGet.outstanding - 1)
+        WebGet.send()
         if error != QNetworkReply.NoError:
             logger.warning("WebGet FAILED %s in %.3fs (%d queued): %s",
                            error, took, queued, safeurl(self.url))

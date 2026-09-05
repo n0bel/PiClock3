@@ -142,6 +142,9 @@ class LogHandler(logging.handlers.RotatingFileHandler):
 if __name__ == '__main__':
 
     fmt = logging.Formatter('%(asctime)s %(message)s')
+    # a period rather than logging's own comma, which is the decimal point
+    # everywhere else in this project and the only one RFC 3339 allows
+    fmt.default_msec_format = '%s.%03d'
     logger = logging.getLogger()
     fileh = LogHandler(filename='PyQtPiClock3.log', backupCount=7)
     fileh.setFormatter(fmt)
