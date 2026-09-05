@@ -28,6 +28,31 @@ def thisFolder(part, home):
     return part
 
 
+def merge(source, destination, tiers=None, tier=None, path=''):
+    """source over destination, recursing into dicts.
+
+    Anything that is not a dict is assigned outright, so a list replaces a
+    list rather than extending one.
+
+    `tiers` collects which tier last wrote each dotted path, for a caller
+    assembling one config out of several.  It travels as an argument
+    because a DottedDict has no attributes to hang it on.
+
+    A function rather than a method, because a theme over a layout and the
+    eight tiers under a plugin both need it without holding a Config.
+    """
+    for key, value in source.items():
+        where = path + key
+        if isinstance(value, dict):
+            node = destination.setdefault(key, DottedDict())
+            merge(value, node, tiers, tier, where + '.')
+        else:
+            destination[key] = value
+            if tiers is not None:
+                tiers[where] = tier
+    return destination
+
+
 class Include(YamlIncludeConstructor):
     """!include, resolving {this-folder} against the file being included.
 
@@ -67,7 +92,7 @@ class Config(DottedDict):
         # the included files were substituted as they were read; this is
         # the outermost one, which nothing else has seen
         v2 = thisFolder(v2, os.path.dirname(name))
-        self._merge(v2, self)
+        merge(v2, self)
 
         self._overrides(self)
 
@@ -127,28 +152,7 @@ class Config(DottedDict):
                 if key.endswith("--"):
                     okey = key[:-2]
                     if okey in d:
-                        self._merge(d[key], d[okey])
+                        merge(d[key], d[okey])
                         del d[key]
                 else:
                     self._overrides(value)
-
-    def _merge(self, source, destination, tiers=None, tier=None, path=''):
-        """source over destination, recursing into dicts.
-
-        Anything that is not a dict is assigned outright, so a list replaces
-        a list rather than extending one.
-
-        `tiers` collects which tier last wrote each dotted path, for a
-        caller assembling one config out of several.  It travels as an
-        argument because a DottedDict has no attributes to hang it on.
-        """
-        for key, value in source.items():
-            where = path + key
-            if isinstance(value, dict):
-                node = destination.setdefault(key, DottedDict())
-                self._merge(value, node, tiers, tier, where + '.')
-            else:
-                destination[key] = value
-                if tiers is not None:
-                    tiers[where] = tier
-        return destination

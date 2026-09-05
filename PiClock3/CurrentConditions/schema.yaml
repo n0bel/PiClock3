@@ -17,7 +17,7 @@ types:
 
 settings:
 
-  conditions-provider: {is: provider, required: true}
+  conditions-provider: {is: provider, provides: [conditions], required: true}
 
   layout:
     is: block

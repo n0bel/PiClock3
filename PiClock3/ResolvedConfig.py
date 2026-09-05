@@ -1,0 +1,306 @@
+"""Everything a config decides before anything is drawn.
+
+Which layout and theme each page is built from, which regions those layouts
+declare and which theme each region belongs to, and what every plugin's
+settings come out as once the eight tiers have been merged over each other.
+
+None of it needs a screen, a network or a plugin's code, so it is the half
+of startup --check can run.  The clock builds its widgets from what comes
+out of here and Check reads the same answers, which is what stops the two
+disagreeing about a config.
+
+Finding a plugin is the one thing this leaves to its caller: the clock has
+the imported module and takes the folder from that, Check finds one on
+disk.  So the folder arrives as an argument.
+"""
+import logging
+import os
+
+import yaml
+
+from .Config import merge, thisFolder
+from .DottedDict import DottedDict
+
+logger = logging.getLogger(__name__)
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+# Qt's own property names, which mean here what they mean in Qt.  A widget
+# declaring one is asking for the page's answer to it.
+CASCADE = ('color', 'background-color', 'font-family', 'font-style',
+           'font-weight')
+
+
+def localPath(value, home):
+    """one relative path, made relative to the folder it came in"""
+    if (isinstance(value, str) and '{' not in value
+            and not os.path.isabs(value)):
+        return (home + '/' + value).replace(os.sep, '/')
+    return value
+
+
+def localArt(part, home):
+    """point a folder's own art at that folder.
+
+    a theme that ships its own images should not have to know where it was
+    installed, so inside a folder a plain relative path is relative to the
+    folder.  a path with a {placeholder} is left alone: that is how the
+    shipped themes reach the common image directory.
+    """
+    keys = ('art', 'background', 'folder', 'files', 'image')
+    if isinstance(part, list):
+        for v in part:
+            localArt(v, home)
+    elif isinstance(part, dict):
+        for k, v in part.items():
+            if k in keys and isinstance(v, list):
+                part[k] = [localPath(x, home) for x in v]
+            elif isinstance(v, (dict, list)):
+                localArt(v, home)
+            elif k in keys:
+                part[k] = localPath(v, home)
+    return part
+
+
+def partPaths(kind, name):
+    """where a layout or a theme of this name could be, in the order tried.
+
+    Either a file or a folder will do.  A folder is what a git checkout of
+    somebody else's theme looks like, so themes/mine.yaml and
+    themes/mine/theme.yaml both work, and so does the repository naming its
+    file after itself.
+    """
+    stem = 'theme' if kind == 'themes' else 'layout'
+    for base in (kind, os.path.join('PiClock3', kind)):
+        folder = os.path.join(base, name)
+        yield os.path.join(base, name + '.yaml'), None
+        yield os.path.join(folder, stem + '.yaml'), folder
+        yield os.path.join(folder, name + '.yaml'), folder
+
+
+def loadPart(kind, name):
+    """a layout or a theme - the user's own first, then the shipped one.
+
+    None where there is none, so a caller with somewhere to put the news
+    can say so its own way instead of ending the program.
+    """
+    stem = 'theme' if kind == 'themes' else 'layout'
+    for path, home in partPaths(kind, name):
+        if not os.path.isfile(path):
+            continue
+        with open(path, encoding='utf-8') as fh:
+            part = yaml.safe_load(fh)
+        logger.debug('%s %s from %s', stem, name, path)
+        # localArt leaves a {placeholder} alone, so it has to run before
+        # the placeholder becomes a path
+        part = localArt(part, home) if home else part
+        return thisFolder(part, os.path.dirname(path))
+    return None
+
+
+def noSuchPart(kind, name):
+    """what to say about a layout or theme that is not there"""
+    stem = 'theme' if kind == 'themes' else 'layout'
+    return ("no %s named '%s'.  looked for %s.yaml, %s/%s.yaml and "
+            "%s/%s.yaml, in %s/ and in PiClock3/%s/\n"
+            % (stem, name, name, name, stem, name, name, kind, kind))
+
+
+def cellNames(name, spec):
+    """the regions one layout entry actually declares.
+
+    A repeat registers its cells and never the bare name, so a widget
+    naming the repeat is naming all of them and a widget naming a cell is
+    naming one.
+    """
+    repeat = spec.get('repeat') if isinstance(spec, dict) else None
+    count = int((repeat or {}).get('count', 0)) if repeat else 0
+    if not count:
+        return [name]
+    return ['%s.%d' % (name, i) for i in range(1, count + 1)]
+
+
+class ResolvedConfig():
+    """what the config comes to, page by page, before any of it is drawn."""
+
+    def __init__(self, config):
+        self.config = config
+        # page name -> its layout and theme, in the config's own order,
+        # since the later page wins a name two layouts both declare
+        self.pages = {}
+        # region name -> the theme of the page it sits on
+        self.regionTheme = {}
+        # each repeat's name, which is not a region itself but is what a
+        # widget writes to mean all of its cells
+        self.repeats = set()
+        # (where, kind, name) for a layout or theme a page named and is
+        # not there.  The kind matters: no layout, no regions.
+        self.missing = []
+
+    def build(self):
+        """every page's layout and theme, and the regions they declare.
+
+        A part that is not there is recorded rather than raised, so a
+        caller collecting everything wrong with a config gets the rest of
+        it too, and its page is skipped.
+        """
+        for pageName, page in (self.config.get('pages') or {}).items():
+            page = page or {}
+            layout = self.part('pages.%s.layout' % pageName,
+                               'layouts', page.get('layout'))
+            theme = self.part('pages.%s.theme' % pageName,
+                              'themes', page.get('theme'))
+            if layout is None or theme is None:
+                continue
+            # theme: and layout: blocks in the config have the last word
+            # over the files they name, which is what makes either testable
+            # from the command line without editing it.  Named for what
+            # they change rather than -settings: they are not keyed by a
+            # target the way kind-settings and plugin-settings are.
+            merge(self.config.get('layout') or {}, layout)
+            merge(self.config.get('theme') or {}, theme)
+            theme['styles'] = self.regionStyles(layout, theme)
+            self.pages[pageName] = (layout, theme)
+            for name, spec in (layout.get('regions') or {}).items():
+                cells = cellNames(name, spec)
+                if cells != [name]:
+                    self.repeats.add(name)
+                for cell in cells:
+                    self.regionTheme[cell] = theme
+        return self
+
+    def part(self, where, kind, name):
+        """one layout or theme a page named, or None with the news kept"""
+        part = loadPart(kind, name) if name else None
+        if part is None:
+            self.missing.append((where, kind, name or ''))
+        return part
+
+    def anyLayoutMissing(self):
+        """whether a page named a layout that is not there.
+
+        Then no region is knowable, and complaining about each widget in
+        turn would bury the one line that is wrong.
+        """
+        return any(kind == 'layouts' for _, kind, _ in self.missing)
+
+    def regionStyles(self, layout, theme):
+        """the named styles a region can ask for, layout first then theme.
+
+        A layout knows how big its text has to be to fit; a theme knows
+        what it should look like.  So a layout carries the sizing as a
+        default and a theme overrides whatever it cares to, which is what
+        lets a layout nobody has themed still look right.
+        """
+        styles = {}
+        merge(layout.get('layout-style-settings') or {}, styles)
+        merge(theme.get('styles') or {}, styles)
+        wanted = {r['style'] for r in (layout.get('regions') or {}).values()
+                  if isinstance(r, dict) and 'style' in r}
+        for name in sorted(wanted - set(styles)):
+            logger.warning('layout asks for style %r and nothing defines it',
+                           name)
+        return styles
+
+    def regions(self):
+        """every name a widget's region: may legally use.
+
+        A repeat's cells, and the repeat's own name beside them, since
+        naming the repeat names all of its cells at once.
+        """
+        return set(self.regionTheme) | self.repeats
+
+    # ------------------------------------------------------- the tiers
+
+    def pluginConfig(self, folder, entry, isWidget):
+        """one instance's settings, and which tier last set each of them.
+
+        Eight tiers, each merged over the last: what the role takes, the
+        plugin's own defaults, the page's theme three ways - its default:,
+        its kind-settings: and its plugin-settings: - then the config's own
+        two of those, and last the entry itself.
+
+        Each tier is named as it is merged, because the merge is the last
+        moment anything can tell a shipped default from an answer somebody
+        wrote.
+        """
+        config = DottedDict()
+        tiers = {}
+
+        # what the role itself takes: a widget accepts color and effect
+        # whether or not the plugin ever heard of them, and a provider
+        # accepts neither, having no region for a theme to reach
+        if isWidget:
+            path = os.path.join(HERE, 'widget-config.yaml')
+            with open(path, encoding='utf-8') as fh:
+                merge(yaml.safe_load(fh) or {}, config, tiers, 'role')
+
+        defaults = {}
+        path = os.path.join(folder, 'config.yaml') if folder else ''
+        if path and os.path.isfile(path):
+            with open(path, encoding='utf-8') as fh:
+                defaults = yaml.safe_load(fh) or {}
+            defaults = thisFolder(defaults, os.path.dirname(path))
+            merge(defaults, config, tiers, 'plugin')
+
+        # the theme of the page this instance draws on, if it draws at all.
+        # a provider occupies no region, so no theme reaches it - which is
+        # why anything a theme should be able to say belongs on a widget.
+        theme = self.themeFor(entry.get('region'))
+        if theme:
+            self.cascade(theme, defaults, config, tiers)
+            self.settingsFor(theme, defaults, entry, config, tiers, 'theme')
+
+        # the config has the same two blocks and the last word over the theme
+        self.settingsFor(self.config, defaults, entry, config, tiers, 'config')
+        merge(entry, config, tiers, 'widget')
+        return config, tiers
+
+    @staticmethod
+    def cascade(theme, defaults, config, tiers=None):
+        """the theme's default: reaching every widget that takes the name.
+
+        font-size is deliberately not among them.  It is a fraction of
+        whatever it sits in, and a page and a region are not the same
+        height - the page's 0.02 would draw a clock face at four pixels.
+        """
+        page = theme.get('default') or {}
+        for name in CASCADE:
+            if name in page and name in defaults:
+                config[name] = page[name]
+                if tiers is not None:
+                    tiers[name] = 'theme default'
+
+    @staticmethod
+    def settingsFor(source, defaults, entry, config, tiers=None, where=''):
+        """kind-settings: then plugin-settings:, from a theme or the config.
+
+        A kind is what a plugin is interchangeable with, so a kind-setting
+        means the same thing to every plugin wearing it.  plugin-settings:
+        names one exactly, for the times that is too broad.
+        """
+        for block, key in (('kind-settings', defaults.get('kind')),
+                           ('plugin-settings', entry.get('plugin'))):
+            settings = source.get(block)
+            if (isinstance(settings, dict)
+                    and isinstance(settings.get(key), dict)):
+                merge(settings[key], config, tiers,
+                      ('%s %s' % (where, block)).strip())
+
+    def themeFor(self, region):
+        """the theme of the page an instance draws on.
+
+        A list names several and they are on one page; the bare name of a
+        repeat names its cells, which share one.
+        """
+        if isinstance(region, list):
+            region = region[0] if region else None
+        if not region:
+            return None
+        if region in self.regionTheme:
+            return self.regionTheme[region]
+        head = region + '.'
+        for key in self.regionTheme:
+            if key.startswith(head):
+                return self.regionTheme[key]
+        return None

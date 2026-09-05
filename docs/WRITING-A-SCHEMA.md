@@ -58,27 +58,42 @@ be worse than having no schema at all.  The other half of that rule: every
 setting a plugin reads has a default in its `config.yaml`, so a schema
 declaring one that is not there is describing a setting nobody can find.
 
-**A problem stops the clock; a warning does not.**  A setting misspelled, or
-a `provider` naming something the config does not define, is a problem: it
-cannot work, so the clock says so and exits rather than drawing the wrong
-thing quietly.  A value outside a range the schema guessed at is a warning -
-it runs, and the log says what it did.  The split belongs to #24, which is
-where all of this is enforced.
+**A problem stops the clock; a warning does not.**  A `provider` naming
+something the config does not define, or a value outside the `range:` or
+`one-of:` its setting allows, is a problem: it cannot work, so the clock
+says so and exits rather than drawing the wrong thing quietly.  A setting
+nobody declares is a warning - it runs, and the log says what it dropped.
+So write a `range:` only where a value outside it really cannot work.  The
+split belongs to #24, which is where all of this is enforced.
 
 ## The document
 
 | | |
 |---|---|
 | `description:` | what the plugin is, in a sentence or three.  Required, and the reason a schema is |
-| `provides:` | for a `Weather` provider, which of `conditions`, `hourly` and `daily` it actually answers |
+| `provides:` | which of its role's questions it actually answers.  Required of a provider, and meaningless on a widget |
 | `types:` | shapes this schema invents, if it needs any |
 | `settings:` | the settings themselves |
 
 `provides:` is how a config can tell that pointing `forecast-provider:` at a
-station is a mistake.  A `Weather` subclass inherits all three whether it
-implements them or not - `conditions()` answering `None`, `hourly()` and
-`daily()` an empty list - so having the method proves nothing, and only the
+station is a mistake.  The words are the questions a role defines, and a
+provider lists the ones it means:
+
+    map                          BaseMap    - one picture of the ground
+    frames                       Frames     - a stamped series of them
+    conditions hourly daily      Weather    - now, the hours, the days
+
+A subclass inherits all of its role's questions whether it implements them
+or not - `conditions()` answering `None`, `hourly()` an empty list, the map
+and frame calls raising - so having the method proves nothing, and only the
 plugin can say which it means.
+
+Every provider needs one, and needs at least one word in it: a provider
+exists to be asked something, so one that answers nothing is a
+contradiction rather than a plugin somebody has not finished.
+
+The other half is on the setting that names a provider: `provides: [frames]`
+beside `is: provider` says which answer this one is for.  See below.
 
 ## Four kinds
 
@@ -130,6 +145,7 @@ at the same level - not `width:` inside a `placement:` block:
 | `unit: <what>` | what a bare number counts, where the units table has nothing to say - `minutes`, `milliseconds`.  No suffix is accepted |
 | `quantity: <what>` | an entry in `units/quantities.yaml` - see [WRITING-UNITS.md](WRITING-UNITS.md).  A bare number is that quantity's base, and any unit it lists may be written instead: `altitude` takes `1600` and `'5280ft'` alike |
 | `names: <what>` | must name something that exists.  See below |
+| `provides: [<what>, ...]` | beside `names: providers`, the questions the provider named here has to answer - any one of them will do |
 | `portable: true` | a `strftime` format written the glibc way and turned round for Windows |
 
 **Silence means optional, and blank means none.**  Those three states -
@@ -148,7 +164,7 @@ that exists somewhere else:
     unit-sets   a set in units/sets.yaml, or one added to it
 
 ```yaml
-  forecast-provider: {is: provider, required: true}
+  forecast-provider: {is: provider, provides: [hourly, daily], required: true}
   region:            {of: [region-name, region-names], required: true}
 ```
 
@@ -157,6 +173,11 @@ region is a widget that draws nowhere, and both are a list somebody could
 have picked from.  Say `names:` wherever a setting is a reference, because a
 string the schema cannot place is the one failure a reader cannot see
 coming.
+
+`provides:` narrows `providers` from "one that exists" to "one that answers
+this".  A radar names a base map and a frame source, neither can stand in
+for the other, and the config that swaps them reads perfectly well - so say
+which a setting is for wherever there is more than one sort to name.
 
 ## Types you already have
 
@@ -169,7 +190,7 @@ name; a name there may not be redefined.
 | `size` `font-size` | a fraction of what holds it, or a measure.  `font-size` takes 0 besides, meaning as large as fits |
 | `color` | anything Qt reads - a name, `#rgb`, `#rrggbb`, `rgba()` |
 | `strftime` | a time format, written the glibc way |
-| `template` | a line with `{names}` in it, looked up when it is drawn |
+| `apikey` | a service credential, in place or naming an `apikeys:` entry |
 | `provider` | one of the config's own `providers:` |
 | `effect` `effects` | a glow or a drop shadow, and the three names |
 | `location` | latitude, longitude, timezone, elevation |

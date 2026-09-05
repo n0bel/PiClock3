@@ -10,11 +10,11 @@ types:
   border:
     is: block
     of:
-      art:   {is: template, required: true}
+      art:   {is: string, required: true}
       width: {is: number}
       inset: {is: number}
-    # art is a template so {this-folder} finds the picture beside the theme
-    # that named it.  width is a fraction of the region, inset how far the
+    # art takes {this-folder} to find the picture beside the theme that
+    # named it.  width is a fraction of the region, inset how far the
     # frame's own edge sits inside its picture.
 
   slideshow:
@@ -23,8 +23,8 @@ types:
     # files one by one - each theme ships its own background.png, so a
     # slideshow across themes has to name them.
     of:
-      folder:   {is: template}
-      files:    {is: list, of: template}
+      folder:   {is: string}
+      files:    {is: list, of: string}
       interval: {is: number, unit: seconds}
       order:    {is: scalar, one-of: [sorted, random]}
       fit:      {is: scalar, one-of: [cover, contain]}
@@ -57,7 +57,7 @@ settings:
   borders: {is: table, of: border}
   # by name.  A layout region's border: names one, or true for default.
 
-  background: {of: [template, slideshow]}
+  background: {of: [string, slideshow]}
   # one picture, or the block above for several
 
   kind-settings:   {is: table, of: block}

@@ -5,8 +5,8 @@ description: >
 
 settings:
 
-  format:       {is: template}
-  polar-format: {is: template}
+  format:       {is: string}
+  polar-format: {is: string}
   # drawn instead on a day the sun neither rises nor sets, where the usual
   # line has no time to put in and would print its own braces
 

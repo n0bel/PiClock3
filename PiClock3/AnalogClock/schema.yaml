@@ -5,6 +5,6 @@ description: >
 settings:
 
   clock-images-folder:      {is: string}
-  clock-images-base-folder: {is: template}
+  clock-images-base-folder: {is: string}
   # the set, and where sets live.  Base folder is a template so a theme can
   # point it at {this-folder} and carry a face of its own.

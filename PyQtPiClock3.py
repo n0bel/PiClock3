@@ -3,11 +3,13 @@ import traceback
 import os
 import sys
 
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QMessageBox, QApplication
 
 from PiClock3.Check import Check
 from PiClock3.Config import Config
 from PiClock3.PiClock3 import PiClock3
+from PiClock3.ResolvedConfig import ResolvedConfig
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 'plugins'))
@@ -115,6 +117,20 @@ def loadConfig(configName, settings):
     return config
 
 
+def resolveAndCheck(configName, settings):
+    """the config, worked out once, and read against the schemas.
+
+    The same two steps whether this is going to draw a clock or only say
+    what is wrong with one, so the answers a check gives are the answers
+    the clock will then be built from.
+    """
+    config = loadConfig(configName, settings)
+    resolved = ResolvedConfig(config).build()
+    check = Check(config, resolved)
+    check.run()
+    return config, resolved, check
+
+
 def runCheck(configName, settings):
     """--check: say what is wrong with a config, and how badly.
 
@@ -122,8 +138,7 @@ def runCheck(configName, settings):
     question at a prompt or something building the project, and the answer
     is the output.  Nothing here touches Qt, so it runs with no screen.
     """
-    check = Check(loadConfig(configName, settings))
-    check.run()
+    check = resolveAndCheck(configName, settings)[2]
     for line in check.report():
         print(line)
     problems, warnings = len(check.problems()), len(check.warnings())
@@ -131,6 +146,50 @@ def runCheck(configName, settings):
           % (configName, problems, '' if problems == 1 else 's',
              warnings, '' if warnings == 1 else 's'))
     return 1 if problems else 0
+
+
+# long enough to read a screenful and write one down, short enough that a
+# clock on a wall is not left holding a dialog
+COUNTDOWN = 30
+
+
+def refuse(check, seconds=COUNTDOWN):
+    """what is wrong with this config, on the screen the clock would use.
+
+    All of them rather than the first, because the person reading is
+    standing at a wall rather than a prompt and will not want to come back
+    once per fault.  It closes itself and gives up: a clock drawing the
+    wrong thing quietly is what the checking is for.
+    """
+    problems = check.problems()
+    for severity, where, message in problems:
+        logging.error('%s: %s', where, message)
+
+    box = QMessageBox(QMessageBox.Critical, 'PiClock3 will not start', '')
+    # one label, because setTextFormat reaches this one and not an
+    # informative half.  A finding quotes the config, and Qt reading a
+    # quoted tag as html swallows it and the newlines with it.
+    box.setTextFormat(Qt.PlainText)
+    box.setText('%d problem%s with this configuration:\n\n%s'
+                % (len(problems), '' if len(problems) == 1 else 's',
+                   '\n'.join('%s: %s' % (where, message)
+                             for _, where, message in problems)))
+    button = box.addButton(QMessageBox.Ok)
+
+    left = [seconds]
+
+    def tick():
+        left[0] -= 1
+        if left[0] <= 0:
+            box.close()
+        else:
+            button.setText('Quit (%d)' % left[0])
+
+    timer = QTimer(box)
+    timer.timeout.connect(tick)
+    timer.start(1000)
+    button.setText('Quit (%d)' % seconds)
+    box.exec_()
 
 
 class LogHandler(logging.handlers.RotatingFileHandler):
@@ -169,7 +228,7 @@ if __name__ == '__main__':
     try:
         app = QApplication(sys.argv)
         try:
-            config = loadConfig(configName, settings)
+            config, resolved, check = resolveAndCheck(configName, settings)
             logging.info("Startup....")
         except Exception as e:
             logging.exception('PyQtPiClock3 Config Error:')
@@ -177,7 +236,13 @@ if __name__ == '__main__':
                 None, "PyQtPiClock3 Config Error",
                 type(e).__name__ + ': ' + str(e), QMessageBox.Ok)
             sys.exit(1)
-        ex = PiClock3(config)
+        for _, where, message in check.warnings():
+            logging.warning('%s: %s', where, message)
+        if check.problems():
+            refuse(check)
+            sys.exit(1)
+        # built from what was just checked rather than worked out again
+        ex = PiClock3(config, resolved)
         sys.exit(app.exec_())
     except SystemExit as e:
         # sys.exit(app.exec_()) arrives here with an int, and that is a
@@ -188,6 +253,9 @@ if __name__ == '__main__':
             # it here too would say it twice
             logging.error('%s', e.code)
             sys.exit(1)
+        # a number already says what to exit with, and swallowing it here
+        # would answer 0 to everything that asked
+        raise
     except Exception as e:
         logging.exception('Unhandled Error Caught at outermost level:')
         QMessageBox.critical(None, "Unhandled Error",

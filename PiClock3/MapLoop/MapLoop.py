@@ -485,7 +485,7 @@ class MapLoop(Widget):
     def captionList(self):
         """the captions to draw, from captions: or from the older keys.
 
-        A supplied list replaces rather than adds to: Config._merge assigns
+        A supplied list replaces rather than adds to: Config.merge assigns
         anything that is not a dict outright, so a narrower tier restates the
         whole list rather than adjusting one entry of it.
         """

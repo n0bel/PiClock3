@@ -22,7 +22,8 @@ types:
 
 settings:
 
-  forecast-provider: {is: provider, required: true}
+  forecast-provider: {is: provider, provides: [hourly, daily], required: true}
+  # either answer is a forecast: hourly: 0 or daily: 0 asks for only one
 
   hourly:      {is: number}
   daily:       {is: number}

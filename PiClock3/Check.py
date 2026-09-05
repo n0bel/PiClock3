@@ -8,15 +8,20 @@ in a place that says nothing about the config that caused them.
 This walks the config once and collects everything it finds:
 
     problem   it cannot work.  A provider that is not there, a region that
-              is not there, a value outside the set its setting allows
+              is not there, a value outside the set or the range its
+              setting allows, a plugin whose schema does not describe it
     warning   it runs, but not as written.  A setting nobody declares, a
-              number outside a range a schema guessed at
+              block of settings that reaches nothing, a missing api key
 
 Data rather than classes: nothing here imports a plugin or builds a widget,
 so a config can be read on a machine with no display and no api keys.  A
-plugin is found on disk the way units files are found, and one that ships no
-schema contributes nothing rather than a page of complaints about settings
-this cannot know.
+plugin is found on disk the way units files are found, and has to ship a
+schema, since without one there is nothing to read its settings against.
+
+What a config comes to is ResolvedConfig's answer rather than one worked out
+again here.  A checker with its own idea of the merge agrees with the loader
+only by coincidence, and fails the worst way: calling a setting unset when
+the clock will find it, and going quiet about one the clock will drop.
 """
 import glob
 import logging
@@ -25,14 +30,23 @@ import re
 
 import yaml
 
+from .ResolvedConfig import ResolvedConfig
+
 logger = logging.getLogger(__name__)
 
 PROBLEM, WARNING = 'problem', 'warning'
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# what a plugin writes to say it needs a key: apikey: '{apikeys.mbapi}'
-APIKEY = re.compile(r'\{apikeys\.([A-Za-z0-9_-]+)\}')
+# a key given as the name of an apikeys: entry rather than in place
+APIKEY = re.compile(r'^\{apikeys\.([A-Za-z0-9_-]+)\}$')
+
+# what examples/ApiKeys.yaml writes where a key goes.  A substring, so the
+# service can be named after it
+PLACEHOLDER = 'YOUR API KEY'
+
+# no service issues one this short
+MINKEY = 5
 
 
 def isTemplate(value):
@@ -62,11 +76,13 @@ def readYaml(path):
 
 class Check():
 
-    def __init__(self, config):
+    def __init__(self, config, resolved=None):
         self.config = config
+        # the clock resolves a config once and hands it here, so a normal
+        # start checks what it is about to build rather than a second copy
+        self.resolved = resolved or ResolvedConfig(config).build()
         self.found = []
         self.types = {}
-        self.regions = {}          # layout name -> the regions it declares
         self.used = set()          # providers a widget actually names
 
     # ------------------------------------------------------------ saying
@@ -111,32 +127,6 @@ class Check():
             return None
         return readYaml(os.path.join(folder, 'schema.yaml'))
 
-    def layoutRegions(self, name):
-        """every region a layout declares, its repeats' cells included.
-
-        The same search PiClock3._loadPart does, because a check that looked
-        somewhere else would pass a config the clock then refuses.
-        """
-        if name in self.regions:
-            return self.regions[name]
-        part = None
-        for base in ('layouts', os.path.join('PiClock3', 'layouts')):
-            for path in (os.path.join(base, name + '.yaml'),
-                         os.path.join(base, name, 'layout.yaml'),
-                         os.path.join(base, name, name + '.yaml')):
-                part = part or readYaml(path)
-        if part is None:
-            self.regions[name] = None
-            return None
-        names = set()
-        for region, spec in (part.get('regions') or {}).items():
-            names.add(region)
-            repeat = spec.get('repeat') if isinstance(spec, dict) else None
-            for cell in range(1, int((repeat or {}).get('count', 0)) + 1):
-                names.add('%s.%d' % (region, cell))
-        self.regions[name] = names
-        return names
-
     def named(self, kind):
         """what a names: target can legally be, as a set of names.
 
@@ -157,20 +147,11 @@ class Check():
         return None
 
     def everyRegion(self):
-        """every region any page's layout declares, cells included.
-
-        None where a page names a layout that is not there, because then
-        the answer is not known - and saying every widget sits in a region
-        that does not exist would bury the one line that is actually wrong
-        under one complaint per widget.
-        """
-        names = set()
-        for page in (self.config.get('pages') or {}).values():
-            found = self.layoutRegions((page or {}).get('layout') or '')
-            if found is None:
-                return None
-            names |= found
-        return names
+        """every region any page's layout declares, cells included, or None
+        where a page names a layout that is not there"""
+        if self.resolved.anyLayoutMissing():
+            return None
+        return self.resolved.regions()
 
     # ---------------------------------------------------------- checking
 
@@ -223,20 +204,22 @@ class Check():
 
         allowed = spec.get('one-of')
         if allowed and value not in allowed:
-            self.problem(where, '%r is not one of %s'
+            self.problem(where, '%r is not one of the allowed values: %s'
                          % (value, ', '.join(str(a) for a in allowed)))
             return
 
         kind = spec.get('names')
         if kind:
             self.checkName(where, value, kind)
+        if kind == 'providers' and spec.get('provides'):
+            self.checkProvides(where, value, spec['provides'])
 
         span = spec.get('range')
         if span and isinstance(value, (int, float)) \
                 and not isinstance(value, bool):
             if value < span[0] or value > span[1]:
-                self.warning(where, '%s is outside %s to %s'
-                             % (value, span[0], span[1]))
+                self.problem(where, '%s is not in the allowed range of'
+                                    ' %s to %s' % (value, span[0], span[1]))
 
     def checkName(self, where, value, kind):
         """a string that has to name something that exists"""
@@ -256,6 +239,28 @@ class Check():
                          % (kind.rstrip('s'), value,
                             ', '.join(sorted(known)) or 'none'))
 
+    def checkProvides(self, where, name, wanted):
+        """the provider a setting names has to answer the right question.
+
+        A base map returns one picture and a frame source a stamped series
+        of them, so a radar's two cannot be swapped - though the config
+        that swaps them reads perfectly well.
+        """
+        entry = (self.config.get('providers') or {}).get(name)
+        if not isinstance(entry, dict):
+            return                  # checkName has already said so
+        module = entry.get('plugin') or ''
+        schema = self.pluginSchema(module)
+        if schema is None:
+            return                  # checkPlugin has already said so
+        has = schema.get('provides')
+        if not has:
+            return                  # checkPlugin has already said so
+        if not set(has) & set(wanted):
+            self.problem(where, '%r provides %s, and this wants %s'
+                         % (name, ', '.join(sorted(has)),
+                            ' or '.join(sorted(wanted))))
+
     @staticmethod
     def blank(entry, name):
         """set to nothing, or not set at all.
@@ -265,19 +270,18 @@ class Check():
         """
         return name not in entry or entry[name] is None or entry[name] == ''
 
-    def checkEntry(self, where, entry, settings, declared, defaults=None,
+    def checkEntry(self, where, entry, settings, declared, merged=None,
                    quiet=False):
         """one block of settings against what declares them.
 
-        `defaults` is what the plugin's own config.yaml brings, because that
-        is what the clock will merge under this entry - a setting answered
-        there is answered, and asking for it again would be asking somebody
-        to write out a default that already works.
+        Two questions, two subjects.  `required` is asked of `merged`,
+        everything the clock will hand the plugin, because a setting any of
+        the eight tiers fills in is set.  Whether anything declares a
+        setting is asked of the entry, the only place it can be misspelled.
         """
         if not isinstance(entry, dict):
             return
-        merged = dict(defaults or {})
-        merged.update(entry)
+        merged = entry if merged is None else merged
         for name, spec in (settings or {}).items():
             if spec.get('required') and self.blank(merged, name):
                 self.problem('%s.%s' % (where, name), 'must be set')
@@ -315,26 +319,45 @@ class Check():
                 self.checkPlugin('%s.%s' % (kind, name), entry,
                                  kind == 'widgets')
 
+        self.checkKinds()
         # last, because it only asks about providers a widget named, and
         # that is not known until every widget has been read
         self.checkKeys()
         return self.found
 
+    def checkKinds(self):
+        """a kind-settings: block aimed at a kind nothing here wears.
+
+        The quietest way to write a setting that does nothing: a kind
+        nobody wears merges into nothing at all.
+
+        This config's own only.  A shipped theme styles kinds a config need
+        not have, and those are not the config's mistake.
+        """
+        worn = set()
+        for section in ('providers', 'widgets'):
+            for entry in (self.config.get(section) or {}).values():
+                folder = pluginFolder((entry or {}).get('plugin') or '')
+                if folder is None:
+                    continue
+                kind = (readYaml(os.path.join(folder, 'config.yaml'))
+                        or {}).get('kind')
+                if kind:
+                    worn.add(kind)
+        for kind in sorted(self.config.get('kind-settings') or {}):
+            if kind not in worn:
+                self.warning('kind-settings.%s' % kind,
+                             'nothing in this config is a %s, so this block'
+                             ' reaches nothing.  There is %s'
+                             % (kind, ', '.join(sorted(worn)) or 'nothing'))
+
     def checkKeys(self):
-        """a key a provider needs, for the providers something actually uses.
+        """every setting declared an apikey, on a provider something uses.
 
         Reachable rather than declared: a config may list six providers and
-        point at four, and a key the other two want is nobody's problem.
-
-        A key is found by looking for {apikeys.name} in what the provider
-        will be handed, so a plugin that wants one says so in its own
-        config.yaml and nothing here has to know its name.
+        point at four, so the two nothing draws with are not asked for a
+        key.
         """
-        keys = self.config.get('apikeys') or {}
-        # beside the tree rather than beside the working directory, the way
-        # every other shipped file here is found
-        shipped = readYaml(os.path.join(HERE, os.pardir, 'examples',
-                                        'ApiKeys.yaml')) or {}
         for name in sorted(self.used):
             entry = (self.config.get('providers') or {}).get(name)
             if not isinstance(entry, dict) or not entry.get('plugin'):
@@ -342,25 +365,40 @@ class Check():
             folder = pluginFolder(entry['plugin'])
             if folder is None:
                 continue            # checkPlugin has already said so
-            merged = dict(readYaml(os.path.join(folder, 'config.yaml')) or {})
-            merged.update(entry)
+            settings = (readYaml(os.path.join(folder, 'schema.yaml'))
+                        or {}).get('settings') or {}
+            merged, _ = self.resolved.pluginConfig(folder, entry, False)
             for setting, value in merged.items():
-                for wanted in APIKEY.findall(str(value)):
-                    self.checkKey('providers.%s.%s' % (name, setting),
-                                  wanted, keys, shipped)
+                spec = self.resolve(settings.get(setting) or {})
+                if spec.get('is') == 'apikey':
+                    self.checkKey('providers.%s.%s' % (name, setting), value)
 
-    def checkKey(self, where, wanted, keys, shipped):
-        """one {apikeys.name}, against what the config's apikeys: holds"""
-        if wanted not in keys:
-            self.warning(where, 'wants apikeys.%s and the config has no'
-                                ' such key' % wanted)
-        elif not str(keys[wanted] or '').strip():
-            self.warning(where, 'apikeys.%s is empty' % wanted)
-        elif shipped.get(wanted) is not None \
-                and keys[wanted] == shipped[wanted]:
-            self.warning(where, 'apikeys.%s is still %r, the placeholder'
-                                ' examples/ApiKeys.yaml ships'
-                         % (wanted, keys[wanted]))
+    def checkKey(self, where, value):
+        """one key, as far as anything short of the service can tell.
+
+        Whether a key is accepted is the service's answer, so this only
+        catches what is plainly not a key at all.  A value naming an
+        apikeys: entry is followed there first; one written in place is
+        taken as the key itself.
+        """
+        named = APIKEY.match(str(value or '').strip())
+        if named:
+            keys = self.config.get('apikeys') or {}
+            wanted = named.group(1)
+            if wanted not in keys:
+                self.problem(where, 'wants apikeys.%s and the config has no'
+                                    ' such key' % wanted)
+                return
+            where, value = '%s (apikeys.%s)' % (where, wanted), keys[wanted]
+
+        value = str(value or '').strip()
+        if not value:
+            self.problem(where, 'is empty - put your key there')
+        elif len(value) < MINKEY:
+            self.problem(where, 'is %r, too short to be a key' % value)
+        elif PLACEHOLDER in value.upper():
+            self.problem(where, 'is still %r - put your own key there'
+                         % value)
 
     def checkPlugin(self, where, entry, isWidget):
         """one provider or widget entry, against its plugin's schema"""
@@ -369,11 +407,27 @@ class Check():
                                 '  Add plugin: <module>')
             return
         module = entry['plugin']
-        schema = self.pluginSchema(module)
-        if schema is None:
-            self.warning(where, 'no schema for %s, so nothing here is'
-                                ' checked' % module)
+        part = module.replace('.', '/')
+        # two faults behind one None, wanting different sentences: the
+        # plugin is not on disk, or it is and has no schema
+        folder = pluginFolder(module)
+        if folder is None:
+            self.problem(where, 'no plugin %s.  Looked for %s/ and'
+                                ' plugins/%s/' % (module, part, part))
             return
+        schema = readYaml(os.path.join(folder, 'schema.yaml'))
+        if schema is None:
+            self.problem(where, '%s has no schema.yaml, which is required'
+                         % module)
+            return
+
+        # asked of the provider rather than of whoever names it, so it is
+        # said once and reaches one nothing points at yet
+        if not isWidget and not schema.get('provides'):
+            self.problem(where, '%s has no provides:, so it answers nothing.'
+                                '  A provider names what it can be asked:'
+                                ' map, frames, conditions, hourly, daily'
+                         % module)
 
         self.types.update(schema.get('types') or {})
         settings = dict(schema.get('settings') or {})
@@ -385,9 +439,6 @@ class Check():
             settings.update((self.types.get('provider-entry') or {}).get('of')
                             or {})
 
-        # a widget may also carry the settings of a provider it names -
-        # MapLoop hands its own config to its providers, and a radar sets
-        # the frame provider's palette: on itself
         # a widget may also carry the settings of a provider it names -
         # MapLoop hands its own config to its providers, and a radar sets
         # the frame provider's palette: on itself.  A name that resolves to
@@ -407,7 +458,8 @@ class Check():
             else:
                 passed |= set(theirs.get('settings') or {})
 
-        folder = pluginFolder(module)
-        defaults = readYaml(os.path.join(folder, 'config.yaml')) or {}
-        self.checkEntry(where, entry, settings, passed, defaults,
+        # what the clock will hand this plugin, all eight tiers of it
+        merged, _ = self.resolved.pluginConfig(pluginFolder(module), entry,
+                                               isWidget)
+        self.checkEntry(where, entry, settings, passed, merged,
                         quiet=unresolved)

@@ -66,22 +66,27 @@ cp examples/default.yaml Config.yaml
 cp examples/ApiKeys.yaml ApiKeys.yaml
 ```
 
-**Now edit `ApiKeys.yaml`**, because what you just copied holds the word
-`'MAPBOXAPIKEY'` rather than a key.  The base map under a radar is the only
-thing that needs one, and either of these will do:
+**Now edit `ApiKeys.yaml`**, because what you just copied holds the words
+`YOUR API KEY` where a key goes:
 
   - Mapbox - https://account.mapbox.com - goes in `mbapi`
   - Google Static Maps - https://console.cloud.google.com - goes in `googleapi`
 
 The example points its radars at Mapbox; if you got a Google key instead,
 change `base-provider: mapbox` to `base-provider: googlemaps` in
-`Config.yaml`.  Skip this and everything still runs - the radar simply
-animates over bare background with no map beneath it.
+`Config.yaml`.
 
-Nothing else needs a key.  Radar frames are free from both RainViewer and
-LibreWXR, and so is the METAR.
+Which keys a clock wants depends on the providers its config points at, so
+the way to find out is to ask:
 
-Then:
+```
+python3 PyQtPiClock3.py --check
+```
+
+It reads the config, says what is wrong with it and exits - no window, no
+screen needed.  An unfilled key is one of the things it reports.  The clock
+makes the same check when it starts: if there is a problem it puts the list
+on the screen and quits rather than drawing something wrong.  Then:
 
 ```
 python3 PyQtPiClock3.py

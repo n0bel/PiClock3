@@ -94,6 +94,8 @@ clock's own position does not repeat the numbers.
 ## `providers:` and `widgets:`
 
 A **provider** fetches and draws nothing.  A **widget** draws in a region.
+Which section an entry is written in is what says which it is, so one put in
+the wrong one stops the clock at startup with a sentence saying so.
 
 ```yaml
 providers:
@@ -131,6 +133,10 @@ can name different ones.  A radar names two, `base-provider:` for the map
 underneath and `frame-provider:` for the weather over it.  A name that is
 not in `providers:` stops the clock at startup with a `KeyError` holding
 the name it could not find - spelling is worth checking there first.
+
+The two are not interchangeable, and swapping them reads perfectly well:
+a base map answers with one picture and a frame source with a stamped
+series of them.  `--check` catches that before the clock does.
 
 A repeat gives a layout several regions from one entry, named `maps.1`,
 `maps.2` and so on.  A widget takes one cell, or the whole set - `Forecast`
@@ -194,6 +200,10 @@ when you mean one implementation and not the other.
 
 A widget's own entry still wins over both, which is how one radar differs from
 the rest while the other three take the shared block.
+
+A misspelled kind does nothing at all: the block merges into whichever
+plugin wears that kind, and one nobody wears merges into nothing.  `--check`
+says so - see [COMMAND-LINE-OPTIONS.md](COMMAND-LINE-OPTIONS.md).
 
 **This is also the answer to "I edited a shipped file and an update
 overwrote it".**  Anything a plugin, theme or layout carries can be reached

@@ -23,7 +23,7 @@ types:
       # drawn unless set to something other than 1
 
   caption-entry:
-    of: [template, caption]
+    of: [string, caption]
     # a bare string is the whole entry, everything else defaulted - the
     # same shorthand-or-block shape effect: has
 
@@ -41,9 +41,9 @@ types:
 
 settings:
 
-  base-provider:    {is: provider, required: true}
-  frame-provider:   {is: provider, required: true}
-  overlay-provider: {is: provider}
+  base-provider:    {is: provider, provides: [map], required: true}
+  frame-provider:   {is: provider, provides: [frames], required: true}
+  overlay-provider: {is: provider, provides: [map]}
 
   center: {is: location}
   zoom:   {is: number, range: [0, 20]}

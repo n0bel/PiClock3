@@ -23,6 +23,18 @@ What each one asks of you is written beside it in that file.  Leave out
 something the role cannot answer on your behalf and you get an error naming
 your plugin, rather than a failure in the middle of a redraw.
 
+**A provider must say which of its role's questions it answers**, in its
+`schema.yaml`, because inheriting a method proves nothing:
+
+```yaml
+provides: [frames]        # BaseMap: [map].  Weather: any of
+                          # conditions, hourly, daily
+```
+
+Required, not optional: a provider exists to be asked something, so
+`--check` reports one that answers nothing as a problem.  It is also what
+catches a base map named as a `frame-provider:`.
+
 ## Where a plugin goes
 
 There is a `plugins` folder beside `Config.yaml`, at the top of the checkout,

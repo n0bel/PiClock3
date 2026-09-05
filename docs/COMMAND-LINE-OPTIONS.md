@@ -257,25 +257,51 @@ exits.  No window opens and nothing is drawn, so this is what a clock with
 no screen attached, or something building the project, can run.
 
 ```
-problem  widgets.radar1.frame-provider: no provider named 'librewxrr'.
-         There is googlemaps, librewxr, mapbox, metar, openmeteo
-warning  widgets.radar1.zoom: 47 is outside 0 to 20
-examples/default.yaml: 1 problem, 1 warning
+problem  widgets.forecast.forecast-provider: 'metar' provides conditions,
+         and this wants daily or hourly
+problem  widgets.radar1.zoom: 47 is not in the allowed range of 0 to 20
+warning  widgets.radar1.labl: nothing declares this setting, so it is
+         dropped
+examples/default.yaml: 2 problems, 1 warning
 ```
 
 **A problem means it cannot work** - a provider or a region that is not
-there, a value outside the set its setting allows - and exits `1`.  **A
-warning means it runs, but not as written** - a setting nobody declares, so
-the merge drops it, or a number outside a range - and exits `0`.  So a
-script can treat the exit code as the answer and still see the warnings.
+there, a value outside the set or the range its setting allows, a key that
+is blank or still says `YOUR API KEY`, a plugin with no schema - and exits
+`1`.  **A warning means it runs, but not as written** - a setting nobody
+declares, so the merge drops it, or a `kind-settings:` block that reaches
+nothing - and exits `0`.  So a script can treat the exit code as the answer
+and still see the warnings.
+
+**The clock runs the same check on itself.**  Starting normally reads the
+config exactly as this does, and if there is a problem it puts the list on
+the screen, counts down and quits rather than drawing something wrong.  So
+`--check` is for asking before you start, or from a machine with no screen;
+you do not have to remember to run it.
 
 `--set` is applied first, which makes this the way to find out whether an
 override says what you meant before running a clock with it.
 
-A plugin that ships no schema is reported once and its settings are left
-alone, because nothing here knows what they should be.  What this cannot
-tell you is whether a key works or a service is up: an unreachable radar is
-a runtime failure that heals itself, and this only reads files.
+It reads the config the way the clock does rather than working out a second
+answer to the same question, so a setting a theme's `kind-settings:` fills
+in counts as set, and one nothing declares is reported because the merge
+really will drop it.
+
+Two mistakes it catches that a careful read of the config would not.  A
+provider has to answer the question the setting naming it is for, so a base
+map written as a `frame-provider:` is caught even though both names exist.
+And a `kind-settings:` block for a kind nothing in the config wears reaches
+nothing at all, which is the quietest way to write a setting that does
+nothing.
+
+A plugin has to ship a schema, and a provider's has to say what it answers.
+Both are problems rather than warnings: a plugin nothing can describe is one
+a config can only be wrong about quietly, and the person who can fix it is
+the one running this while writing it.
+
+What this cannot tell you is whether a key works or a service is up: an
+unreachable radar is a runtime failure that heals itself, and this only
+reads files.
 
 ## `--help`, `-h`
 
@@ -302,8 +328,9 @@ start-at: 'next tuesday' is not a date and time.  Write it as
 2026-06-21 or 2026-06-21 13:45.
 ```
 
-All of them exit `1`.  A problem in the config itself also puts up a dialog,
-since a clock that starts on a Pi at boot has nobody watching a terminal.
+All of them exit `1`.  A problem in the config itself goes on the screen as
+well, since a clock that starts on a Pi at boot has nobody watching a
+terminal: every problem at once, with a countdown, and then it quits.
 
 ## Seeing what it did
 

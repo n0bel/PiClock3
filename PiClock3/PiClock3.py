@@ -9,7 +9,6 @@ import re
 import zoneinfo
 
 import tzlocal
-import yaml
 
 from PyQt5 import (QtNetwork)
 from PyQt5.QtCore import (Qt, QRect,
@@ -17,7 +16,7 @@ from PyQt5.QtCore import (Qt, QRect,
 from PyQt5.QtGui import (QImage, QFontMetrics)
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
-from .Config import thisFolder
+from .ResolvedConfig import ResolvedConfig, noSuchPart
 from .DottedDict import DottedDict, Missing
 from .Languages import Languages
 from .Plugin import Plugin
@@ -26,6 +25,28 @@ from .Slideshow import Slideshow
 from .Units import Units
 
 logger = logging.getLogger(__name__)
+
+
+def pluginClass(mod):
+    """the Plugin subclass a plugin module defines, and its name.
+
+    Defined there, not imported.  A plugin that imports a base class to
+    subclass it puts a second Plugin subclass in this namespace, and
+    picking by "most derived" cannot tell the two apart when neither
+    descends from the other.  `plugin:` names the package, so the class
+    arrives from a module inside it rather than from the package itself.
+    """
+    cls, clsName = None, ''
+    for name, obj in inspect.getmembers(mod, inspect.isclass):
+        if not (obj.__module__ == mod.__name__
+                or obj.__module__.startswith(mod.__name__ + '.')):
+            continue
+        if not issubclass(obj, Plugin) or obj is Plugin:
+            continue
+        if cls is not None and issubclass(cls, obj):
+            continue
+        cls, clsName = obj, name
+    return cls, clsName
 
 
 class FitLabel(QLabel):
@@ -113,31 +134,28 @@ class Words():
 
 
 class PiClock3(QWidget):
-    config = DottedDict()
-    pages = DottedDict()
-    # a plain dict: region names contain dots (maps.1) and DottedDict would
-    # read those as a path
-    regions = {}
-    # intrinsic size of each frame image, so the inset can be derived
-    artSizes = {}
-    # which theme each region was built with, so a widget in it can be told
-    regionTheme = {}
-    styles = DottedDict()
-    plugins = DottedDict()
-    pluginData = DottedDict()
-    # which tier last set each of a plugin's settings, keyed the way
-    # pluginData is.  Beside the config because it cannot live on one.
-    pluginTiers = {}
-    slideshows = []
 
     regionName = 'PiClock3'
     net = QtNetwork.QNetworkAccessManager()
 
-    offset = datetime.timedelta()
-
-    def __init__(self, config):
+    def __init__(self, config, resolved=None):
         self.config = config
         super().__init__()
+        self.pages = DottedDict()
+        # a plain dict: region names contain dots (maps.1) and DottedDict
+        # would read those as a path
+        self.regions = {}
+        # intrinsic size of each frame image, so the inset can be derived
+        self.artSizes = {}
+        self.styles = DottedDict()
+        self.plugins = DottedDict()
+        self.pluginData = DottedDict()
+        # which tier last set each of a plugin's settings, keyed the way
+        # pluginData is.  Beside the config because it cannot live on one.
+        self.pluginTiers = {}
+        self.slideshows = []
+        # already built, and already checked, by whoever is starting this
+        self.resolved = resolved or ResolvedConfig(config).build()
         # before anything asks the time
         self.offset = self.startAt()
         self.screen = self.screenGeometry()
@@ -218,19 +236,14 @@ class PiClock3(QWidget):
 
     def initWidgets(self):
         self._requireLayoutConfig()
+        # collected rather than raised, so a check can report the rest of
+        # the config too.  Here there is nothing to draw without one.
+        if self.resolved.missing:
+            _, kind, name = self.resolved.missing[0]
+            raise SystemExit(noSuchPart(kind, name))
         unsortedPages = []
-        for pageName in self.config.pages:
+        for pageName, (layout, theme) in self.resolved.pages.items():
             page = self.config.pages[pageName]
-            layout = self._loadPart('layouts', page['layout'])
-            self.config._merge(self.config.get('layout') or {}, layout)
-            theme = self._loadPart('themes', page['theme'])
-            # theme: and layout: blocks in the config have the last word
-            # over the files they name, which is what makes either testable
-            # from the command line without editing it.  Named for what they
-            # change rather than -settings: they are not keyed by a target
-            # the way kind-settings and plugin-settings are.
-            self.config._merge(self.config.get('theme') or {}, theme)
-            theme['styles'] = self.regionStyles(layout, theme)
             self.pageRatio = self.aspectScale(layout)
             logging.debug("Building Page %s: layout %s, theme %s",
                           pageName, page['layout'], page['theme'])
@@ -273,7 +286,8 @@ class PiClock3(QWidget):
             if section not in self.config:
                 continue
             for name in self.config[section]:
-                self.loadModule(name, self.config[section][name])
+                self.loadModule(name, self.config[section][name],
+                                section == 'widgets')
 
     def _buildBackground(self, pageFrame, pageName, spec):
         """one picture behind a page, or a folder of them"""
@@ -297,24 +311,6 @@ class PiClock3(QWidget):
         bg.setStyleSheet(
             "#%s { border-image: url(%s) 0 0 0 0 stretch stretch; }"
             % (name, self.expand(spec)))
-
-    def regionStyles(self, layout, theme):
-        """the named styles a region can ask for, layout first then theme.
-
-        A layout knows how big its text has to be to fit; a theme knows what
-        it should look like.  So a layout carries the sizing as a default and
-        a theme overrides whatever it cares to, which is what lets a layout
-        nobody has themed still look right.
-        """
-        styles = {}
-        self.config._merge(layout.get('layout-style-settings') or {}, styles)
-        self.config._merge(theme.get('styles') or {}, styles)
-        wanted = {r['style'] for r in (layout.get('regions') or {}).values()
-                  if isinstance(r, dict) and 'style' in r}
-        for name in sorted(wanted - set(styles)):
-            logger.warning('layout asks for style %r and nothing defines it',
-                           name)
-        return styles
 
     def _requireLayoutConfig(self):
         if 'plugins' in self.config:
@@ -340,65 +336,6 @@ class PiClock3(QWidget):
                     "converting this one.  See\n"
                     "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n"
                     % pageName)
-
-    def _loadPart(self, kind, name):
-        """a layout or a theme - the user's own first, then the shipped one
-
-        either a file or a folder will do.  a folder is what a git checkout
-        of somebody else's theme looks like, so themes/mine.yaml and
-        themes/mine/theme.yaml both work, and so does the repository naming
-        its file after itself.
-        """
-        stem = 'theme' if kind == 'themes' else 'layout'
-        for base in (kind, os.path.join('PiClock3', kind)):
-            folder = os.path.join(base, name)
-            for path, home in ((os.path.join(base, name + '.yaml'), None),
-                               (os.path.join(folder, stem + '.yaml'), folder),
-                               (os.path.join(folder, name + '.yaml'), folder)):
-                if not os.path.isfile(path):
-                    continue
-                with open(path, encoding='utf-8') as fh:
-                    part = yaml.safe_load(fh)
-                logging.debug('%s %s from %s', stem, name, path)
-                # localArt leaves a {placeholder} alone, so it has to run
-                # before the placeholder becomes a path
-                part = self.localArt(part, home) if home else part
-                return thisFolder(part, os.path.dirname(path))
-        raise SystemExit(
-            "no %s named '%s'.  looked for %s.yaml, %s/%s.yaml and "
-            "%s/%s.yaml, in %s/ and in PiClock3/%s/\n"
-            % (stem, name, name, name, stem, name, name, kind, kind))
-
-    @staticmethod
-    def localArt(part, home):
-        """point a folder's own art at that folder.
-
-        a theme that ships its own images should not have to know where it
-        was installed, so inside a folder a plain relative path is relative
-        to the folder.  a path with a {placeholder} is left alone: that is
-        how the shipped themes reach the common image directory.
-        """
-        keys = ('art', 'background', 'folder', 'files', 'image')
-        if isinstance(part, list):
-            for v in part:
-                PiClock3.localArt(v, home)
-        elif isinstance(part, dict):
-            for k, v in part.items():
-                if k in keys and isinstance(v, list):
-                    part[k] = [PiClock3.localPath(x, home) for x in v]
-                elif isinstance(v, (dict, list)):
-                    PiClock3.localArt(v, home)
-                elif k in keys:
-                    part[k] = PiClock3.localPath(v, home)
-        return part
-
-    @staticmethod
-    def localPath(value, home):
-        """one relative path, made relative to the folder it came in"""
-        if (isinstance(value, str) and '{' not in value
-                and not os.path.isabs(value)):
-            return (home + '/' + value).replace(os.sep, '/')
-        return value
 
     def _regionRect(self, pw, ph, r, widen=False):
         # both edges and no size: whatever lies between them
@@ -747,54 +684,16 @@ class PiClock3(QWidget):
             logging.warning('region %s is defined by more than one layout in '
                             'use - the later page wins', name)
         self.regions[name] = w
-        self.regionTheme[name] = theme
         logging.debug("Region %s %s", name, rect)
 
-    def pluginConfig(self, mod, entry, name, cls):
-        """the plugin's own defaults with this instance merged over them.
+    def instanceTheme(self, entry):
+        """the theme of the page an instance draws on"""
+        return self.resolved.themeFor(entry.get('region'))
 
-        the defaults live beside the plugin's code, so they are found from
-        the imported module rather than from a path anybody has to write
-        down - which is what makes a third-party plugin work the moment it
-        is cloned into plugins/.
-
-        Under those, what the role itself takes: a widget accepts color and
-        effect whether or not the plugin ever heard of them, and a provider
-        accepts neither, having no region for a theme to reach.
-
-        Each tier is named as it is merged, into pluginTiers[name], because
-        the merge is the last moment anything can tell a shipped default
-        from an answer somebody wrote.
-        """
-        config = DottedDict()
-        tiers = self.pluginTiers[name] = {}
-        if issubclass(cls, Widget):
-            path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                'widget-config.yaml')
-            with open(path, encoding='utf-8') as fh:
-                self.config._merge(yaml.safe_load(fh) or {}, config,
-                                   tiers, 'role')
-        defaults = {}
-        path = os.path.join(os.path.dirname(os.path.abspath(mod.__file__)),
-                            'config.yaml')
-        if os.path.isfile(path):
-            with open(path, encoding='utf-8') as fh:
-                defaults = yaml.safe_load(fh) or {}
-            defaults = thisFolder(defaults, os.path.dirname(path))
-            self.config._merge(defaults, config, tiers, 'plugin')
-
-        # the theme of the page this instance draws on, if it draws at all.
-        # a provider occupies no region, so no theme reaches it - which is
-        # why anything a theme should be able to say belongs on a widget.
-        theme = self.instanceTheme(entry)
-        if theme:
-            self.cascade(theme, defaults, config, tiers)
-            self.settingsFor(theme, defaults, entry, config, tiers, 'theme')
-
-        # the config has the same two blocks and the last word over the theme
-        self.settingsFor(self.config, defaults, entry, config, tiers,
-                         'config')
-        self.config._merge(entry, config, tiers, 'widget')
+    def pluginConfig(self, folder, entry, name, isWidget):
+        """the eight tiers, merged, with a note of which one said what"""
+        config, tiers = self.resolved.pluginConfig(folder, entry, isWidget)
+        self.pluginTiers[name] = tiers
         # only what somebody wrote; the shipped defaults are the rest of it
         # and saying so for every setting of every plugin buries this
         chosen = {k: v for k, v in tiers.items() if v != 'plugin'}
@@ -820,55 +719,6 @@ class PiClock3(QWidget):
             if tier != 'plugin':
                 return tier
         return inside[0] if inside else None
-
-    # Qt's own property names, which mean here what they mean in Qt.  A
-    # widget declaring one is asking for the page's answer to it.
-    CASCADE = ('color', 'background-color', 'font-family', 'font-style',
-               'font-weight')
-
-    def cascade(self, theme, defaults, config, tiers=None):
-        """the theme's default: reaching every widget that takes the name.
-
-        font-size is deliberately not among them.  It is a fraction of
-        whatever it sits in, and a page and a region are not the same
-        height - the page's 0.02 would draw a clock face at four pixels.
-        """
-        page = theme.get('default') or {}
-        for name in self.CASCADE:
-            if name in page and name in defaults:
-                config[name] = page[name]
-                if tiers is not None:
-                    tiers[name] = 'theme default'
-
-    def settingsFor(self, source, defaults, entry, config,
-                    tiers=None, where=''):
-        """kind-settings: then plugin-settings:, from a theme or the config.
-
-        A kind is what a plugin is interchangeable with, so a kind-setting
-        means the same thing to every plugin wearing it.  plugin-settings:
-        names one exactly, for the times that is too broad.
-        """
-        for block, key in (('kind-settings', defaults.get('kind')),
-                           ('plugin-settings', entry.get('plugin'))):
-            settings = source.get(block)
-            if isinstance(settings, dict) and isinstance(settings.get(key), dict):
-                self.config._merge(settings[key], config, tiers,
-                                   ('%s %s' % (where, block)).strip())
-
-    def instanceTheme(self, entry):
-        """the theme of the page an instance draws on"""
-        name = entry.get('region')
-        if isinstance(name, list):
-            name = name[0] if name else None
-        if not name:
-            return None
-        if name in self.regionTheme:
-            return self.regionTheme[name]
-        head = name + '.'                      # a repeat: its cells share a page
-        for key in self.regionTheme:
-            if key.startswith(head):
-                return self.regionTheme[key]
-        return None
 
     def regionList(self, name):
         """every region a widget's region: refers to, in order.
@@ -940,38 +790,34 @@ class PiClock3(QWidget):
             region.setStyleSheet(rule + ' ' + region.styleSheet())
         logger.debug('region style for %s: %s', entry.get('region'), rule)
 
-    def loadModule(self, name, entry):
+    def loadModule(self, name, entry, isWidget):
         if 'plugin' not in entry:
             raise SystemExit("%s does not say which plugin it is.  Add"
                              " plugin: <module>\n" % name)
         mod = importlib.import_module(entry['plugin'])
         logging.info('loading %s %s', mod, name)
         self.pluginData[name] = DottedDict()
-        # the class first: which role it is decides whether the widget tier
-        # is merged under its own config.yaml, and finding it needs only
-        # the module
-        cls = None
-        clsName = ''
-        for cname, obj in inspect.getmembers(mod, inspect.isclass):
-            # defined here, not imported.  A plugin that imports a base class
-            # to subclass it puts a second Plugin subclass in this namespace,
-            # and picking by "most derived" cannot tell the two apart when
-            # neither descends from the other.  `plugin:` names the package,
-            # so the class arrives from a module inside it rather than from
-            # the package itself
-            if not (obj.__module__ == mod.__name__
-                    or obj.__module__.startswith(mod.__name__ + '.')):
-                continue
-            if not issubclass(obj, Plugin) or obj is Plugin:
-                continue
-            if cls is not None and issubclass(cls, obj):
-                continue
-            cls = obj
-            clsName = cname
+        cls, clsName = pluginClass(mod)
         if cls is None:
             raise TypeError('%s defines no Plugin subclass' % entry['plugin'])
         logger.debug('found %s %s', cls, clsName)
-        moduleConfig = self.pluginConfig(mod, entry, name, cls)
+        # the section an entry is written in decides its role, so a config
+        # can be read without importing anything.  The class is checked
+        # against that rather than asked.
+        if issubclass(cls, Widget) != isWidget:
+            raise SystemExit(
+                "\n%s is under %s: and %s is a %s.\n\n"
+                "A widget draws in a region; a provider answers one.  Move\n"
+                "the entry to the other section.\n"
+                % (name, 'widgets' if isWidget else 'providers',
+                   entry['plugin'],
+                   'widget' if issubclass(cls, Widget) else 'provider'))
+        # the defaults live beside the plugin's code, so they are found
+        # from the imported module rather than from a path anybody has to
+        # write down - which is what makes a third-party plugin work the
+        # moment it is cloned into plugins/
+        folder = os.path.dirname(os.path.abspath(mod.__file__))
+        moduleConfig = self.pluginConfig(folder, entry, name, isWidget)
         self.broadcast(entry, moduleConfig)
         instance = cls(self, name, moduleConfig)
         self.plugins[name] = instance

@@ -33,6 +33,17 @@
 #         themes      a folder in themes/
 #         unit-sets   a set in units/sets.yaml, or one added to it
 #
+#     provides: [<what>, ...]
+#                         beside names: providers, the questions the
+#                         provider named here has to be able to answer -
+#                         any one of them is enough.  A provider says
+#                         which it answers with a provides: of its own,
+#                         beside its settings:, and the words are the
+#                         questions its role defines: map, frames,
+#                         conditions, hourly, daily.  This is what tells a
+#                         radar's frame-provider: from its base-provider:,
+#                         which names: providers cannot.
+#
 # of: is always type names and one-of: is always values, so neither has to
 # be read in context.
 #
@@ -75,13 +86,14 @@ types:
     # written the glibc way - %-d drops a leading zero - and turned round
     # for Windows by strftimePortableFormat
 
-  template:
+  apikey:
     is: scalar
     of: [string]
-    # a line with {names} in it, looked up when it is drawn:
-    # {location.*}, {apikeys.*}, {language.*}, {plugin-data.*},
-    # {this-folder}, {plugin-folder}.  A name that is not there comes back
-    # empty rather than complaining.
+    # a service credential: the key itself, or '{apikeys.mbapi}' naming an
+    # entry of the config's apikeys:.  Nothing can say whether a key is
+    # accepted without asking the service, so what is checked is only that
+    # it is not plainly nothing - blank, a name apikeys: does not have, or
+    # still the placeholder examples/ApiKeys.yaml ships.
 
   provider:
     is: scalar

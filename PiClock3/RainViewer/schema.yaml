@@ -3,6 +3,8 @@ description: >
   of what exists and answers from that, so its frame list is whatever the
   service last published.
 
+provides: [frames]
+
 settings:
 
   palette: {is: number}

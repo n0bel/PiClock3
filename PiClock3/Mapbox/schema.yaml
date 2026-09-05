@@ -3,9 +3,11 @@ description: >
   Mapbox's own logo and credit drawn into it, and sends a mask saying where
   they sit so whatever draws over it can put them back on top.
 
+provides: [map]
+
 settings:
 
-  apikey: {is: template, required: true}
+  apikey: {is: apikey, required: true}
   style:  {is: string}
   # a style id - 'mapbox/satellite-streets-v10', or one of your own from
   # Mapbox Studio.  Free-form, unlike Google's four names.

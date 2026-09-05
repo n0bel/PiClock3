@@ -3,6 +3,8 @@ description: >
   arithmetic on a fixed interval rather than an index it has to fetch, so it
   can answer the moment it is asked.
 
+provides: [frames]
+
 settings:
 
   palette: {is: number}
