@@ -2,10 +2,10 @@
 
 ```
 python3 PyQtPiClock3.py [config.yaml] [--set key=value ...] [--at when]
-                        [--geometry WIDTHxHEIGHT]
+                        [--geometry WIDTHxHEIGHT] [--check]
 ```
 
-There are four, and `--help` prints them.  This page is mostly about why they
+There are five, and `--help` prints them.  This page is mostly about why they
 exist, because that is what tells you when to reach for one.
 
 ## Why there are any
@@ -244,6 +244,38 @@ shows a layout drawn for 4:3 instead.
 The one thing it cannot tell you is how the clock behaves on a machine that
 is not this one.  Fonts, Qt version and how fast the maps composite are all
 still this machine's.
+
+## `--check` - read the config instead of running it
+
+```
+python3 PyQtPiClock3.py --check
+python3 PyQtPiClock3.py examples/default.yaml --check
+```
+
+Walks the config against the schemas and says what is wrong with it, then
+exits.  No window opens and nothing is drawn, so this is what a clock with
+no screen attached, or something building the project, can run.
+
+```
+problem  widgets.radar1.frame-provider: no provider named 'librewxrr'.
+         There is googlemaps, librewxr, mapbox, metar, openmeteo
+warning  widgets.radar1.zoom: 47 is outside 0 to 20
+examples/default.yaml: 1 problem, 1 warning
+```
+
+**A problem means it cannot work** - a provider or a region that is not
+there, a value outside the set its setting allows - and exits `1`.  **A
+warning means it runs, but not as written** - a setting nobody declares, so
+the merge drops it, or a number outside a range - and exits `0`.  So a
+script can treat the exit code as the answer and still see the warnings.
+
+`--set` is applied first, which makes this the way to find out whether an
+override says what you meant before running a clock with it.
+
+A plugin that ships no schema is reported once and its settings are left
+alone, because nothing here knows what they should be.  What this cannot
+tell you is whether a key works or a service is up: an unreachable radar is
+a runtime failure that heals itself, and this only reads files.
 
 ## `--help`, `-h`
 

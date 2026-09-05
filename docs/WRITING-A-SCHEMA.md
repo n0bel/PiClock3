@@ -230,15 +230,24 @@ nothing on success and names the line on failure:
 python3 -c "import yaml; yaml.safe_load(open('PiClock3/Metar/schema.yaml'))"
 ```
 
-Then read it against the `config.yaml` beside it, which is the check that
-matters and the one nothing does for you yet:
+Then point `--check` at a config that uses your plugin - see
+[COMMAND-LINE-OPTIONS.md](COMMAND-LINE-OPTIONS.md).  It reads the config
+against every schema it can find, so a setting you declared wrongly shows up
+as a complaint about the config rather than as a clock that draws the wrong
+thing:
+
+```bash
+python3 PyQtPiClock3.py examples/default.yaml --check
+```
+
+A setting your `config.yaml` has and your schema does not is reported there.
+The two it cannot see are still yours to read for:
 
 - every setting the schema declares has a default in `config.yaml`, unless
   it is `required:`
-- every setting `config.yaml` sets is declared here
 - nothing is declared that the `.py` never reads
 
-None of it is enforced yet - the loader still takes a plugin with no schema,
-and #24 is where the checks land.  Until then a schema that disagrees with
-its `config.yaml` is wrong in the direction that matters most, because the
-whole point is that a program can trust it.
+A schema that disagrees with its `config.yaml` is wrong in the direction
+that matters most, because the whole point is that a program can trust it.
+And a plugin with no schema is still loaded today - the rule is written,
+not enforced.

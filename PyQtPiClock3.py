@@ -5,6 +5,7 @@ import sys
 
 from PyQt5.QtWidgets import QMessageBox, QApplication
 
+from PiClock3.Check import Check
 from PiClock3.Config import Config
 from PiClock3.PiClock3 import PiClock3
 
@@ -14,6 +15,12 @@ sys.path.insert(0, os.path.join(
 
 USAGE = """
     python3 PyQtPiClock3.py [config.yaml] [--set key=value ...] [--at when]
+
+      --check  read the config against the schemas and say what is wrong
+             with it, rather than running.  Opens no window and needs no
+             screen, so it is what a pi with no display, or something
+             building this, can run.  A problem means it cannot work and
+             exits 1; a warning means it runs but not as written.
 
       --set  a config key, dotted for anything nested, taking the last word
              over the file:   --set units=metric
@@ -51,14 +58,17 @@ USAGE = """
 
 
 def readArgs(args):
-    """the config to load, and the settings to lay over it"""
-    configName, settings, i = 'Config.yaml', [], 0
+    """the config to load, the settings to lay over it, and whether to
+    read it rather than run it"""
+    configName, settings, checking, i = 'Config.yaml', [], False, 0
     while i < len(args):
         a = args[i]
         if a in ('-h', '--help'):
             # asking is not an error: it goes to stdout and exits happy
             print(USAGE)
             sys.exit(0)
+        elif a == '--check':
+            checking = True
         elif a == '--set':
             i += 1
             if i >= len(args):
@@ -79,7 +89,48 @@ def readArgs(args):
         else:
             configName = a
         i += 1
-    return configName, settings
+    return configName, settings, checking
+
+
+def loadConfig(configName, settings):
+    """the file, with each --set laid over it"""
+    config = Config()
+    config.load(configName)
+
+    def setLevel():
+        levels = {'debug': logging.DEBUG, 'info': logging.INFO,
+                  'warning': logging.WARNING}
+        if config.get('logging-level') in levels:
+            logging.getLogger().setLevel(levels[config['logging-level']])
+
+    # the file's level first, so that each --set can say what it did as it
+    # does it - which is the only way to catch a mistyped path, since one
+    # that matches nothing is otherwise silent
+    setLevel()
+    # after the file, so the command line has the last word
+    for setting in settings:
+        config.override(setting)
+    # again, in case one of them was logging-level itself
+    setLevel()
+    return config
+
+
+def runCheck(configName, settings):
+    """--check: say what is wrong with a config, and how badly.
+
+    Written to stdout rather than logged, because this is somebody asking a
+    question at a prompt or something building the project, and the answer
+    is the output.  Nothing here touches Qt, so it runs with no screen.
+    """
+    check = Check(loadConfig(configName, settings))
+    check.run()
+    for line in check.report():
+        print(line)
+    problems, warnings = len(check.problems()), len(check.warnings())
+    print('%s: %d problem%s, %d warning%s'
+          % (configName, problems, '' if problems == 1 else 's',
+             warnings, '' if warnings == 1 else 's'))
+    return 1 if problems else 0
 
 
 class LogHandler(logging.handlers.RotatingFileHandler):
@@ -106,28 +157,16 @@ if __name__ == '__main__':
 
     sys.excepthook = excepthook
 
+    # before any of Qt, so --check runs where there is no screen to open a
+    # window on
+    configName, settings, checking = readArgs(sys.argv[1:])
+    if checking:
+        sys.exit(runCheck(configName, settings))
+
     try:
         app = QApplication(sys.argv)
         try:
-            configName, settings = readArgs(sys.argv[1:])
-            config = Config()
-            config.load(configName)
-
-            def setLevel():
-                levels = {'debug': logging.DEBUG, 'info': logging.INFO,
-                          'warning': logging.WARNING}
-                if config.get('logging-level') in levels:
-                    logger.setLevel(levels[config['logging-level']])
-
-            # the file's level first, so that each --set can say what it did
-            # as it does it - which is the only way to catch a mistyped path,
-            # since one that matches nothing is otherwise silent
-            setLevel()
-            # after the file, so the command line has the last word
-            for setting in settings:
-                config.override(setting)
-            # again, in case one of them was logging-level itself
-            setLevel()
+            config = loadConfig(configName, settings)
             logging.info("Startup....")
         except Exception as e:
             logging.exception('PyQtPiClock3 Config Error:')
