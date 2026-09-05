@@ -98,7 +98,7 @@ A **provider** fetches and draws nothing.  A **widget** draws in a region.
 ```yaml
 providers:
   openmeteo: {plugin: PiClock3.OpenMeteo}
-  metar:     {plugin: PiClock3.Metar, METAR: KLVN}
+  metar:     {plugin: PiClock3.Metar, METAR: KMSP}
   mapbox:    {plugin: PiClock3.Mapbox}
   librewxr:  {plugin: PiClock3.LibreWXR}
 

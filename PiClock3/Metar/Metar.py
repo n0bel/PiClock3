@@ -6,7 +6,7 @@ no forecast of any kind, so hourly() and daily() answer empty and a widget
 asking for them gets nothing rather than a guess.
 
 Reports come from the NWS text feed, one file per station:
-    https://tgftp.nws.noaa.gov/data/observations/metar/stations/KLVN.TXT
+    https://tgftp.nws.noaa.gov/data/observations/metar/stations/KMSP.TXT
 
 Everything handed out is in Celsius, millibars, km/h and degrees; formatting
 belongs to whatever draws it.  The report string itself travels under raw,

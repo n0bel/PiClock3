@@ -33,7 +33,7 @@ providers:
   openmeteo: {plugin: PiClock3.OpenMeteo}
 
   # an actual observation from a nearby field
-  metar: {plugin: PiClock3.Metar, METAR: KLVN}
+  metar: {plugin: PiClock3.Metar, METAR: KMSP}
 
   # base map under the radar - needs a key in ApiKeys.yaml
   mapbox:     {plugin: PiClock3.Mapbox}

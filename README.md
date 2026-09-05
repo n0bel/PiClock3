@@ -1,17 +1,28 @@
 # PiClock3
 
+PiClock3 is a full-screen clock for a Raspberry Pi, on a wall or on a desk.
+It draws the time on an analog or a digital face, the date, the current
+conditions from a nearby airfield or a weather service, a forecast several
+days out, sunrise and sunset and the phase of the moon, and animated weather
+radar over a base map.  It steps through as many pages as you give it, and
+what is on them, where each thing sits and how it looks are configuration
+rather than code.
+
+It is a complete rewrite of PiClock (https://github.com/n0bel/PiClock), in
+Python 3 and PyQt5, and much more modular and less monolithic.
+
+![PiClock3 running examples/default.yaml](https://raw.githubusercontent.com/n0bel/PiClock3/main/Pictures/2026-09-05_default.jpg)
+
+That is `examples/default.yaml` as it ships, on the `classic` layout and the
+`circuit` theme - and on a Pi Zero W, which is the least hardware that will
+run it.
+
 > **August 23 and 24, 2026 - the configuration format changed and older
-> configs will not load.**  Pages now name a layout and a theme instead of including a tree
-> of blocks, and block names changed with it.  PiClock3 will tell you if it
-> sees an older config.  This only affects configurations written before that
-> date - see
+> configs will not load.**  Pages now name a layout and a theme instead of
+> including a tree of blocks, and block names changed with it.  PiClock3
+> will tell you if it sees an older config.  This only affects
+> configurations written before that date - see
 > [BREAKING-CONFIGURATION-CHANGE-2026-08-23.md](BREAKING-CONFIGURATION-CHANGE-2026-08-23.md).
-
-> Drawing frame art, or writing a theme?  See
-> [docs/FRAME-ART.md](docs/FRAME-ART.md).
-
-PiClock3 is a complete rewrite of PiClock (https://github.com/n0bel/PiClock).
-It is based on Python3 and PyQt5.  It is also much more modular and less monolithic.
 
 ## Work in progress
 
@@ -32,9 +43,9 @@ If you want a clock to simply rely on today, use the original PiClock
 here to see where PiClock is going, to run it, and to say what is wrong with
 it.
 
-Progress, plans and half-formed ideas live in
-https://github.com/n0bel/PiClock3/issues/11 - it replaces issue 230 on
-PiClock.  A bug or a specific request is better as its own issue.
+Progress, plans and half-formed ideas live in the issues:
+https://github.com/n0bel/PiClock3/issues.  A bug or a specific request is
+welcome as its own.
 
 I'll be committing many partially complete commits here as an easy means to
 distribute code to my PiClocks for testing.
@@ -76,6 +87,14 @@ Then:
 python3 PyQtPiClock3.py
 ```
 
+The clock, the date, the almanac, the current conditions, the forecast and
+the radar all work at this point - but it thinks it is somewhere else.  The
+example sits at 45, -93 with KMSP for its METAR, because it has to say
+something.  Set your own latitude and longitude and your nearest METAR
+station in `Config.yaml`.
+
+The rest of this section is why those steps look the way they do.
+
 PyQt5 comes from apt on purpose.  Installing it with pip builds Qt from
 source, which takes hours on a Pi and usually runs out of memory first.
 
@@ -97,10 +116,12 @@ Raspberry Pi OS should be fine and `requirements.txt` already resolves the
 right package versions for it by itself, but it has had less use, so say so
 if something breaks.
 
-The clock, the date, the almanac, the current conditions, the forecast and
-the radar all work at this point - but it thinks it is somewhere else.  The example sits at
-45, -93 with KLVN for its METAR, because it has to say something.  Set your
-own latitude and longitude and your nearest METAR station in `Config.yaml`.
+**A Pi Zero W runs it too**, on any of those releases - ARMv6, one 1 GHz
+core, 426 MB.  The first start after installing is the slow one, because
+Python is compiling the tree to bytecode as it imports it, and on a Zero
+that is enough to time out the first few web requests and leave the forecast
+column and the current conditions empty.  Start it again; the second run is
+warm and draws everything.
 
 ### The example configurations
 
