@@ -94,8 +94,8 @@ clock's own position does not repeat the numbers.
 ## `providers:` and `widgets:`
 
 A **provider** fetches and draws nothing.  A **widget** draws in a region.
-Which section an entry is written in is what says which it is, so one put in
-the wrong one stops the clock at startup with a sentence saying so.
+Which section an entry is written in is what says which it is, and `--check`
+names one that is in the wrong section either way round.
 
 ```yaml
 providers:

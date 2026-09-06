@@ -421,13 +421,20 @@ class Check():
                          % module)
             return
 
-        # asked of the provider rather than of whoever names it, so it is
-        # said once and reaches one nothing points at yet
-        if not isWidget and not schema.get('provides'):
+        # provides: is what a provider has and a widget has not, so it
+        # answers both halves of "is this in the right section" without
+        # importing the class the way the loader does.  Asked here rather
+        # than of whoever names it, so it is said once and reaches a
+        # provider nothing points at yet.
+        if isWidget and schema.get('provides'):
+            self.problem(where, '%s answers %s, so it is a provider.  Move'
+                                ' it to providers:'
+                         % (module, ', '.join(sorted(schema['provides']))))
+        elif not isWidget and not schema.get('provides'):
             self.problem(where, '%s has no provides:, so it answers nothing.'
                                 '  A provider names what it can be asked:'
-                                ' map, frames, conditions, hourly, daily'
-                         % module)
+                                ' map, frames, conditions, hourly, daily.'
+                                '  A widget belongs in widgets:' % module)
 
         self.types.update(schema.get('types') or {})
         settings = dict(schema.get('settings') or {})

@@ -287,9 +287,10 @@ answer to the same question, so a setting a theme's `kind-settings:` fills
 in counts as set, and one nothing declares is reported because the merge
 really will drop it.
 
-Two mistakes it catches that a careful read of the config would not.  A
+Three mistakes it catches that a careful read of the config would not.  A
 provider has to answer the question the setting naming it is for, so a base
 map written as a `frame-provider:` is caught even though both names exist.
+An entry has to be in the section its plugin belongs to, either way round.
 And a `kind-settings:` block for a kind nothing in the config wears reaches
 nothing at all, which is the quietest way to write a setting that does
 nothing.
