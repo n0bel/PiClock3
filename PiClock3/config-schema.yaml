@@ -32,7 +32,7 @@ types:
 
   region-name:
     is: scalar
-    of: string
+    of: [string]
     names: regions
     # a region some page's layout declares, including a repeat's cells -
     # maps.1 and maps.2 exist, the bare maps gathers both
@@ -57,7 +57,7 @@ settings:
   location: {is: location, required: true}
   # where the clock is pointed, and what a plugin's own location: defaults
   # from
-  language: {is: string}
+  language: {is: string, names: languages}
   locale:   {is: string}
   # a code the language file answers to, and the locale strftime is asked
   # to use for day and month names.  Empty locale takes the machine's.
@@ -66,7 +66,7 @@ settings:
   # a set in units/sets.yaml, or one a plugin or you added
 
   logging-level: {is: levels}
-  geometry:      {is: string}
+  geometry:      {is: string, pattern: geometry}
   # WIDTHxHEIGHT, or WIDTHxHEIGHT+X+Y: a window rather than full screen,
   # for looking at a clock built for a screen you do not have here
 
@@ -78,3 +78,20 @@ settings:
   plugin-settings: {is: table, of: block}
   # the same two blocks a theme has, keyed by kind and by plugin name, so a
   # config has the last word over one
+
+  layout: {is: block}
+  theme:  {is: block}
+  # laid over whichever layout or theme a page names, so either can be
+  # tried without editing the file it belongs to.  What is written here is
+  # read against that layout's or theme's schema where it lands, so it is
+  # not restated here
+
+  styles:    {is: table, of: block}
+  unit-sets: {is: table, of: block}
+  # raw Qt properties by name, and unit sets of your own.  A theme's
+  # styles: of the same name wins over the config's.
+
+  folders: {is: table, of: string}
+  # named paths a setting can expand.  Only a marker's image: ever read
+  # one - see WRITING-A-CONFIG.md, which says not to write it in anything
+  # new

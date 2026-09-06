@@ -17,6 +17,7 @@ from PyQt5.QtGui import (QImage, QFontMetrics)
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
 from .ResolvedConfig import ResolvedConfig, noSuchPart
+from .Config import GEOMETRY
 from .DottedDict import DottedDict, Missing
 from .Languages import Languages
 from .Plugin import Plugin
@@ -192,8 +193,7 @@ class PiClock3(QWidget):
         want = self.config.get('geometry')
         if not want:
             return QApplication.desktop().screenGeometry()
-        size = re.match(r'^\s*(\d+)\s*[xX,]\s*(\d+)'
-                        r'(?:\s*\+\s*(\d+)\s*\+\s*(\d+))?\s*$', str(want))
+        size = GEOMETRY.match(str(want))
         if not size:
             raise SystemExit(
                 "geometry wants WIDTHxHEIGHT, or WIDTHxHEIGHT+X+Y: %r" % want)

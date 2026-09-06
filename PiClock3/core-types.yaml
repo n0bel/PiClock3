@@ -24,6 +24,10 @@
 #     unit: <what>        what a bare number counts - minutes, milliseconds
 #     quantity: <what>    an entry in units/quantities.yaml: a bare number
 #                         is its base, and any unit it lists may be written
+#     pattern: <what>     a string the clock reads with an expression
+#                         rather than takes as it stands.  Named rather
+#                         than written out, so the clock and a check read
+#                         it with the same one: geometry
 #     names: <what>       must name something that exists, which is what
 #                         lets an editor offer a list rather than a box:
 #

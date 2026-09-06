@@ -1,10 +1,16 @@
 import logging
 import os
+import re
 import yaml
 from yamlinclude import YamlIncludeConstructor
 from .DottedDict import DottedDict
 
 logger = logging.getLogger(__name__)
+
+# geometry: as the clock reads it, and as a check reads it - one pattern,
+# so the two cannot come to different answers about the same word
+GEOMETRY = re.compile(r'^\s*(\d+)\s*[xX,]\s*(\d+)'
+                      r'(?:\s*\+\s*(\d+)\s*\+\s*(\d+))?\s*$')
 
 
 def thisFolder(part, home):
@@ -44,7 +50,12 @@ def merge(source, destination, tiers=None, tier=None, path=''):
     for key, value in source.items():
         where = path + key
         if isinstance(value, dict):
-            node = destination.setdefault(key, DottedDict())
+            # a block replaces whatever is not one, the way a list does.
+            # effect: is written either way round, so a tier writing the
+            # long form lands on a shorthand string below it
+            node = destination.get(key)
+            if not isinstance(node, dict):
+                node = destination[key] = DottedDict()
             merge(value, node, tiers, tier, where + '.')
         else:
             destination[key] = value

@@ -5,13 +5,13 @@ provider name that does not exist is a KeyError somewhere later, and a region
 nobody declares is a widget that draws nowhere - all of them silent, or loud
 in a place that says nothing about the config that caused them.
 
-This walks the config once and collects everything it finds:
+Every value is read against what its schema declares, and every name
+against the things that exist to be named - regions, themes, layouts,
+providers, languages, unit sets, plugin kinds.  Both go as deep as the
+config does, and it collects everything rather than stopping at the first:
 
-    problem   it cannot work.  A provider that is not there, a region that
-              is not there, a value outside the set or the range its
-              setting allows, a plugin whose schema does not describe it
-    warning   it runs, but not as written.  A setting nobody declares, a
-              block of settings that reaches nothing, a missing api key
+    problem   it cannot work
+    warning   it runs, but not as written
 
 Data rather than classes: nothing here imports a plugin or builds a widget,
 so a config can be read on a machine with no display and no api keys.  A
@@ -23,6 +23,7 @@ again here.  A checker with its own idea of the merge agrees with the loader
 only by coincidence, and fails the worst way: calling a setting unset when
 the clock will find it, and going quiet about one the clock will drop.
 """
+import contextlib
 import glob
 import logging
 import os
@@ -30,7 +31,9 @@ import re
 
 import yaml
 
+from .Config import GEOMETRY
 from .ResolvedConfig import ResolvedConfig
+from .Units import MEASURE, Units
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +50,15 @@ PLACEHOLDER = 'YOUR API KEY'
 
 # no service issues one this short
 MINKEY = 5
+
+# what a pattern: names, and the shape to say when a value is not one.
+# Named rather than written into a schema, so the clock and this read a
+# value with one expression
+PATTERNS = {'geometry': (GEOMETRY, 'WIDTHxHEIGHT, or WIDTHxHEIGHT+X+Y')}
+
+PRIMITIVES = {'number': (int, float), 'string': str, 'boolean': bool}
+NAMED = {int: 'a number', float: 'a number', str: 'a word', bool: 'true',
+         list: 'a list', dict: 'a block', type(None): 'nothing'}
 
 
 def isTemplate(value):
@@ -67,6 +79,16 @@ def pluginFolder(module):
     return None
 
 
+def mapping(value):
+    """a block of settings, or nothing where something else was written.
+
+    Every walk here reads config somebody typed, so a scalar can turn up
+    anywhere a block belongs.  checkShape reports it once; the walks past
+    that point want it not to be there rather than to raise.
+    """
+    return value if isinstance(value, dict) else {}
+
+
 def readYaml(path):
     if not os.path.isfile(path):
         return None
@@ -84,6 +106,10 @@ class Check():
         self.found = []
         self.types = {}
         self.used = set()          # providers a widget actually names
+        self.described = set()     # plugins read against their own schema
+        self.folders = None        # every plugin installed, found once
+        self.redefined = set()     # plugins redefining a core type
+        self.units = None          # the units table, read once
 
     # ------------------------------------------------------------ saying
 
@@ -119,6 +145,37 @@ class Check():
         self.types.update(self.configSchema.get('types') or {})
         self.widgetSchema = readYaml(
             os.path.join(HERE, 'widget-schema.yaml')) or {}
+        self.layoutSchema = readYaml(
+            os.path.join(HERE, 'layout-schema.yaml')) or {}
+        self.types.update(self.layoutSchema.get('types') or {})
+        self.themeSchema = readYaml(
+            os.path.join(HERE, 'theme-schema.yaml')) or {}
+        self.types.update(self.themeSchema.get('types') or {})
+        # what a plugin may not redefine
+        self.coreTypes = set(self.types)
+
+    @contextlib.contextmanager
+    def typesOf(self, schema, module):
+        """a plugin's own types, for as long as its own settings are read.
+
+        Two plugins may both invent a `part`, and they mean different
+        shapes, so the names cannot share one table.  A core name is
+        another matter: redefining one changes what every other schema
+        meant by it, and that is reported rather than allowed.
+        """
+        mine = schema.get('types') or {}
+        for name in sorted(set(mine) & self.coreTypes):
+            if module not in self.redefined:
+                self.redefined.add(module)
+                self.problem('%s schema.yaml' % module,
+                             '%s is a core type and this redefines it'
+                             % name)
+        saved = self.types
+        self.types = dict(saved, **mine)
+        try:
+            yield
+        finally:
+            self.types = saved
 
     def pluginSchema(self, module):
         """a plugin's own schema, and the types it invents, or None"""
@@ -140,10 +197,16 @@ class Check():
             found = glob.glob(os.path.join(kind, '*')) + \
                 glob.glob(os.path.join('PiClock3', kind, '*'))
             return {os.path.splitext(os.path.basename(f))[0] for f in found}
+        if kind == 'languages':
+            # the same folders Languages searches, so a language a plugin
+            # ships counts as one
+            found = glob.glob(os.path.join('PiClock3', 'languages', '*.yaml'))
+            for base in ('PiClock3', 'plugins'):
+                found += glob.glob(os.path.join(base, '*', kind, '*.yaml'))
+            found += glob.glob(os.path.join(kind, '*.yaml'))
+            return {os.path.splitext(os.path.basename(f))[0] for f in found}
         if kind == 'unit-sets':
-            sets = (readYaml(os.path.join(HERE, 'units', 'sets.yaml'))
-                    or {}).get('sets') or {}
-            return set(sets) | set(self.config.get('unit-sets') or {})
+            return set(self.unitsTable().sets)
         return None
 
     def everyRegion(self):
@@ -173,29 +236,182 @@ class Check():
         return merged
 
     def alternatives(self, spec):
-        """`of: [a, b]` as the specs those names stand for"""
-        found = []
-        for name in spec.get('of') or []:
-            if isinstance(name, str) and name in self.types:
-                found.append(self.resolve(self.types[name]))
-        return found
+        """`of: [a, b]` as the specs those names stand for.
+
+        A list only.  A block's of: is a mapping of its fields, and a field
+        sharing a name with a type would otherwise stand in for the block.
+        """
+        of = spec.get('of')
+        return [self.resolve(self.types[name])
+                for name in (of if isinstance(of, list) else [])
+                if isinstance(name, str) and name in self.types]
+
+    def accepts(self, spec, seen=None):
+        """the primitives a scalar setting may hold, or an empty set where
+        it says nothing"""
+        seen = seen or set()
+        if spec.get('is') in PRIMITIVES:
+            return {spec['is']}
+        out = set()
+        of = spec.get('of')
+        # one alternative may be written as the bare name rather than a
+        # list of one, and a schema doing that should still be checked
+        if isinstance(of, str) and spec.get('is') != 'list':
+            of = [of]
+        for name in (of if isinstance(of, list) else []):
+            if name in PRIMITIVES:
+                out.add(name)
+            elif name in self.types and name not in seen:
+                seen.add(name)
+                out |= self.accepts(self.resolve(self.types[name]), seen)
+        return out
+
+    def checkShape(self, where, value, spec):
+        """a block, a table or a list has to be written as one.
+
+        Known by its fields as well as by the word, since a setting saying
+        `is: location` keeps its own `is` through resolve.
+        """
+        want = spec.get('is')
+        if want == 'list':
+            shape, ok = 'a list', isinstance(value, list)
+        elif want in ('block', 'table') or self.fields(spec):
+            shape, ok = 'a block of settings', isinstance(value, dict)
+        else:
+            return True
+        if not ok:
+            self.problem(where, 'must be %s, and this is %s'
+                         % (shape, NAMED.get(type(value),
+                                             type(value).__name__)))
+        return ok
+
+    def unitsTable(self):
+        """the units table, loaded the way the clock loads it.
+
+        Units wants only a config, and Check has one, so the same reader
+        answers here rather than a second one written to agree with it.
+        """
+        if self.units is None:
+            self.units = Units(self)
+            self.units.load()
+        return self.units
+
+    def checkMeasure(self, where, value, spec):
+        """a number written with a unit, against the units its quantity
+        names.
+
+        quantity: is what says which are legal - a measure with none is
+        Qt's to read, and this leaves it alone.
+        """
+        quantity = spec.get('quantity')
+        if not quantity or not isinstance(value, str):
+            return
+        table = self.unitsTable().quantities.get(quantity)
+        if table is None:
+            return              # the schema's fault, and it says so itself
+        found = MEASURE.match(value.strip())
+        if found is None:
+            self.problem(where, '%r is not a number, with or without a unit'
+                         % value)
+            return
+        unit, known = found.group(2).strip(), table.get('units') or {}
+        if unit and unit not in known:
+            self.problem(where, '%r is not a unit of %s.  There is %s'
+                         % (unit, quantity, ', '.join(sorted(known))))
+
+    def checkPattern(self, where, value, spec):
+        """a string the clock will read with an expression rather than
+        take as it stands"""
+        found = PATTERNS.get(spec.get('pattern'))
+        if found is None or not isinstance(value, str):
+            return
+        if not found[0].match(value):
+            self.problem(where, '%r is not %s' % (value, found[1]))
+
+    def checkType(self, where, value, spec):
+        """a scalar against the primitives its setting takes.
+
+        A boolean is not a number, whatever Python thinks: yaml reads true
+        and 1 differently and so does everything downstream.
+        """
+        allowed = self.accepts(spec)
+        if not allowed:
+            return
+        for name in allowed:
+            if isinstance(value, PRIMITIVES[name]) and (
+                    name == 'boolean' or not isinstance(value, bool)):
+                return
+        self.problem(where, '%r is %s, and this takes %s'
+                     % (value, NAMED.get(type(value), type(value).__name__),
+                        ' or '.join(sorted(allowed))))
+
+    def fields(self, spec):
+        """what a block declares, the with: chain included"""
+        out = {}
+        base = spec.get('with')
+        if isinstance(base, str) and base in self.types:
+            out.update(self.fields(self.resolve(self.types[base])))
+        of = spec.get('of')
+        if isinstance(of, dict):
+            out.update(of)
+        return out
+
+    def checkBlock(self, where, value, spec):
+        """a mapping against what declares its keys.
+
+        A block names its keys and a table invents them, so one is checked
+        against fields and the other against the one type its values are.
+        """
+        for entry in self.alternatives(spec) or [spec]:
+            fields = self.fields(entry)
+            if fields:
+                self.checkEntry(where, value, fields, (), value)
+                return
+            if entry.get('is') == 'table':
+                of = entry.get('of')
+                for name, item in (value.items() if of in self.types else ()):
+                    self.checkValue('%s.%s' % (where, name), item,
+                                    self.types[of])
+                return
+            if entry.get('is') == 'block':
+                return      # declares no fields, so read somewhere else
+        self.problem(where, 'is a block of settings and this setting takes'
+                            ' a value')
+
+    def checkList(self, where, value, spec):
+        """a list against the one type its items are"""
+        for entry in self.alternatives(spec) or [spec]:
+            if entry.get('is') == 'list':
+                of = entry.get('of')
+                for n, item in (enumerate(value) if of in self.types else ()):
+                    self.checkValue('%s.%d' % (where, n), item,
+                                    self.types[of])
+                return
+        self.problem(where, 'is a list and this setting does not take one')
 
     def checkValue(self, where, value, spec):
         """one value against one setting's declaration"""
         if isTemplate(value):
             return
+        if value is None or value == '':
+            return              # blank is unset, and required: says so
         spec = self.resolve(spec)
+        if not self.checkShape(where, value, spec):
+            return
+
+        if isinstance(value, dict):
+            self.checkBlock(where, value, spec)
+            return
 
         if isinstance(value, list):
-            for entry in self.alternatives(spec):
-                if entry.get('is') == 'list':
-                    inner = entry.get('of')
-                    if isinstance(inner, str) and inner in self.types:
-                        for n, item in enumerate(value):
-                            self.checkValue('%s.%d' % (where, n), item,
-                                            self.types[inner])
-                    return
+            self.checkList(where, value, spec)
             return
+
+        # before one alternative is picked below: a region's border: takes
+        # true or a name, and narrowing to the name would reject true
+        self.checkType(where, value, spec)
+        self.checkMeasure(where, value, spec)
+        self.checkPattern(where, value, spec)
 
         for entry in self.alternatives(spec) or [spec]:
             if entry.get('names') or entry.get('one-of') or entry.get('range'):
@@ -246,7 +462,7 @@ class Check():
         of them, so a radar's two cannot be swapped - though the config
         that swaps them reads perfectly well.
         """
-        entry = (self.config.get('providers') or {}).get(name)
+        entry = mapping(self.config.get('providers')).get(name)
         if not isinstance(entry, dict):
             return                  # checkName has already said so
         module = entry.get('plugin') or ''
@@ -267,22 +483,29 @@ class Check():
 
         Not falsiness: order: 0 is the first page and precision: 0 is whole
         degrees, and a required setting holding either of those is answered.
+        An empty list is nothing, though - a widget whose region: is []
+        draws nowhere - and only required settings ask, so MapLoop's
+        captions: [] goes on meaning what it means.
         """
-        return name not in entry or entry[name] is None or entry[name] == ''
+        return name not in entry or any(entry[name] is v or entry[name] == v
+                                        for v in (None, '', [], {}))
 
     def checkEntry(self, where, entry, settings, declared, merged=None,
-                   quiet=False):
+                   quiet=False, required=True):
         """one block of settings against what declares them.
 
         Two questions, two subjects.  `required` is asked of `merged`,
         everything the clock will hand the plugin, because a setting any of
         the eight tiers fills in is set.  Whether anything declares a
         setting is asked of the entry, the only place it can be misspelled.
+
+        A kind-settings: block is only part of what a plugin will get, so
+        it answers the second question and not the first.
         """
         if not isinstance(entry, dict):
             return
         merged = entry if merged is None else merged
-        for name, spec in (settings or {}).items():
+        for name, spec in (settings or {}).items() if required else ():
             if spec.get('required') and self.blank(merged, name):
                 self.problem('%s.%s' % (where, name), 'must be set')
         for name, value in entry.items():
@@ -307,49 +530,161 @@ class Check():
             if spec.get('required') and self.blank(self.config, name):
                 self.problem(name, 'must be set')
         for name, value in self.config.items():
-            if name in settings and name not in tables:
+            if name not in settings:
+                self.warning(name, 'nothing declares this setting, so it is'
+                                   ' dropped')
+            elif name not in tables:
                 self.checkValue(name, value, settings[name])
+            else:
+                # walked below, so only their shape is asked here
+                self.checkShape(name, value, self.resolve(settings[name]))
 
-        for name, page in (self.config.get('pages') or {}).items():
-            self.checkEntry('pages.' + name, page,
-                            (self.types.get('page') or {}).get('of'), ())
+        page = self.types.get('page') or {}
+        for name, entry in mapping(self.config.get('pages')).items():
+            if self.checkShape('pages.' + name, entry, self.resolve(page)):
+                self.checkEntry('pages.' + name, entry, page.get('of'), ())
 
         for kind in ('providers', 'widgets'):
-            for name, entry in (self.config.get(kind) or {}).items():
+            for name, entry in mapping(self.config.get(kind)).items():
                 self.checkPlugin('%s.%s' % (kind, name), entry,
                                  kind == 'widgets')
 
+        for where, region, key, name in self.resolved.unnamed:
+            self.warning('%s.%s.%s' % (where, region, key),
+                         "no %s named %r, so this region takes the theme's"
+                         ' default' % (key, name))
+
+        self.checkParts()
         self.checkKinds()
+        self.checkSettings('', self.config)
         # last, because it only asks about providers a widget named, and
         # that is not known until every widget has been read
         self.checkKeys()
         return self.found
 
-    def checkKinds(self):
-        """a kind-settings: block aimed at a kind nothing here wears.
+    def checkParts(self):
+        """each layout and theme a page named, against its own schema.
 
-        The quietest way to write a setting that does nothing: a kind
-        nobody wears merges into nothing at all.
-
-        This config's own only.  A shipped theme styles kinds a config need
-        not have, and those are not the config's mistake.
+        Read once however many pages share it, and as ResolvedConfig
+        settled it, so the config's layout: and theme: blocks are checked
+        where they land rather than where they were written.
         """
-        worn = set()
+        for kind, schema in (('layouts', self.layoutSchema),
+                             ('themes', self.themeSchema)):
+            seen = set()
+            for pageName, page in mapping(self.config.get('pages')).items():
+                name = mapping(page).get(kind[:-1])
+                part = self.resolved.pages.get(pageName)
+                if not isinstance(name, str) or name in seen or part is None:
+                    continue
+                seen.add(name)
+                part = part[0 if kind == 'layouts' else 1]
+                self.checkEntry('%s.%s' % (kind, name), part,
+                                schema.get('settings') or {}, ())
+                if kind == 'themes':
+                    self.checkSettings('%s.%s.' % (kind, name), part)
+
+    def installed(self):
+        """every plugin folder on this machine, whether a config uses it.
+
+        No schema is nothing to spell a setting against, and naming such a
+        plugin is a problem in its own right.  Somebody else's may sit a
+        level down, the way a clone leaves it.
+        """
+        if self.folders is None:
+            self.folders = [
+                f for f in (glob.glob(os.path.join('PiClock3', '*'))
+                            + glob.glob(os.path.join('plugins', '*'))
+                            + glob.glob(os.path.join('plugins', '*', '*')))
+                if os.path.isfile(os.path.join(f, 'schema.yaml'))]
+        return self.folders
+
+    def declaredFor(self, block, key):
+        """what a settings block's target declares, from disk.
+
+        Whether a block reaches anything changes when a provider is
+        swapped, so it is not asked.  Whether a setting exists at all is
+        spelling, and that is what is asked here.
+        """
+        if block == 'plugin-settings':
+            # named exactly, so found the way the loader finds it
+            folder = pluginFolder(key)
+            folders = [f for f in [folder] if f and os.path.isfile(
+                os.path.join(f, 'schema.yaml'))]
+        else:
+            folders = [f for f in self.installed()
+                       if (readYaml(os.path.join(f, 'config.yaml'))
+                           or {}).get('kind') == key]
+        settings, types = {}, {}
+        for folder in folders:
+            schema = readYaml(os.path.join(folder, 'schema.yaml')) or {}
+            settings.update(schema.get('settings') or {})
+            types.update(schema.get('types') or {})
+            if not schema.get('provides'):
+                settings.update(self.widgetSchema.get('settings') or {})
+        return settings, types
+
+    def checkSettings(self, where, holder):
+        """the two settings blocks of a config or of a theme.
+
+        A widget hands its own config to the providers it names, so a
+        setting one of those declares belongs here too.
+        """
+        for block in ('kind-settings', 'plugin-settings'):
+            for key, values in mapping(holder.get(block)).items():
+                at = '%s%s.%s' % (where, block, key)
+                if not isinstance(values, dict):
+                    self.problem(at, 'must be a block of settings')
+                    continue
+                settings, types = self.declaredFor(block, key)
+                if not settings:
+                    continue    # nothing installed to spell it against
+                with self.typesOf({'types': types}, key):
+                    self.checkEntry(at, values, settings,
+                                    self.passedAnywhere(), required=False)
+
+    def passedAnywhere(self):
+        """every setting any provider in this config declares.
+
+        A widget passes its own config down, so naming one of these in a
+        settings block is how a radar sets its frame provider's palette.
+        """
+        passed = set()
+        for entry in (self.config.get('providers') or {}).values():
+            schema = self.pluginSchema(mapping(entry).get('plugin') or '')
+            passed |= set((schema or {}).get('settings') or {})
+        return passed
+
+    def checkKinds(self):
+        """a kind two plugins wear and disagree about.
+
+        A widget and a provider take different settings, so a block aimed
+        at a kind they both wear has no single meaning.  Only where a
+        block aims at it, and only this config's own.
+        """
+        worn = {}
         for section in ('providers', 'widgets'):
-            for entry in (self.config.get(section) or {}).values():
-                folder = pluginFolder((entry or {}).get('plugin') or '')
+            for entry in mapping(self.config.get(section)).values():
+                module = mapping(entry).get('plugin') or ''
+                folder = pluginFolder(module)
                 if folder is None:
                     continue
                 kind = (readYaml(os.path.join(folder, 'config.yaml'))
                         or {}).get('kind')
-                if kind:
-                    worn.add(kind)
-        for kind in sorted(self.config.get('kind-settings') or {}):
-            if kind not in worn:
+                if not kind:
+                    continue
+                schema = readYaml(os.path.join(folder, 'schema.yaml')) or {}
+                role = 'provider' if schema.get('provides') else 'widget'
+                worn.setdefault(kind, {}).setdefault(role, set()).add(module)
+
+        for kind in sorted(mapping(self.config.get('kind-settings'))):
+            roles = worn.get(kind) or {}
+            if len(roles) > 1:
                 self.warning('kind-settings.%s' % kind,
-                             'nothing in this config is a %s, so this block'
-                             ' reaches nothing.  There is %s'
-                             % (kind, ', '.join(sorted(worn)) or 'nothing'))
+                             'reaches %s, which do not take the same'
+                             ' settings' % ', and '.join(
+                                 '%s %s' % (role, ', '.join(sorted(
+                                     roles[role]))) for role in sorted(roles)))
 
     def checkKeys(self):
         """every setting declared an apikey, on a provider something uses.
@@ -359,7 +694,7 @@ class Check():
         key.
         """
         for name in sorted(self.used):
-            entry = (self.config.get('providers') or {}).get(name)
+            entry = mapping(self.config.get('providers')).get(name)
             if not isinstance(entry, dict) or not entry.get('plugin'):
                 continue
             folder = pluginFolder(entry['plugin'])
@@ -383,7 +718,7 @@ class Check():
         """
         named = APIKEY.match(str(value or '').strip())
         if named:
-            keys = self.config.get('apikeys') or {}
+            keys = mapping(self.config.get('apikeys'))
             wanted = named.group(1)
             if wanted not in keys:
                 self.problem(where, 'wants apikeys.%s and the config has no'
@@ -436,7 +771,6 @@ class Check():
                                 ' map, frames, conditions, hourly, daily.'
                                 '  A widget belongs in widgets:' % module)
 
-        self.types.update(schema.get('types') or {})
         settings = dict(schema.get('settings') or {})
         if isWidget:
             settings.update(self.widgetSchema.get('settings') or {})
@@ -452,21 +786,33 @@ class Check():
         # nothing leaves us unable to say what is legal here, so the entry
         # keeps its one real complaint rather than one per setting.
         passed, unresolved = set(), False
-        for name, value in entry.items():
-            spec = self.resolve(settings.get(name) or {})
-            if spec.get('names') != 'providers' or isTemplate(value):
-                continue
-            if isWidget:
-                self.used.add(value)
-            named = (self.config.get('providers') or {}).get(value) or {}
-            theirs = self.pluginSchema(named.get('plugin') or '')
-            if theirs is None:
-                unresolved = True
-            else:
-                passed |= set(theirs.get('settings') or {})
+        with self.typesOf(schema, module):
+            for name, value in entry.items():
+                spec = self.resolve(settings.get(name) or {})
+                if (spec.get('names') != 'providers' or isTemplate(value)
+                        or not isinstance(value, str)):
+                    continue    # checkValue says what a non-name is
+                if isWidget:
+                    self.used.add(value)
+                named = mapping(self.config.get('providers')).get(value) or {}
+                theirs = self.pluginSchema(named.get('plugin') or '')
+                if theirs is None:
+                    unresolved = True
+                else:
+                    passed |= set(theirs.get('settings') or {})
 
-        # what the clock will hand this plugin, all eight tiers of it
-        merged, _ = self.resolved.pluginConfig(pluginFolder(module), entry,
-                                               isWidget)
-        self.checkEntry(where, entry, settings, passed, merged,
-                        quiet=unresolved)
+            # a plugin's defaults against its own schema, once however
+            # many instances there are: the two describe one thing
+            if module not in self.described:
+                self.described.add(module)
+                defaults = readYaml(os.path.join(folder, 'config.yaml')) or {}
+                for name in sorted(set(defaults) - set(settings) - {'kind'}):
+                    self.problem('%s config.yaml' % module,
+                                 '%s is a default and no schema declares it'
+                                 % name)
+
+            # what the clock will hand this plugin, all eight tiers of it
+            merged, _ = self.resolved.pluginConfig(pluginFolder(module),
+                                                   entry, isWidget)
+            self.checkEntry(where, entry, settings, passed, merged,
+                            quiet=unresolved)

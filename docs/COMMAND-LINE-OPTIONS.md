@@ -265,13 +265,9 @@ warning  widgets.radar1.labl: nothing declares this setting, so it is
 examples/default.yaml: 2 problems, 1 warning
 ```
 
-**A problem means it cannot work** - a provider or a region that is not
-there, a value outside the set or the range its setting allows, a key that
-is blank or still says `YOUR API KEY`, a plugin with no schema - and exits
-`1`.  **A warning means it runs, but not as written** - a setting nobody
-declares, so the merge drops it, or a `kind-settings:` block that reaches
-nothing - and exits `0`.  So a script can treat the exit code as the answer
-and still see the warnings.
+**A problem means it cannot work**, and exits `1`.  **A warning means it
+runs, but not as written**, and exits `0`.  So a script can treat the exit
+code as the answer and still see the warnings.
 
 **The clock runs the same check on itself.**  Starting normally reads the
 config exactly as this does, and if there is a problem it puts the list on
@@ -287,18 +283,10 @@ answer to the same question, so a setting a theme's `kind-settings:` fills
 in counts as set, and one nothing declares is reported because the merge
 really will drop it.
 
-Three mistakes it catches that a careful read of the config would not.  A
-provider has to answer the question the setting naming it is for, so a base
-map written as a `frame-provider:` is caught even though both names exist.
-An entry has to be in the section its plugin belongs to, either way round.
-And a `kind-settings:` block for a kind nothing in the config wears reaches
-nothing at all, which is the quietest way to write a setting that does
-nothing.
-
-A plugin has to ship a schema, and a provider's has to say what it answers.
-Both are problems rather than warnings: a plugin nothing can describe is one
-a config can only be wrong about quietly, and the person who can fix it is
-the one running this while writing it.
+Every value is read against what its schema declares, and every name
+against the things that exist to be named - regions, themes, layouts,
+providers, languages, unit sets, plugin kinds.  Both go as deep as the
+config does.
 
 What this cannot tell you is whether a key works or a service is up: an
 unreachable radar is a runtime failure that heals itself, and this only

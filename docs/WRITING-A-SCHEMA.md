@@ -145,6 +145,7 @@ at the same level - not `width:` inside a `placement:` block:
 | `unit: <what>` | what a bare number counts, where the units table has nothing to say - `minutes`, `milliseconds`.  No suffix is accepted |
 | `quantity: <what>` | an entry in `units/quantities.yaml` - see [WRITING-UNITS.md](WRITING-UNITS.md).  A bare number is that quantity's base, and any unit it lists may be written instead: `altitude` takes `1600` and `'5280ft'` alike |
 | `names: <what>` | must name something that exists.  See below |
+| `pattern: <what>` | a string the clock reads with an expression rather than takes as it stands - `geometry`.  Named rather than written out, so both read it with the same one |
 | `provides: [<what>, ...]` | beside `names: providers`, the questions the provider named here has to answer - any one of them will do |
 | `portable: true` | a `strftime` format written the glibc way and turned round for Windows |
 
@@ -261,8 +262,8 @@ thing:
 python3 PyQtPiClock3.py examples/default.yaml --check
 ```
 
-A setting your `config.yaml` has and your schema does not is reported there.
-The two it cannot see are still yours to read for:
+A setting your `config.yaml` has and your schema does not is reported there,
+as a problem.  The two it cannot see are still yours to read for:
 
 - every setting the schema declares has a default in `config.yaml`, unless
   it is `required:`
@@ -270,5 +271,5 @@ The two it cannot see are still yours to read for:
 
 A schema that disagrees with its `config.yaml` is wrong in the direction
 that matters most, because the whole point is that a program can trust it.
-And a plugin with no schema is still loaded today - the rule is written,
-not enforced.
+A plugin with no schema at all is a problem too, so a config naming one
+does not start.

@@ -95,7 +95,7 @@ clock's own position does not repeat the numbers.
 
 A **provider** fetches and draws nothing.  A **widget** draws in a region.
 Which section an entry is written in is what says which it is, and `--check`
-names one that is in the wrong section either way round.
+says when one is in the wrong one.
 
 ```yaml
 providers:
@@ -201,9 +201,10 @@ when you mean one implementation and not the other.
 A widget's own entry still wins over both, which is how one radar differs from
 the rest while the other three take the shared block.
 
-A misspelled kind does nothing at all: the block merges into whichever
-plugin wears that kind, and one nobody wears merges into nothing.  `--check`
-says so - see [COMMAND-LINE-OPTIONS.md](COMMAND-LINE-OPTIONS.md).
+A block for a kind nothing here wears merges into nothing and is left
+alone, since a config shared between clocks keeps blocks for the other
+one's plugins.  A misspelled kind looks the same, so check it against the
+table above when a block seems to do nothing.
 
 **This is also the answer to "I edited a shipped file and an update
 overwrote it".**  Anything a plugin, theme or layout carries can be reached

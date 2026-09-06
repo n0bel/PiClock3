@@ -21,6 +21,7 @@ import yaml
 from .Config import merge, thisFolder
 from .DottedDict import DottedDict
 
+
 logger = logging.getLogger(__name__)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -29,6 +30,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # declaring one is asking for the page's answer to it.
 CASCADE = ('color', 'background-color', 'font-family', 'font-style',
            'font-weight')
+
+
+def mapping(value):
+    """a block of settings, or nothing where something else was written.
+
+    This reads config somebody typed, so a scalar can turn up where a block
+    belongs.  Check reports that; here it only has to not raise.
+    """
+    return value if isinstance(value, dict) else {}
 
 
 def localPath(value, home):
@@ -136,6 +146,9 @@ class ResolvedConfig():
         # (where, kind, name) for a layout or theme a page named and is
         # not there.  The kind matters: no layout, no regions.
         self.missing = []
+        # (page, region, style or border, name) a layout asks its page's
+        # theme for and the theme does not have
+        self.unnamed = []
 
     def build(self):
         """every page's layout and theme, and the regions they declare.
@@ -144,8 +157,8 @@ class ResolvedConfig():
         caller collecting everything wrong with a config gets the rest of
         it too, and its page is skipped.
         """
-        for pageName, page in (self.config.get('pages') or {}).items():
-            page = page or {}
+        for pageName, page in mapping(self.config.get('pages')).items():
+            page = mapping(page)
             layout = self.part('pages.%s.layout' % pageName,
                                'layouts', page.get('layout'))
             theme = self.part('pages.%s.theme' % pageName,
@@ -157,11 +170,12 @@ class ResolvedConfig():
             # from the command line without editing it.  Named for what
             # they change rather than -settings: they are not keyed by a
             # target the way kind-settings and plugin-settings are.
-            merge(self.config.get('layout') or {}, layout)
-            merge(self.config.get('theme') or {}, theme)
+            merge(mapping(self.config.get('layout')), layout)
+            merge(mapping(self.config.get('theme')), theme)
             theme['styles'] = self.regionStyles(layout, theme)
+            self.namesNobodyDefines(pageName, layout, theme)
             self.pages[pageName] = (layout, theme)
-            for name, spec in (layout.get('regions') or {}).items():
+            for name, spec in mapping(layout.get('regions')).items():
                 cells = cellNames(name, spec)
                 if cells != [name]:
                     self.repeats.add(name)
@@ -195,12 +209,25 @@ class ResolvedConfig():
         styles = {}
         merge(layout.get('layout-style-settings') or {}, styles)
         merge(theme.get('styles') or {}, styles)
-        wanted = {r['style'] for r in (layout.get('regions') or {}).values()
-                  if isinstance(r, dict) and 'style' in r}
-        for name in sorted(wanted - set(styles)):
-            logger.warning('layout asks for style %r and nothing defines it',
-                           name)
         return styles
+
+    def namesNobodyDefines(self, pageName, layout, theme):
+        """the styles and borders a layout's regions ask this page's theme
+        for and it does not have.
+
+        Only a page knows the pairing, so it is settled here rather than
+        left to a checker that sees one at a time.
+        """
+        have = {'style': set(theme.get('styles') or {}),
+                'border': set(theme.get('borders') or {})}
+        for region, spec in mapping(layout.get('regions')).items():
+            if not isinstance(spec, dict):
+                continue
+            for key in ('style', 'border'):
+                name = spec.get(key)
+                if isinstance(name, str) and name not in have[key]:
+                    self.unnamed.append(
+                        ('pages.%s' % pageName, region, key, name))
 
     def regions(self):
         """every name a widget's region: may legally use.
@@ -295,8 +322,8 @@ class ResolvedConfig():
         """
         if isinstance(region, list):
             region = region[0] if region else None
-        if not region:
-            return None
+        if not isinstance(region, str) or not region:
+            return None     # Check says what a region that is not a name is
         if region in self.regionTheme:
             return self.regionTheme[region]
         head = region + '.'

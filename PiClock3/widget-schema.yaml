@@ -22,7 +22,7 @@ settings:
   # the glow takes its color from the one above
 
   icons-folder: {is: string}
-  units:        {is: string, inherits: clock}
+  units:        {is: string, names: unit-sets, inherits: clock}
   precision:    {is: block, of: {}}
   # and these three only mean anything to a plugin that asks - icon(),
   # units() and precision() are helpers rather than something core calls.

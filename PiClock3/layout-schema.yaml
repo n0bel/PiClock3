@@ -19,13 +19,13 @@ types:
 
   border-name:
     is: scalar
-    of: string
+    of: [string]
     names: borders
     # an entry of the theme's borders:.  true takes its default
 
   style-name:
     is: scalar
-    of: string
+    of: [string]
     names: styles
     # an entry of the theme's styles:, or of layout-style-settings: below
 

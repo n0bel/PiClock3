@@ -31,9 +31,9 @@ provides: [frames]        # BaseMap: [map].  Weather: any of
                           # conditions, hourly, daily
 ```
 
-Required, not optional: a provider exists to be asked something, so
-`--check` reports one that answers nothing as a problem.  It is also what
-catches a base map named as a `frame-provider:`.
+Required, not optional: a provider exists to be asked something, and this
+is what lets a config be told it has named a base map where a frame source
+belongs.
 
 ## Where a plugin goes
 
