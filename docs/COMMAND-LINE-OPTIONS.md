@@ -373,10 +373,13 @@ type at:
 
 | | |
 |---|---|
-| `Space` | next page |
+| `Space`, or a left click | next page |
 | `F4` | quit |
 | `F6` / `F7` | previous / next slideshow image |
 | `F8` | hold the slideshow, or let it run |
+
+A tap on a touchscreen arrives as a left click, which is the point of
+having one: the clock on the wall has no keyboard in front of it.
 
 F6, F7 and F8 are the keys PiClock v1 used for these, and act on the
 slideshow of the page being looked at.

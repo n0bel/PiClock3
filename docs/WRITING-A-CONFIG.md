@@ -62,7 +62,7 @@ pages:
 
 Each page names a **layout**, which says where the regions are, and a
 **theme**, which says what they look like.  `order` is the sequence they
-rotate in; the space bar steps through them.
+rotate in; the space bar steps through them, and so does a click or a tap.
 
 The names on the left are yours.  What matters is that the names under a
 layout's `regions:` are the ones your widgets ask for - `classic` has

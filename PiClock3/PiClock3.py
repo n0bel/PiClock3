@@ -184,7 +184,14 @@ class PiClock3(QWidget):
         return None
 
     def mousePressEvent(self, event):
-        return
+        """a left click steps a page on, the way the space bar does.
+
+        A tap on a touchscreen arrives as one, which is the point: a clock
+        on a wall has no keyboard in front of it.  Left only, so the other
+        buttons stay free for something that wants them later.
+        """
+        if event.button() == Qt.LeftButton:
+            self.nextPage(1)
 
     def initData(self):
         styles = self.config.styles if 'styles' in self.config else {}
