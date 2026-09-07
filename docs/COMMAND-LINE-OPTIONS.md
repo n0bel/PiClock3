@@ -257,13 +257,19 @@ exits.  No window opens and nothing is drawn, so this is what a clock with
 no screen attached, or something building the project, can run.
 
 ```
-problem  widgets.forecast.forecast-provider: 'metar' provides conditions,
-         and this wants daily or hourly
-problem  widgets.radar1.zoom: 47 is not in the allowed range of 0 to 20
-warning  widgets.radar1.labl: nothing declares this setting, so it is
-         dropped
-examples/default.yaml: 2 problems, 1 warning
+problem  widgets.forecast.forecast-provider (Config.yaml line 46): 'metar'
+         provides conditions, and this wants daily or hourly
+problem  widgets.radar1.zoom (Config.yaml line 67): 47 is not in the
+         allowed range of 0 to 20
+warning  widgets.radar1.labl (Config.yaml line 68): nothing declares this
+         setting, so it is dropped
+Config.yaml: 2 problems, 1 warning
 ```
+
+Each says which file and which line it is about.  A theme or a layout
+names its own file rather than the config, since that is where you would
+have to go looking.  A value that came from `--set` says that instead,
+because it is not in any file.
 
 **A problem means it cannot work**, and exits `1`.  **A warning means it
 runs, but not as written**, and exits `0`.  So a script can treat the exit
@@ -300,7 +306,10 @@ output and exits `0` - which matters if you are calling this from a script.
 ## When something is wrong with the command line
 
 Every one of these fails at startup with a sentence rather than a traceback,
-because the person reading it is usually not the person who wrote the code:
+because the person reading it is usually not the person who wrote the code.
+A file that will not parse answers the same way, naming the file, the line
+and the line itself - whether it is the config, a theme, a layout, a
+language file or a plugin's own:
 
 ```
 $ python3 PyQtPiClock3.py --bogus
@@ -315,6 +324,12 @@ cannot read '"unclosed' as a value: while scanning a quoted scalar
 $ python3 PyQtPiClock3.py Config.yaml --at "next tuesday"
 start-at: 'next tuesday' is not a date and time.  Write it as
 2026-06-21 or 2026-06-21 13:45.
+
+$ python3 PyQtPiClock3.py Config.yaml --check
+problem  Config.yaml line 2: a tab, and yaml indents with spaces
+    	clock-page: {order: 0, layout:  ...
+    ^
+Config.yaml: 1 problem, 0 warnings
 ```
 
 All of them exit `1`.  A problem in the config itself goes on the screen as

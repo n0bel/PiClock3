@@ -767,7 +767,7 @@ class PiClock3(QWidget):
             region.setStyleSheet(rule + ' ' + region.styleSheet())
             # a region that fits its text rebuilds its whole sheet from
             # baseStyle the first time it draws, and baseStyle was taken
-            # when the page was built - before any of this existed
+            # when the page was built, before a widget had settled
             region.baseStyle = region.styleSheet()
         logger.debug('region style for %s: %s', entry.get('region'), rule)
 

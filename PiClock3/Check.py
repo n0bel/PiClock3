@@ -125,9 +125,9 @@ class Check():
     def __init__(self, config, resolved=None, source=None, overridden=()):
         self.config = config
         # the file the config was read from, and the dotted paths --set
-        # wrote over it.  Both only so a finding can say where a value
-        # came from; a caller with neither gets findings without one,
-        # which is what a config built in memory should get
+        # wrote over it, so a finding can say where a value came from.  A
+        # caller with neither - a config built in memory - gets findings
+        # with no such note, which is the whole of what it costs
         self.source = source
         self.overridden = tuple(overridden)
         self.lines = Lines()

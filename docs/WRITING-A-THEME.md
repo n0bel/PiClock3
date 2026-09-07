@@ -167,11 +167,16 @@ a plugin must not use one of those names for anything else.
 
 They arrive by two roads, and neither needs the plugin's cooperation.  The
 `default:` block is put on the page itself, and Qt hands its colors and fonts
-down to everything drawn on it.  Anything that resolved for one widget - from
-`kind-settings:`, from `plugin-settings:`, from the widget's own entry - is
-put on that widget's **region**, and reaches whatever the plugin draws there.
-Nearer wins, so a `kind-settings` color beats the page's, and a widget that
-names a color itself beats both.
+down to everything drawn on it.  Anything somebody chose for one widget -
+from `kind-settings:`, from `plugin-settings:`, from the widget's own entry
+- is put on that widget's **region**, and reaches whatever the plugin draws
+there.  Nearer wins, so a `kind-settings` color beats the page's, and a
+widget that names a color itself beats both.
+
+A color a plugin ships as its own default does not travel that road, so the
+page's `default:` still reaches a widget nobody has colored.  Otherwise a
+theme would have to beat every plugin's idea of white before its own
+`default:` meant anything.
 
 `background-color` travels the first road only.  CSS does not inherit it, so
 putting it on a region would paint a box behind every child - including the

@@ -161,14 +161,13 @@ def zoneFor(name):
 class Lines():
     """where in a file each setting was written.
 
-    Asked only when there is a finding to place, so a config nothing is
-    wrong with parses nothing twice.  Each file is composed once and kept
-    for the run.
+    Asked only when there is a finding to place, so a config with none
+    parses nothing twice.  Each file is composed once and kept for the run.
 
     compose() builds the node tree and stops - no constructors, no
     DottedDict, no merge - and every node carries the line it came from.
-    Which is why none of this has to be carried while a config loads: the
-    file still knows, and can be asked later.
+    So nothing has to be carried while a config loads: the file still
+    knows, and can be asked afterwards.
     """
 
     def __init__(self):
@@ -182,8 +181,8 @@ class Lines():
                 with open(path, encoding='utf-8') as fh:
                     self.trees[path] = yaml.compose(fh.read())
             except (OSError, yaml.YAMLError):
-                # a file that will not read has already been reported as
-                # that, and has no lines to offer either way
+                # a file that will not parse is already a finding of its
+                # own, and has no lines to give anything else
                 pass
         return self.trees[path]
 

@@ -46,6 +46,12 @@ defaults, or do nothing until you want them.
 | `theme:` / `layout:` | a block laid over whichever theme or layout a page names |
 | `styles:` | named Qt properties, the config's own |
 
+**Write a key once.**  yaml lets the second one win without a word, so a
+config saying `location:` twice would quietly draw the weather for the
+wrong place.  A key written twice is a problem instead, naming both lines,
+and the clock will not start on it.  It catches the commonest way of
+making one: commenting a setting out to try another, and leaving both.
+
 ## `pages:`
 
 ```yaml
@@ -694,6 +700,11 @@ apikeys: !include ApiKeys.yaml
 and a config can be published without them.  A setting reaches a key by name -
 `{apikeys.mbapi}` - which is how a provider gets one without the config
 repeating it.
+
+**The name is read from where you started the clock, not from beside the
+config.**  That is why every example says `!include ApiKeys.yaml` and they
+all get the one file at the top of the checkout, wherever the example
+itself lives.  A file that is not there says so, and says where it looked.
 
 Only the base map under a radar needs a key.  Radar frames from RainViewer and
 LibreWXR are free, and so is the METAR.
