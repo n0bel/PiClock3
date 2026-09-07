@@ -16,16 +16,9 @@ kind-settings:
     color: '#e8dfcb'
     effect: glow 0.10
 
-styles:
   # the same ivory held back, because the day answers a question the face
-  # raises rather than saying which clock this is.
-  #
-  # Set on the style rather than under kind-settings: date:, which is where
-  # it belongs and does not reach.  A date widget draws in the region
-  # itself, and this layout asks that region to fit its text - so the
-  # region's stylesheet is rebuilt as the day is sized, and only what the
-  # page put there survives it.
-  day:
+  # raises rather than saying which clock this is
+  date:
     color: '#a99f88'
 
 default:

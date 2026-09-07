@@ -719,7 +719,7 @@ class PiClock3(QWidget):
     # label inside that region are not the same height.
     INHERITED = ('color', 'font-family', 'font-style', 'font-weight')
 
-    def broadcast(self, entry, config):
+    def broadcast(self, name, entry, config):
         """a widget's resolved settings, onto its region, for its children.
 
         A theme's default: reaches everything because core hands it to the
@@ -737,16 +737,27 @@ class PiClock3(QWidget):
         QWidget { } rather than a bare list of properties: a stylesheet
         holding both bare properties and a rule loses the bare half, and
         loses it silently.
+
+        Nothing is sent for a setting the role tier answered.  color there
+        is white, which is nobody's choice, and a region is nearer a
+        widget than the page is - so sending it would beat the theme's
+        default: for every widget that never named a color.  The same rule
+        Widget.color() follows, for the same reason.
         """
         if not entry.get('region'):
             return                      # a provider draws nothing
         props = {n: self.expand(config[n]) for n in self.INHERITED
-                 if config.get(n) is not None}
+                 if config.get(n) is not None
+                 and self.setBy(name, n) not in (None, 'role')}
         if not props:
             return
         rule = 'QWidget {%s }' % self._buildStyleString(props)
         for region in self.regionList(entry['region']):
             region.setStyleSheet(rule + ' ' + region.styleSheet())
+            # a region that fits its text rebuilds its whole sheet from
+            # baseStyle the first time it draws, and baseStyle was taken
+            # when the page was built - before any of this existed
+            region.baseStyle = region.styleSheet()
         logger.debug('region style for %s: %s', entry.get('region'), rule)
 
     def loadModule(self, name, entry, isWidget):
@@ -777,7 +788,7 @@ class PiClock3(QWidget):
         # moment it is cloned into plugins/
         folder = os.path.dirname(os.path.abspath(mod.__file__))
         moduleConfig = self.pluginConfig(folder, entry, name, isWidget)
-        self.broadcast(entry, moduleConfig)
+        self.broadcast(name, entry, moduleConfig)
         instance = cls(self, name, moduleConfig)
         self.plugins[name] = instance
         # effect: on the region, before start() draws anything into it.  An
