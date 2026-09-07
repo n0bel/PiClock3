@@ -57,8 +57,22 @@ MINKEY = 5
 PATTERNS = {'geometry': (GEOMETRY, 'WIDTHxHEIGHT, or WIDTHxHEIGHT+X+Y')}
 
 PRIMITIVES = {'number': (int, float), 'string': str, 'boolean': bool}
-NAMED = {int: 'a number', float: 'a number', str: 'a word', bool: 'true',
-         list: 'a list', dict: 'a block', type(None): 'nothing'}
+
+# what to call the shape of a value, in a sentence.  In order and read
+# with isinstance rather than keyed on the exact class: a bool is an int,
+# and every block a config holds is a DottedDict rather than a dict - so
+# an exact lookup answers a reader with the name of one of our classes.
+SHAPES = ((bool, 'true'), (int, 'a number'), (float, 'a number'),
+          (str, 'a word'), (list, 'a list'), (dict, 'a block'),
+          (type(None), 'nothing'))
+
+
+def describe(value):
+    """what this value is, to say in a sentence about what was wanted"""
+    for kind, word in SHAPES:
+        if isinstance(value, kind):
+            return word
+    return 'a %s' % type(value).__name__
 
 
 def isTemplate(value):
@@ -281,8 +295,7 @@ class Check():
             return True
         if not ok:
             self.problem(where, 'must be %s, and this is %s'
-                         % (shape, NAMED.get(type(value),
-                                             type(value).__name__)))
+                         % (shape, describe(value)))
         return ok
 
     def unitsTable(self):
@@ -342,7 +355,7 @@ class Check():
                     name == 'boolean' or not isinstance(value, bool)):
                 return
         self.problem(where, '%r is %s, and this takes %s'
-                     % (value, NAMED.get(type(value), type(value).__name__),
+                     % (value, describe(value),
                         ' or '.join(sorted(allowed))))
 
     def fields(self, spec):
