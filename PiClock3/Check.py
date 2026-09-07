@@ -32,7 +32,7 @@ import re
 import zoneinfo
 
 from .Config import ConfigError, GEOMETRY, Lines, readYaml as read
-from .ResolvedConfig import partPaths, ResolvedConfig
+from .ResolvedConfig import partPaths, pluginFolder, ResolvedConfig
 from .Units import MEASURE, Units
 
 logger = logging.getLogger(__name__)
@@ -82,15 +82,6 @@ def isTemplate(value):
     against a type, a range or a set - what it will be is not known yet.
     """
     return isinstance(value, str) and '{' in value and '}' in value
-
-
-def pluginFolder(module):
-    """where a plugin's files are, without importing it"""
-    part = module.replace('.', os.sep)
-    for folder in (part, os.path.join('plugins', part)):
-        if os.path.isdir(folder):
-            return folder
-    return None
 
 
 def mapping(value):
@@ -145,7 +136,6 @@ class Check():
         self.resolved = resolved or ResolvedConfig(config).build()
         self.found = []
         self.types = {}
-        self.used = set()          # providers a widget actually names
         self.described = set()     # plugins read against their own schema
         self.folders = None        # every plugin installed, found once
         self.redefined = set()     # plugins redefining a core type
@@ -790,9 +780,10 @@ class Check():
 
         Reachable rather than declared: a config may list six providers and
         point at four, so the two nothing draws with are not asked for a
-        key.
+        key.  Which four is the merge's answer, since a config may point
+        at one from kind-settings: rather than from the widget itself.
         """
-        for name in sorted(self.used):
+        for name in sorted(self.resolved.usedProviders()):
             entry = mapping(self.config.get('providers')).get(name)
             if not isinstance(entry, dict) or not entry.get('plugin'):
                 continue
@@ -891,8 +882,6 @@ class Check():
                 if (spec.get('names') != 'providers' or isTemplate(value)
                         or not isinstance(value, str)):
                     continue    # checkValue says what a non-name is
-                if isWidget:
-                    self.used.add(value)
                 named = mapping(self.config.get('providers')).get(value) or {}
                 theirs = self.pluginSchema(named.get('plugin') or '')
                 if theirs is None:

@@ -239,12 +239,23 @@ class PiClock3(QWidget):
                 pageFrame.setVisible(True)
             pageFrame.pageNumber = i
 
+        # a provider nothing points at is not loaded, because loading one
+        # starts it: RainViewer fetches its index, Metar and OpenMeteo
+        # fetch and then poll for as long as the clock runs
+        used = self.resolved.usedProviders()
+        idle = sorted(set(self.config.get('providers') or {}) - used)
+        if idle:
+            logger.info('not loading %s: nothing points at them',
+                        ', '.join(idle))
+
         # providers first: a widget names the providers it draws with, and
         # they have to exist by the time it does
         for section in ('providers', 'widgets'):
             if section not in self.config:
                 continue
             for name in self.config[section]:
+                if section == 'providers' and name not in used:
+                    continue
                 self.loadModule(name, self.config[section][name],
                                 section == 'widgets')
 

@@ -70,6 +70,15 @@ def localArt(part, home):
     return part
 
 
+def pluginFolder(module):
+    """where a plugin's files are, without importing it"""
+    part = module.replace('.', os.sep)
+    for folder in (part, os.path.join('plugins', part)):
+        if os.path.isdir(folder):
+            return folder
+    return None
+
+
 def partPaths(kind, name):
     """where a layout or a theme of this name could be, in the order tried.
 
@@ -183,6 +192,61 @@ class ResolvedConfig():
                 for cell in cells:
                     self.regionTheme[cell] = theme
         return self
+
+    def usedProviders(self):
+        """the providers something in this config actually points at.
+
+        Asked of the merge rather than of what a widget entry says, because
+        a provider may be named a tier away:
+
+            kind-settings:
+              radar: {base-provider: mapbox, frame-provider: librewxr}
+
+        which is the documented way to point four radars at one map, and
+        names mapbox nowhere under widgets:.  Reading the entry alone would
+        call that provider unused and leave the radar with no base map.
+
+        Nothing here imports a plugin - a folder is found from the module
+        name - so it can be asked before anything is loaded.
+
+        Any merged value that is a provider's name counts, rather than
+        only the settings a schema calls providers.  That over-counts on
+        purpose.  Counting one too many costs a request nobody wanted;
+        missing one costs the clock a provider it needs, so the loose
+        answer is the safe one.
+        """
+        names = set(mapping(self.config.get('providers')))
+        if not names:
+            return set()
+        used, entries = set(), mapping(self.config.get('widgets'))
+        for name, entry in list(entries.items()) + list(
+                mapping(self.config.get('providers')).items()):
+            entry = mapping(entry)
+            module = entry.get('plugin')
+            folder = pluginFolder(module) if isinstance(module, str) else None
+            if folder is None:
+                # what this points at cannot be known, and --check
+                # reports the missing plugin itself.  Everything loads
+                # rather than skipping one that was needed
+                return names
+            try:
+                merged, _ = self.pluginConfig(folder, entry,
+                                              name in entries)
+            except ConfigError:
+                return names        # a schema that will not read, likewise
+            for value in merged.values():
+                if not isinstance(value, str):
+                    continue
+                if value in names:
+                    used.add(value)
+                elif '{' in value:
+                    # frame-provider: '{something}' is a name once it is
+                    # expanded, and the merge holds it before that
+                    expand = getattr(self.config, 'expand', None)
+                    grown = expand(value) if expand else value
+                    if grown in names:
+                        used.add(grown)
+        return used
 
     def part(self, where, kind, name):
         """one layout or theme a page named, or None with the news kept.

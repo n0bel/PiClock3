@@ -133,6 +133,12 @@ and they are what a widget refers to:
 Which is how one clock shows a real observation from the field down the road
 beside a model's forecast: point two widgets at different providers.
 
+A provider nothing points at is not loaded at all, and the log says which
+were left out.  Loading one starts it - some fetch the moment they start,
+and some go on asking every few minutes - so listing an alternative you
+are not using, the way the shipped examples list both radar sources,
+costs nothing.
+
 Each widget that needs a provider has its own key for it, so the two above
 can name different ones.  A radar names two, `base-provider:` for the map
 underneath and `frame-provider:` for the weather over it.  A name that is
