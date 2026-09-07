@@ -31,7 +31,7 @@ import os
 import re
 import zoneinfo
 
-from .Config import ConfigError, GEOMETRY, readYaml as read
+from .Config import ConfigError, GEOMETRY, Lines, readYaml as read
 from .ResolvedConfig import partPaths, ResolvedConfig
 from .Units import MEASURE, Units
 
@@ -131,8 +131,15 @@ def readYaml(path):
 
 class Check():
 
-    def __init__(self, config, resolved=None):
+    def __init__(self, config, resolved=None, source=None, overridden=()):
         self.config = config
+        # the file the config was read from, and the dotted paths --set
+        # wrote over it.  Both only so a finding can say where a value
+        # came from; a caller with neither gets findings without one,
+        # which is what a config built in memory should get
+        self.source = source
+        self.overridden = tuple(overridden)
+        self.lines = Lines()
         # the clock resolves a config once and hands it here, so a normal
         # start checks what it is about to build rather than a second copy
         self.resolved = resolved or ResolvedConfig(config).build()
@@ -149,7 +156,33 @@ class Check():
     # ------------------------------------------------------------ saying
 
     def say(self, severity, where, message):
-        self.found.append((severity, where, message))
+        self.found.append((severity, self.placed(where), message))
+
+    def placed(self, where):
+        """a finding's path, and where that value was written.
+
+        Every finding comes through here, so this is the only place that
+        has to know.  A path nothing can be found for is left as it is:
+        naming a line that is not the cause is worse than naming none,
+        and most of what has no line is a setting that is simply absent.
+        """
+        if ' ' in where or where.endswith(')'):
+            # a plugin's own file, or a path that already says where it
+            # came from
+            return where
+        steps = where.split('.')
+        if any(steps[:len(o)] == o for o in self.overridden):
+            return '%s (--set)' % where
+        if steps[0] in ('layouts', 'themes') and len(steps) > 2:
+            path = self.resolved.partFiles.get((steps[0], steps[1]))
+            steps = steps[2:]
+        else:
+            path = self.source
+        if not path:
+            return where
+        line = self.lines.at(path, steps)
+        return where if line is None else '%s (%s line %d)' % (
+            where, path.replace(os.sep, '/'), line)
 
     def problem(self, where, message):
         self.say(PROBLEM, where, message)

@@ -96,9 +96,10 @@ def readArgs(args):
 
 
 def loadConfig(configName, settings):
-    """the file, with each --set laid over it"""
+    """the file, with each --set laid over it, and which paths those were"""
     config = Config()
     config.load(configName)
+    overridden = []
 
     def setLevel():
         levels = {'debug': logging.DEBUG, 'info': logging.INFO,
@@ -112,10 +113,10 @@ def loadConfig(configName, settings):
     setLevel()
     # after the file, so the command line has the last word
     for setting in settings:
-        config.override(setting)
+        overridden.append(config.override(setting))
     # again, in case one of them was logging-level itself
     setLevel()
-    return config
+    return config, overridden
 
 
 def resolveAndCheck(configName, settings):
@@ -125,9 +126,9 @@ def resolveAndCheck(configName, settings):
     what is wrong with one, so the answers a check gives are the answers
     the clock will then be built from.
     """
-    config = loadConfig(configName, settings)
+    config, overridden = loadConfig(configName, settings)
     resolved = ResolvedConfig(config).build()
-    check = Check(config, resolved)
+    check = Check(config, resolved, configName, overridden)
     check.run()
     return config, resolved, check
 

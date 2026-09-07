@@ -158,6 +158,55 @@ def zoneFor(name):
     return zoneinfo.ZoneInfo(tzlocal.get_localzone_name())
 
 
+class Lines():
+    """where in a file each setting was written.
+
+    Asked only when there is a finding to place, so a config nothing is
+    wrong with parses nothing twice.  Each file is composed once and kept
+    for the run.
+
+    compose() builds the node tree and stops - no constructors, no
+    DottedDict, no merge - and every node carries the line it came from.
+    Which is why none of this has to be carried while a config loads: the
+    file still knows, and can be asked later.
+    """
+
+    def __init__(self):
+        self.trees = {}
+
+    def tree(self, path):
+        """the node tree of a file, or None where there is not one"""
+        if path not in self.trees:
+            self.trees[path] = None
+            try:
+                with open(path, encoding='utf-8') as fh:
+                    self.trees[path] = yaml.compose(fh.read())
+            except (OSError, yaml.YAMLError):
+                # a file that will not read has already been reported as
+                # that, and has no lines to offer either way
+                pass
+        return self.trees[path]
+
+    def at(self, path, steps):
+        """the line a dotted path was written on, or None.
+
+        The key's line rather than the value's: `captions:` is where
+        somebody looks, not the first line of what follows it.
+        """
+        node = self.tree(path)
+        line = None
+        for step in steps:
+            if not isinstance(node, yaml.MappingNode):
+                return None
+            for keyNode, valueNode in node.value:
+                if keyNode.value == step:
+                    line, node = keyNode.start_mark.line + 1, valueNode
+                    break
+            else:
+                return None
+        return line
+
+
 def thisFolder(part, home):
     """{this-folder} is the folder of the yaml that said it.
 
@@ -262,6 +311,9 @@ class Config(DottedDict):
         """one key=value from the command line, into a dotted path.
 
         The value is read the way the file would read it - see value().
+        Answers the path it wrote, so a finding about that value can say
+        it came from here rather than pointing at a line of the file,
+        which may still hold something else entirely.
         """
         if '=' not in setting:
             raise SystemExit("\n--set wants key=value, not %r\n" % setting)
@@ -275,6 +327,7 @@ class Config(DottedDict):
             here = here[part]
         here[parts[-1]] = value
         logger.info('set %s = %r', path, value)
+        return parts
 
     @staticmethod
     def value(raw):

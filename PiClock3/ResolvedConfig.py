@@ -101,8 +101,8 @@ def loadPart(kind, name):
         # localArt leaves a {placeholder} alone, so it has to run before
         # the placeholder becomes a path
         part = localArt(part, home) if home else part
-        return thisFolder(part, os.path.dirname(path))
-    return None
+        return thisFolder(part, os.path.dirname(path)), path
+    return None, None
 
 
 def noSuchPart(kind, name):
@@ -145,6 +145,8 @@ class ResolvedConfig():
         self.missing = []
         # (where, kind, ConfigError) for one that is there and will not read
         self.unreadable = []
+        # (kind, name) -> the file it was actually read from
+        self.partFiles = {}
         # (page, region, style or border, name) a layout asks its page's
         # theme for and the theme does not have
         self.unnamed = []
@@ -191,12 +193,16 @@ class ResolvedConfig():
         widget drawing nowhere.
         """
         try:
-            part = loadPart(kind, name) if name else None
+            part, path = loadPart(kind, name) if name else (None, None)
         except ConfigError as e:
             self.unreadable.append((where, kind, e))
             return None
         if part is None:
             self.missing.append((where, kind, name or ''))
+        else:
+            # which of the paths partPaths offers this one answered to,
+            # so a finding about a value in it can name the file
+            self.partFiles[(kind, name)] = path
         return part
 
     def anyLayoutMissing(self):
