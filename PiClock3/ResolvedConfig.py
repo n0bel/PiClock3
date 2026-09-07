@@ -16,9 +16,7 @@ disk.  So the folder arrives as an argument.
 import logging
 import os
 
-import yaml
-
-from .Config import merge, thisFolder
+from .Config import ConfigError, merge, readYaml, thisFolder
 from .DottedDict import DottedDict
 
 
@@ -98,8 +96,7 @@ def loadPart(kind, name):
     for path, home in partPaths(kind, name):
         if not os.path.isfile(path):
             continue
-        with open(path, encoding='utf-8') as fh:
-            part = yaml.safe_load(fh)
+        part = readYaml(path)
         logger.debug('%s %s from %s', stem, name, path)
         # localArt leaves a {placeholder} alone, so it has to run before
         # the placeholder becomes a path
@@ -146,6 +143,8 @@ class ResolvedConfig():
         # (where, kind, name) for a layout or theme a page named and is
         # not there.  The kind matters: no layout, no regions.
         self.missing = []
+        # (where, kind, ConfigError) for one that is there and will not read
+        self.unreadable = []
         # (page, region, style or border, name) a layout asks its page's
         # theme for and the theme does not have
         self.unnamed = []
@@ -184,8 +183,18 @@ class ResolvedConfig():
         return self
 
     def part(self, where, kind, name):
-        """one layout or theme a page named, or None with the news kept"""
-        part = loadPart(kind, name) if name else None
+        """one layout or theme a page named, or None with the news kept.
+
+        A file that is there and will not read is kept apart from one that
+        is not there: they need different sentences, and reporting the
+        second for the first is how an empty theme used to surface as a
+        widget drawing nowhere.
+        """
+        try:
+            part = loadPart(kind, name) if name else None
+        except ConfigError as e:
+            self.unreadable.append((where, kind, e))
+            return None
         if part is None:
             self.missing.append((where, kind, name or ''))
         return part
@@ -194,9 +203,11 @@ class ResolvedConfig():
         """whether a page named a layout that is not there.
 
         Then no region is knowable, and complaining about each widget in
-        turn would bury the one line that is wrong.
+        turn would bury the one line that is wrong.  One that is there and
+        will not read leaves exactly the same hole.
         """
-        return any(kind == 'layouts' for _, kind, _ in self.missing)
+        return any(kind == 'layouts'
+                   for _, kind, _ in self.missing + self.unreadable)
 
     def regionStyles(self, layout, theme):
         """the named styles a region can ask for, layout first then theme.
@@ -259,14 +270,12 @@ class ResolvedConfig():
         # accepts neither, having no region for a theme to reach
         if isWidget:
             path = os.path.join(HERE, 'widget-config.yaml')
-            with open(path, encoding='utf-8') as fh:
-                merge(yaml.safe_load(fh) or {}, config, tiers, 'role')
+            merge(readYaml(path), config, tiers, 'role')
 
         defaults = {}
         path = os.path.join(folder, 'config.yaml') if folder else ''
         if path and os.path.isfile(path):
-            with open(path, encoding='utf-8') as fh:
-                defaults = yaml.safe_load(fh) or {}
+            defaults = readYaml(path)
             defaults = thisFolder(defaults, os.path.dirname(path))
             merge(defaults, config, tiers, 'plugin')
 

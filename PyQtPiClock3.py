@@ -4,10 +4,11 @@ import os
 import sys
 
 from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QFontDatabase
 from PyQt5.QtWidgets import QMessageBox, QApplication
 
 from PiClock3.Check import Check
-from PiClock3.Config import Config
+from PiClock3.Config import Config, ConfigError
 from PiClock3.PiClock3 import PiClock3
 from PiClock3.ResolvedConfig import ResolvedConfig
 
@@ -138,7 +139,14 @@ def runCheck(configName, settings):
     question at a prompt or something building the project, and the answer
     is the output.  Nothing here touches Qt, so it runs with no screen.
     """
-    check = resolveAndCheck(configName, settings)[2]
+    try:
+        check = resolveAndCheck(configName, settings)[2]
+    except ConfigError as e:
+        # the config itself will not read, so there is nothing to check and
+        # nothing to draw.  One finding, in the shape of the rest of them
+        print('%-8s %s: %s' % ('problem', e.where, e.message))
+        print('%s: 1 problem, 0 warnings' % configName)
+        return 1
     for line in check.report():
         print(line)
     problems, warnings = len(check.problems()), len(check.warnings())
@@ -151,6 +159,15 @@ def runCheck(configName, settings):
 # long enough to read a screenful and write one down, short enough that a
 # clock on a wall is not left holding a dialog
 COUNTDOWN = 30
+
+
+def fixedWidth(box):
+    """a findings box in a font whose columns line up.
+
+    A yaml fault quotes the line it went wrong on and puts a caret under
+    the character, and a caret under proportional text points at nothing.
+    """
+    box.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
 
 
 def refuse(check, seconds=COUNTDOWN):
@@ -170,6 +187,7 @@ def refuse(check, seconds=COUNTDOWN):
     # informative half.  A finding quotes the config, and Qt reading a
     # quoted tag as html swallows it and the newlines with it.
     box.setTextFormat(Qt.PlainText)
+    fixedWidth(box)
     box.setText('%d problem%s with this configuration:\n\n%s'
                 % (len(problems), '' if len(problems) == 1 else 's',
                    '\n'.join('%s: %s' % (where, message)
@@ -230,6 +248,18 @@ if __name__ == '__main__':
         try:
             config, resolved, check = resolveAndCheck(configName, settings)
             logging.info("Startup....")
+        except ConfigError as e:
+            # a file that will not read, said the way a finding is said -
+            # the refusal window is for a config that was read and is
+            # wrong, and this one was never read at all
+            logging.error('%s: %s', e.where, e.message)
+            box = QMessageBox(QMessageBox.Critical,
+                              'PiClock3 will not start', '')
+            box.setTextFormat(Qt.PlainText)
+            fixedWidth(box)
+            box.setText('%s\n\n%s' % (e.where, e.message))
+            box.exec_()
+            sys.exit(1)
         except Exception as e:
             logging.exception('PyQtPiClock3 Config Error:')
             QMessageBox.critical(

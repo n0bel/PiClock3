@@ -16,6 +16,131 @@ GEOMETRY = re.compile(r'^\s*(\d+)\s*[xX,]\s*(\d+)'
                       r'(?:\s*\+\s*(\d+)\s*\+\s*(\d+))?\s*$')
 
 
+class ConfigError(Exception):
+    """a file that will not read, in words somebody can act on.
+
+    It carries the two halves a finding is made of, because whoever
+    catches one either stops the program or files it beside the other
+    findings, and neither of those wants a traceback.
+    """
+
+    def __init__(self, where, message):
+        super().__init__('%s: %s' % (where, message))
+        self.where = where
+        self.message = message
+
+
+def sentence(problem):
+    """what went wrong, in plainer words where there are any.
+
+    yaml's own wording is accurate and mostly readable, so it is what
+    comes through.  Only the few people actually hit are rewritten: a
+    table with a line per message would age worse than no table.
+    """
+    if not problem:
+        return 'it will not read as yaml'
+    if r"'\t'" in problem and 'cannot start any token' in problem:
+        return 'a tab, and yaml indents with spaces'
+    if 'expected <block end>' in problem:
+        return 'the indenting does not line up'
+    if 'found unexpected end of stream' in problem:
+        return 'a quote is opened and never closed'
+    if 'mapping values are not allowed' in problem:
+        return 'a colon inside a value, which needs quoting'
+    return problem
+
+
+# what yaml calls input that did not come from a file
+NOTAFILE = ('<unicode string>', '<byte string>', '<string>', '<file>')
+
+
+def yamlFault(path, error):
+    """a yaml error as (where, what), with the offending line under it.
+
+    The mark is the whole point: it is what lets a reader be told which
+    file and which line, which is otherwise the hardest thing to find
+    about a config spread over a dozen of them.
+
+    The mark names the file itself where it can, since an error inside an
+    !include belongs to the included file rather than to the one that
+    named it, and saying the outer one would send somebody to a line that
+    is fine.
+    """
+    mark = error.problem_mark or error.context_mark
+    what = sentence(error.problem)
+    if mark is None:
+        return path, what
+    named = getattr(mark, 'name', None)
+    where = path if not named or named in NOTAFILE else named
+    snippet = mark.get_snippet()
+    return ('%s line %d' % (where, mark.line + 1),
+            '%s\n%s' % (what, snippet) if snippet else what)
+
+
+class NoDuplicates():
+    """a loader that will not let a key be written twice.
+
+    yaml lets the second one win without a word, so a config can say
+    location: twice and quietly draw the weather for the wrong city.
+    Nobody means to write a key twice, so it is said rather than settled.
+
+    Over construct_mapping rather than as a constructor of its own: the
+    one that ships yields a block before it fills it, so a document can
+    refer to itself, and replacing it would drop that silently.
+    """
+
+    MERGE = 'tag:yaml.org,2002:merge'
+
+    def construct_mapping(self, node, deep=False):
+        seen = {}
+        for keyNode, _ in node.value:
+            if keyNode.tag == self.MERGE:
+                continue
+            key = self.construct_object(keyNode, deep=deep)
+            if key in seen:
+                raise yaml.MarkedYAMLError(
+                    None, None,
+                    '%s is written twice, on lines %d and %d'
+                    % (key, seen[key], keyNode.start_mark.line + 1),
+                    keyNode.start_mark)
+            seen[key] = keyNode.start_mark.line + 1
+        return super().construct_mapping(node, deep=deep)
+
+
+class Safe(NoDuplicates, yaml.SafeLoader):
+    """every yaml file but the config"""
+
+
+class Full(NoDuplicates, yaml.FullLoader):
+    """the config, which takes !include as well"""
+
+
+def readYaml(path, loader=Safe):
+    """one yaml file, or a ConfigError saying what is wrong with it.
+
+    Everything the clock reads comes through here - the config, layouts,
+    themes, languages, units, and a plugin's own two - so a file that
+    will not parse names itself the same way wherever it was read from.
+
+    The file has to be there.  A caller that can do without one asks
+    first, because not having a theme and having one that will not read
+    are different things to say.
+    """
+    try:
+        with open(path, encoding='utf-8') as fh:
+            # the text rather than the handle: yaml keeps the line it was
+            # reading only for a string, and that line under a caret is
+            # most of what makes the answer readable
+            part = yaml.load(fh.read(), Loader=loader)
+    except yaml.MarkedYAMLError as e:
+        raise ConfigError(*yamlFault(path, e))
+    except OSError as e:
+        raise ConfigError(path, 'cannot be read: %s' % e.strerror)
+    if part is None:
+        raise ConfigError(path, 'is empty')
+    return part
+
+
 def zoneFor(name):
     """a named zone, or this machine's.
 
@@ -93,7 +218,15 @@ class Include(YamlIncludeConstructor):
     """
 
     def _read_file(self, path, loader, encoding, *args, **kwargs):
-        part = super()._read_file(path, loader, encoding, *args, **kwargs)
+        try:
+            part = super()._read_file(path, loader, encoding, *args, **kwargs)
+        except OSError:
+            # the file is named against the folder the clock was started
+            # in rather than the one that said !include, so where it
+            # looked is worth saying - it is rarely where you expect
+            raise ConfigError(
+                '!include %s' % path,
+                'is not there.  looked in %s' % os.path.abspath('.'))
         return thisFolder(part, os.path.dirname(path))
 
 # DottedDict that reads yaml config files
@@ -105,7 +238,7 @@ class Config(DottedDict):
     def __init__(self):
         DottedDict.__init__(self)
         Include.add_to_loader_class(
-            loader_class=yaml.FullLoader)  # , base_dir='/your/conf/dir')
+            loader_class=Full)  # , base_dir='/your/conf/dir')
 
     def load(self, name):
         """the config, or a sentence saying it is not there.
@@ -117,9 +250,7 @@ class Config(DottedDict):
         if not os.path.isfile(name):
             raise SystemExit("config file not found: %s\n" % name)
 
-        v2 = yaml.load(
-            open(name, "r"), Loader=yaml.FullLoader
-        )
+        v2 = readYaml(name, Full)
         # the included files were substituted as they were read; this is
         # the outermost one, which nothing else has seen
         v2 = thisFolder(v2, os.path.dirname(name))

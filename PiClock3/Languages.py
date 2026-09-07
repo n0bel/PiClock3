@@ -24,7 +24,7 @@ import glob
 import logging
 import os
 
-import yaml
+from .Config import readYaml
 
 logger = logging.getLogger(__name__)
 
@@ -158,8 +158,7 @@ class Languages():
         if not os.path.isdir(folder):
             return
         for path in sorted(glob.glob(os.path.join(folder, '*.yaml'))):
-            with open(path, encoding='utf-8') as fh:
-                part = yaml.safe_load(fh) or {}
+            part = readYaml(path)
             key = self.key(part, path)
             entry = self.languages.setdefault(
                 key, {'codes': set(), 'name': key, 'strings': {},

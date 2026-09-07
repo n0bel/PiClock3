@@ -31,10 +31,8 @@ import os
 import re
 import zoneinfo
 
-import yaml
-
-from .Config import GEOMETRY
-from .ResolvedConfig import ResolvedConfig
+from .Config import ConfigError, GEOMETRY, readYaml as read
+from .ResolvedConfig import partPaths, ResolvedConfig
 from .Units import MEASURE, Units
 
 logger = logging.getLogger(__name__)
@@ -120,10 +118,15 @@ def suggest(known, value):
 
 
 def readYaml(path):
+    """a yaml file, or None where there is none.
+
+    A file that is there and will not read raises, so a caller with
+    somewhere to put a finding can say which file and which line rather
+    than treating it as one that was never written.
+    """
     if not os.path.isfile(path):
         return None
-    with open(path, encoding='utf-8') as fh:
-        return yaml.safe_load(fh) or {}
+    return read(path)
 
 
 class Check():
@@ -168,19 +171,32 @@ class Check():
 
     # ----------------------------------------------------------- loading
 
+    def reading(self, path):
+        """a yaml file, or None with a finding saying why not.
+
+        Unreadable is collected rather than raised, because a check exists
+        to say everything that is wrong at once and one third-party plugin
+        with a tab in its schema should not end the run.
+        """
+        try:
+            return readYaml(path)
+        except ConfigError as e:
+            self.problem(e.where, e.message)
+            return None
+
     def load(self):
         """the shapes, before anything is looked at against them"""
-        core = readYaml(os.path.join(HERE, 'core-types.yaml')) or {}
+        core = self.reading(os.path.join(HERE, 'core-types.yaml')) or {}
         self.types.update(core.get('types') or {})
-        self.configSchema = readYaml(
+        self.configSchema = self.reading(
             os.path.join(HERE, 'config-schema.yaml')) or {}
         self.types.update(self.configSchema.get('types') or {})
-        self.widgetSchema = readYaml(
+        self.widgetSchema = self.reading(
             os.path.join(HERE, 'widget-schema.yaml')) or {}
-        self.layoutSchema = readYaml(
+        self.layoutSchema = self.reading(
             os.path.join(HERE, 'layout-schema.yaml')) or {}
         self.types.update(self.layoutSchema.get('types') or {})
-        self.themeSchema = readYaml(
+        self.themeSchema = self.reading(
             os.path.join(HERE, 'theme-schema.yaml')) or {}
         self.types.update(self.themeSchema.get('types') or {})
         # what a plugin may not redefine
@@ -214,7 +230,7 @@ class Check():
         folder = pluginFolder(module)
         if folder is None:
             return None
-        return readYaml(os.path.join(folder, 'schema.yaml'))
+        return self.reading(os.path.join(folder, 'schema.yaml'))
 
     def named(self, kind):
         """what a names: target can legally be, as a set of names.
@@ -226,9 +242,14 @@ class Check():
         if kind == 'providers':
             return set(self.config.get('providers') or {})
         if kind in ('layouts', 'themes'):
+            # a name only counts if loadPart would find something under it,
+            # asked with the paths loadPart itself walks - otherwise art
+            # sitting loose in themes/ is offered as a theme
             found = glob.glob(os.path.join(kind, '*')) + \
                 glob.glob(os.path.join('PiClock3', kind, '*'))
-            return {os.path.splitext(os.path.basename(f))[0] for f in found}
+            names = {os.path.splitext(os.path.basename(f))[0] for f in found}
+            return {n for n in names
+                    if any(os.path.isfile(p) for p, _ in partPaths(kind, n))}
         if kind == 'languages':
             # the same folders Languages searches, so a language a plugin
             # ships counts as one
@@ -561,6 +582,13 @@ class Check():
     def run(self):
         """every finding there is, as (severity, where, message)"""
         self.load()
+
+        # a layout or theme that is there and will not read, first: every
+        # region it would have declared is about to be missing, and none
+        # of what follows from that is the mistake anybody made
+        for where, _, error in self.resolved.unreadable:
+            self.problem('%s (%s)' % (where, error.where), error.message)
+
         settings = self.configSchema.get('settings') or {}
         tables = ('pages', 'providers', 'widgets')
 
@@ -651,11 +679,11 @@ class Check():
                 os.path.join(f, 'schema.yaml'))]
         else:
             folders = [f for f in self.installed()
-                       if (readYaml(os.path.join(f, 'config.yaml'))
+                       if (self.reading(os.path.join(f, 'config.yaml'))
                            or {}).get('kind') == key]
         settings, types = {}, {}
         for folder in folders:
-            schema = readYaml(os.path.join(folder, 'schema.yaml')) or {}
+            schema = self.reading(os.path.join(folder, 'schema.yaml')) or {}
             settings.update(schema.get('settings') or {})
             types.update(schema.get('types') or {})
             if not schema.get('provides'):
@@ -707,11 +735,11 @@ class Check():
                 folder = pluginFolder(module)
                 if folder is None:
                     continue
-                kind = (readYaml(os.path.join(folder, 'config.yaml'))
+                kind = (self.reading(os.path.join(folder, 'config.yaml'))
                         or {}).get('kind')
                 if not kind:
                     continue
-                schema = readYaml(os.path.join(folder, 'schema.yaml')) or {}
+                schema = self.reading(os.path.join(folder, 'schema.yaml')) or {}
                 role = 'provider' if schema.get('provides') else 'widget'
                 worn.setdefault(kind, {}).setdefault(role, set()).add(module)
 
@@ -738,7 +766,7 @@ class Check():
             folder = pluginFolder(entry['plugin'])
             if folder is None:
                 continue            # checkPlugin has already said so
-            settings = (readYaml(os.path.join(folder, 'schema.yaml'))
+            settings = (self.reading(os.path.join(folder, 'schema.yaml'))
                         or {}).get('settings') or {}
             merged, _ = self.resolved.pluginConfig(folder, entry, False)
             for setting, value in merged.items():
@@ -788,7 +816,7 @@ class Check():
             self.problem(where, 'no plugin %s.  Looked for %s/ and'
                                 ' plugins/%s/' % (module, part, part))
             return
-        schema = readYaml(os.path.join(folder, 'schema.yaml'))
+        schema = self.reading(os.path.join(folder, 'schema.yaml'))
         if schema is None:
             self.problem(where, '%s has no schema.yaml, which is required'
                          % module)
@@ -843,7 +871,7 @@ class Check():
             # many instances there are: the two describe one thing
             if module not in self.described:
                 self.described.add(module)
-                defaults = readYaml(os.path.join(folder, 'config.yaml')) or {}
+                defaults = self.reading(os.path.join(folder, 'config.yaml')) or {}
                 for name in sorted(set(defaults) - set(settings) - {'kind'}):
                     self.problem('%s config.yaml' % module,
                                  '%s is a default and no schema declares it'

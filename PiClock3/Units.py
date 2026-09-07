@@ -22,7 +22,7 @@ import logging
 import os
 import re
 
-import yaml
+from .Config import readYaml
 from compassheadinglib import Compass
 
 logger = logging.getLogger(__name__)
@@ -102,8 +102,7 @@ class Units():
             if not name.endswith('.yaml'):
                 continue
             path = os.path.join(folder, name)
-            with open(path, encoding='utf-8') as fh:
-                part = yaml.safe_load(fh) or {}
+            part = readYaml(path)
             logger.debug('units from %s', path)
             sets = part.pop('sets', None)
             if sets:
