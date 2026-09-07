@@ -1,7 +1,7 @@
 name: Meridian
 description: The sun's daily circle over the pole, in ice blue on near-black
 
-background: '{this-folder}/background.png'
+background: 'background.png'
 
 kind-settings:
   analog-clock:       {clock-images-folder: lightblue}
@@ -22,11 +22,11 @@ default:
 
 borders:
   default:
-    art: '{this-folder}/frame.png'
+    art: 'frame.png'
     width: 0.0035
     inset: 1.0
   radar:
-    art: '{this-folder}/frame.png'
+    art: 'frame.png'
     width: 0.0035
     inset: 1.0
 

@@ -8,3 +8,4 @@ settings:
   clock-images-base-folder: {is: string}
   # the set, and where sets live.  Base folder is a template so a theme can
   # point it at {this-folder} and carry a face of its own.
+  timezone: {is: string, names: timezones}

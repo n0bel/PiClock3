@@ -1,0 +1,75 @@
+# PiClock3 - Clock Wall.
+#
+# The row of faces behind a hotel desk, each between the name of the city it
+# keeps and the day it is there.  Nothing else is on the page: no weather,
+# no radar, no key to get - six clocks, six names and six days.
+#
+# Two settings do all of it.  A clock's timezone: is the zone that face
+# shows, so six faces on one page show six cities, and a date widget takes
+# the same setting; a text widget draws whatever its text: says, which is
+# how each one is labeled.  Minneapolis names no zone of its own and shows
+# the clock's, which is what the shipped default '{location.timezone}'
+# means.
+#
+# The day is why the wall is worth having.  Half of it is on the far side
+# of midnight from the other half - Tokyo is tomorrow while Los Angeles is
+# still yesterday afternoon - and a face alone cannot say so.
+#
+# The cities read left to right, top row then bottom.
+pages:
+  wall: {order: 0, layout: clockwall, theme: clockwall}
+
+language: en
+
+location:
+  latitude: 45
+  longitude: -93
+  timezone: America/Chicago
+
+# a name is worth reading from across the room
+kind-settings:
+  text: {font-size: 0.8}
+  # the day, and which half of it: a face with hands says four o'clock and
+  # cannot say which four, which is the one thing a wall of them has to
+  # answer.  %p is empty in languages that do not say AM, so a wall in one
+  # of those wants the hour here instead - '%A %H:00'.
+  date: {format: '%A %p'}
+
+# Widgets occupy a region named by the page's layout, and draw in it.
+widgets:
+
+  city1:  {plugin: PiClock3.Text, region: city1, text: Minneapolis}
+  clock1: {plugin: PiClock3.AnalogClock, region: clock1}
+  day1:   {plugin: PiClock3.Date, region: day1}
+
+  city2:  {plugin: PiClock3.Text, region: city2, text: Los Angeles}
+  clock2: {plugin: PiClock3.AnalogClock, region: clock2,
+           timezone: America/Los_Angeles}
+  day2:   {plugin: PiClock3.Date, region: day2,
+           timezone: America/Los_Angeles}
+
+  city3:  {plugin: PiClock3.Text, region: city3, text: New York}
+  clock3: {plugin: PiClock3.AnalogClock, region: clock3,
+           timezone: America/New_York}
+  day3:   {plugin: PiClock3.Date, region: day3,
+           timezone: America/New_York}
+
+  city4:  {plugin: PiClock3.Text, region: city4, text: London}
+  clock4: {plugin: PiClock3.AnalogClock, region: clock4,
+           timezone: Europe/London}
+  day4:   {plugin: PiClock3.Date, region: day4,
+           timezone: Europe/London}
+
+  city5:  {plugin: PiClock3.Text, region: city5, text: Moscow}
+  clock5: {plugin: PiClock3.AnalogClock, region: clock5,
+           timezone: Europe/Moscow}
+  day5:   {plugin: PiClock3.Date, region: day5,
+           timezone: Europe/Moscow}
+
+  city6:  {plugin: PiClock3.Text, region: city6, text: Tokyo}
+  clock6: {plugin: PiClock3.AnalogClock, region: clock6,
+           timezone: Asia/Tokyo}
+  day6:   {plugin: PiClock3.Date, region: day6,
+           timezone: Asia/Tokyo}
+
+logging-level: info

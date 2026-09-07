@@ -1,0 +1,17 @@
+description: >
+  Words in a region - whatever the config wrote, or whatever a source hands
+  it.  A caption, a name over a clock face, a line travelling past.
+
+settings:
+
+  text:          {is: string}
+  text-provider: {is: provider, provides: [text]}
+  # neither is required: a region with no words in it draws none
+
+  overflow:      {is: string, one-of: [fit, marquee, clip]}
+  marquee-speed: {is: number, range: [0.01, 10]}
+
+  font-size:     {is: font-size}
+  extra-font-attributes: {is: string}
+  # anything Qt understands that has no setting of its own, put into the
+  # stylesheet as written

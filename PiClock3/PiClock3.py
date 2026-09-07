@@ -5,20 +5,17 @@ import locale
 import logging
 import logging.handlers
 import os
-import re
-import zoneinfo
-
-import tzlocal
 
 from PyQt5 import (QtNetwork)
 from PyQt5.QtCore import (Qt, QRect,
                           QSize)
-from PyQt5.QtGui import (QImage, QFontMetrics)
+from PyQt5.QtGui import (QImage)
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
 from .ResolvedConfig import ResolvedConfig, noSuchPart
-from .Config import GEOMETRY
+from .Config import GEOMETRY, zoneFor
 from .DottedDict import DottedDict, Missing
+from .FitLabel import FitLabel
 from .Languages import Languages
 from .Plugin import Plugin
 from .Widget import Widget
@@ -48,44 +45,6 @@ def pluginClass(mod):
             continue
         cls, clsName = obj, name
     return cls, clsName
-
-
-class FitLabel(QLabel):
-    """text as large as fits across, asked for by font-size: 0.
-
-    The size only ever comes down.  A clock started on a short date would
-    otherwise clip on a long one.
-    """
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.fitCeiling = None
-        self.fitSize = None
-        self.baseStyle = ''
-
-    def setText(self, text):
-        super().setText(text)
-        if self.fitCeiling and text:
-            self.fitText(text)
-
-    def fitText(self, text):
-        # a label renders markup, so the tags are not part of the width
-        shown = re.sub(r'<[^>]*>', '', text)
-        size = self.fitSize or self.fitCeiling
-        room = self.width() - 4
-        font = self.font()
-        font.setPixelSize(int(size))
-        while size > 6 and QFontMetrics(font).horizontalAdvance(shown) > room:
-            size -= 1
-            font.setPixelSize(int(size))
-        if self.fitSize is not None and size >= self.fitSize:
-            return
-        self.fitSize = size
-        # a stylesheet beats setFont, and the page carries one
-        self.setStyleSheet("%s #%s { font-size: %dpx; }"
-                           % (self.baseStyle, self.objectName(), size))
-        logger.info("fit %s: %dpx for %r in %dpx",
-                    self.objectName(), size, shown, room)
 
 
 class Table():
@@ -866,32 +825,21 @@ class PiClock3(QWidget):
         return styleString
 
     def timezone(self):
-        """the zone of the location: this clock is pointed at.
-
-        Blank means the machine's own, which is right for a clock standing
-        where it is pointed.
-        """
+        """the zone of the location: this clock is pointed at"""
         raw = None
         if 'location' in self.config and 'timezone' in self.config.location:
             raw = self.config.location.timezone
-        name = raw.strip() if isinstance(raw, str) else ''
-        if name:
-            try:
-                return zoneinfo.ZoneInfo(name)
-            except Exception as e:
-                logger.warning("timezone %r unknown, using this machine's: %s",
-                               name, e)
-        return zoneinfo.ZoneInfo(tzlocal.get_localzone_name())
+        return zoneFor(raw)
 
-    def now(self):
-        """the current time where the clock is pointed.
+    def now(self, zone=None):
+        """the current time where the clock is pointed, or in `zone`.
 
         start-at: in the config shifts this, and only this.  The radar asks
         the wall clock directly, because a frame server has what it has
         whatever the clock believes - so a clock set to midwinter shows
         midwinter's sun and this afternoon's rain.
         """
-        return datetime.datetime.now(self.timezone()) + self.offset
+        return datetime.datetime.now(zone or self.timezone()) + self.offset
 
     def startAt(self):
         """how far off the real time the config asked to be.

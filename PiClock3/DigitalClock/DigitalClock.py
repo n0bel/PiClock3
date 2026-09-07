@@ -49,7 +49,7 @@ class DigitalClock(Widget):
         return
 
     def tick(self):
-        now = self.piclock.now()
+        now = self.now()
         self.pluginData.now = now
         timestr = self.piclock.expand(self.format)
         if self.lasttimestr != timestr:

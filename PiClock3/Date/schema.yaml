@@ -8,3 +8,4 @@ settings:
   format: {is: string}
   # expanded, then run through strftime.  Beside strftime's codes it takes
   # {day}, the day with no leading zero, and {sup}, the ordinal after it.
+  timezone: {is: string, names: timezones}

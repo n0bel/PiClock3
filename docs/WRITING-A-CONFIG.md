@@ -81,6 +81,11 @@ A blank `timezone:` means the machine's own, which is right when the clock
 sits where it is pointed.  Name a zone - `Europe/London`, `Pacific/Auckland` -
 when it does not.
 
+A clock face takes a `timezone:` of its own as well, which is how six faces
+on one page show six cities - `examples/clockwall.yaml` is that wall.  It
+defaults to the location's, so a page that says nothing keeps the one zone
+it always had.
+
 A blank `elevation:` lets a weather service work it out from the
 coordinates, which it does better than a guess - give one only where that is
 wrong, as it is on a peak.  A bare number is meters however `units:` is set,
@@ -190,7 +195,7 @@ its own `config.yaml`:
 |---|---|
 | `radar` | `MapLoop` |
 | `analog-clock`, `digital-clock` | the two clock faces |
-| `current-conditions`, `forecast`, `date`, `almanac` | the rest of the widgets |
+| `current-conditions`, `forecast`, `date`, `almanac`, `text` | the rest of the widgets |
 | `basemap`, `radar-frames`, `weather-source`, `forecast-source` | the providers |
 
 So a kind is what a thing *is*, and several plugins can share one - Mapbox and
@@ -517,6 +522,23 @@ name keeps the table's answer.  The table, and how to add to it, is
 | | |
 |---|---|
 | `format` | strftime for the date line.  The default is `{language.date-format}` - the language's own line, which knows where the day belongs in the sentence.  Beside strftime's codes it understands `{day}`, the day with no leading zero, and `{sup}`, the ordinal after it: `en` writes `%A %B {day}<sup>{sup}</sup> %Y` and gets *Thursday September 3rd 2026* |
+
+**`PiClock3.Text`** draws words in a region - a caption, a name over a clock
+face, a line travelling past.
+
+| | |
+|---|---|
+| `text` | what to draw.  It is expanded, so `{location.city}` and anything else the clock knows can be written into it.  Blank draws nothing |
+| `text-provider` | a plugin supplying the words instead, and saying when they change.  Nothing ships with one; writing one is [WRITING-A-PLUGIN.md](WRITING-A-PLUGIN.md) |
+| `overflow` | what to do with a line too wide for its region: `fit` shrinks it, `marquee` travels it past right to left, `clip` lets the edge cut it.  `fit` unless you say |
+| `marquee-speed` | how far a marquee travels in a second, in widths of the region, 0.25 |
+| `font-size` | a fraction of the region's height, 0.3.  `20px` is used as written, and 0 is as large as fits |
+
+**`PiClock3.AnalogClock`**, **`PiClock3.DigitalClock`**, **`PiClock3.Date`**
+
+| | |
+|---|---|
+| `timezone` | the zone this face shows.  It defaults to `{location.timezone}`, so a page that says nothing keeps the clock's own zone.  Naming one per face is what makes a wall of them |
 
 **`PiClock3.MapLoop`**, beyond the radar and caption settings above
 

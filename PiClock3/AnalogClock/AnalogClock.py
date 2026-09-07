@@ -84,7 +84,7 @@ class AnalogClock(Widget):
         return
 
     def tick(self):
-        time_now = self.piclock.now()
+        time_now = self.now()
         angle = time_now.second * 6
         ts = self.secpixmap.size()
         self.secpixmap2 = self.secpixmap.transformed(

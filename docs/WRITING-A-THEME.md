@@ -298,9 +298,9 @@ background:
 ```
 
 A folder is listed again whenever something is put in it; a named set is
-fixed.  `examples/gallery.yaml` uses the second form to work through every
-background the shipped themes have, which cannot be a folder because each one
-lives in its own theme and they all answer to `background.png`.
+fixed.  `examples/gallery.yaml` uses the second form to work through six of
+the shipped backgrounds, which cannot be a folder because each one lives in
+its own theme and they all answer to `background.png`.
 
 A relative path, in either form, is inside the theme, the same as any other
 art - so a theme can ship its pictures, and `../` reaches a neighboring

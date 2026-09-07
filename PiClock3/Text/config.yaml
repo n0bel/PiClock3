@@ -1,0 +1,27 @@
+kind: text
+
+# what to draw.  It is expanded, so {location.city} and anything else the
+# clock knows can be written into it.  Blank draws nothing, which is what
+# a region waiting on a source shows until the source speaks.
+text: ''
+
+# a plugin supplying the words instead, and saying when they change.
+# Nothing ships with one.
+text-provider: ''
+
+# what to do with a line too wide for its region.
+#
+#   fit      shrink it until it fits across
+#   marquee  travel it past, right to left
+#   clip     leave it, and let the edge cut it
+overflow: fit
+
+# how far a marquee travels in a second, in widths of the region
+marquee-speed: 0.25
+
+# a fraction of the height of the region it sits in.  A value with units,
+# 20px, is used as written, and 0 is as large as fits.
+font-size: 0.3
+
+# anything Qt understands that has no setting of its own
+extra-font-attributes: ""

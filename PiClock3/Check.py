@@ -24,10 +24,12 @@ only by coincidence, and fails the worst way: calling a setting unset when
 the clock will find it, and going quiet about one the clock will drop.
 """
 import contextlib
+import difflib
 import glob
 import logging
 import os
 import re
+import zoneinfo
 
 import yaml
 
@@ -103,6 +105,20 @@ def mapping(value):
     return value if isinstance(value, dict) else {}
 
 
+def suggest(known, value):
+    """what to say after naming something that is not there.
+
+    The whole list where somebody could read it, and the near misses where
+    they could not: there are six hundred timezones.
+    """
+    if len(known) <= 12:
+        return 'There is %s' % (', '.join(sorted(known)) or 'none')
+    close = difflib.get_close_matches(str(value), sorted(known), 3)
+    if close:
+        return 'Did you mean %s' % ', '.join(close)
+    return 'There are %d to choose from' % len(known)
+
+
 def readYaml(path):
     if not os.path.isfile(path):
         return None
@@ -124,6 +140,8 @@ class Check():
         self.folders = None        # every plugin installed, found once
         self.redefined = set()     # plugins redefining a core type
         self.units = None          # the units table, read once
+        # every timezone, read once and only if a config names one
+        self.zones = None
 
     # ------------------------------------------------------------ saying
 
@@ -221,6 +239,14 @@ class Check():
             return {os.path.splitext(os.path.basename(f))[0] for f in found}
         if kind == 'unit-sets':
             return set(self.unitsTable().sets)
+        if kind == 'timezones':
+            # read once: six hundred names off a Pi's disk is not something
+            # to do again for the second clock on a wall of them.  None
+            # where there is no table, since a machine with none still runs
+            # a clock on its own zone
+            if self.zones is None:
+                self.zones = zoneinfo.available_timezones() or set()
+            return self.zones or None
         return None
 
     def everyRegion(self):
@@ -464,9 +490,8 @@ class Check():
         if known is None:
             return
         if value not in known:
-            self.problem(where, 'no %s named %r.  There is %s'
-                         % (kind.rstrip('s'), value,
-                            ', '.join(sorted(known)) or 'none'))
+            self.problem(where, 'no %s named %r.  %s'
+                         % (kind.rstrip('s'), value, suggest(known, value)))
 
     def checkProvides(self, where, name, wanted):
         """the provider a setting names has to answer the right question.

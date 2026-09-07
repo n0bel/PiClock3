@@ -1,0 +1,77 @@
+name: Clock Wall
+description: Six faces in two rows, each between the name of a city and its day
+
+designed-for: '16:9'
+
+# Six cells, three across and two down, each a name over a square face with
+# the weekday under it - the wall behind a hotel desk.  Nothing else is on
+# the page: a wall of clocks that also carried a forecast would be a
+# different thing.
+#
+# The day belongs here rather than being a nicety.  Half a wall of clocks
+# is on the far side of midnight from the other half, and a face alone
+# cannot say which - Tokyo reads three o'clock whether that is tonight or
+# tomorrow morning.
+#
+# The columns are centered rather than edged, so the middle one sits on the
+# middle of the screen and the outer two are the same distance from it
+# however wide the page turns out to be.
+#
+# The three parts of a cell are held close together and the two rows well
+# apart, because otherwise the bottom row of names reads as a caption on
+# the top row of clocks.
+
+regions:
+
+  city1:  {horizontal-center: -0.333, top: 0.035, width: 0.31,
+           height: 0.065, style: city}
+  city2:  {horizontal-center:  0.000, top: 0.035, width: 0.31,
+           height: 0.065, style: city}
+  city3:  {horizontal-center:  0.333, top: 0.035, width: 0.31,
+           height: 0.065, style: city}
+
+  clock1: {horizontal-center: -0.333, top: 0.105, height: 0.300,
+           aspect: 1.0}
+  clock2: {horizontal-center:  0.000, top: 0.105, height: 0.300,
+           aspect: 1.0}
+  clock3: {horizontal-center:  0.333, top: 0.105, height: 0.300,
+           aspect: 1.0}
+
+  day1:   {horizontal-center: -0.333, top: 0.408, width: 0.31,
+           height: 0.057, style: day}
+  day2:   {horizontal-center:  0.000, top: 0.408, width: 0.31,
+           height: 0.057, style: day}
+  day3:   {horizontal-center:  0.333, top: 0.408, width: 0.31,
+           height: 0.057, style: day}
+
+  city4:  {horizontal-center: -0.333, top: 0.525, width: 0.31,
+           height: 0.065, style: city}
+  city5:  {horizontal-center:  0.000, top: 0.525, width: 0.31,
+           height: 0.065, style: city}
+  city6:  {horizontal-center:  0.333, top: 0.525, width: 0.31,
+           height: 0.065, style: city}
+
+  clock4: {horizontal-center: -0.333, top: 0.595, height: 0.300,
+           aspect: 1.0}
+  clock5: {horizontal-center:  0.000, top: 0.595, height: 0.300,
+           aspect: 1.0}
+  clock6: {horizontal-center:  0.333, top: 0.595, height: 0.300,
+           aspect: 1.0}
+
+  day4:   {horizontal-center: -0.333, top: 0.898, width: 0.31,
+           height: 0.057, style: day}
+  day5:   {horizontal-center:  0.000, top: 0.898, width: 0.31,
+           height: 0.057, style: day}
+  day6:   {horizontal-center:  0.333, top: 0.898, width: 0.31,
+           height: 0.057, style: day}
+
+layout-style-settings:
+  city:
+    qproperty-alignment: AlignCenter
+  day:
+    # smaller than the city, because it answers a question the face raises
+    # rather than saying which clock this is.  fit: because Wednesday is
+    # half again as wide as Monday
+    font-size: 0.62
+    fit: true
+    qproperty-alignment: AlignCenter

@@ -82,6 +82,7 @@ provider lists the ones it means:
     map                          BaseMap    - one picture of the ground
     frames                       Frames     - a stamped series of them
     conditions hourly daily      Weather    - now, the hours, the days
+    text                         TextSource - words that change on their own
 
 A subclass inherits all of its role's questions whether it implements them
 or not - `conditions()` answering `None`, `hourly()` an empty list, the map
@@ -155,14 +156,16 @@ itself, and saying which is most of what a schema adds.
 
 ## `names:` is the one worth reaching for
 
-Five kinds of string are not free text at all.  They have to name something
-that exists somewhere else:
+Some strings are not free text at all.  They have to name something that
+exists somewhere else:
 
     providers   an entry of the config's own providers:
     regions     one a page's layout declares, cells included
     layouts     a file in layouts/
     themes      a folder in themes/
     unit-sets   a set in units/sets.yaml, or one added to it
+    languages   a file in languages/
+    timezones   a zone this machine has, blank being its own
 
 ```yaml
   forecast-provider: {is: provider, provides: [hourly, daily], required: true}

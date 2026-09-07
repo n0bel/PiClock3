@@ -1,6 +1,9 @@
 import logging
 import os
 import re
+import zoneinfo
+
+import tzlocal
 import yaml
 from yamlinclude import YamlIncludeConstructor
 from .DottedDict import DottedDict
@@ -11,6 +14,23 @@ logger = logging.getLogger(__name__)
 # so the two cannot come to different answers about the same word
 GEOMETRY = re.compile(r'^\s*(\d+)\s*[xX,]\s*(\d+)'
                       r'(?:\s*\+\s*(\d+)\s*\+\s*(\d+))?\s*$')
+
+
+def zoneFor(name):
+    """a named zone, or this machine's.
+
+    Blank means the machine's own, which is right for a clock standing
+    where it is pointed.  A name it does not know is a warning rather than
+    a stop: a clock showing the wrong hour still shows the time.
+    """
+    name = name.strip() if isinstance(name, str) else ''
+    if name:
+        try:
+            return zoneinfo.ZoneInfo(name)
+        except Exception as e:
+            logger.warning("timezone %r unknown, using this machine's: %s",
+                           name, e)
+    return zoneinfo.ZoneInfo(tzlocal.get_localzone_name())
 
 
 def thisFolder(part, home):

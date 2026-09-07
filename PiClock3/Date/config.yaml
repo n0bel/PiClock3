@@ -1,3 +1,7 @@
 kind: date
 
 format: '{language.date-format}'
+
+# the zone this face shows.  Blank is the clock's own, so a wall of them
+# each name a city while one clock on a wall names none.
+timezone: '{location.timezone}'

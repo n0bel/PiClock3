@@ -12,3 +12,4 @@ settings:
   extra-font-attributes: {is: string}
   # anything Qt understands that has no setting of its own, put into the
   # stylesheet as written
+  timezone: {is: string, names: timezones}

@@ -4,6 +4,7 @@ import os
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect
 
+from .Config import zoneFor
 from .Plugin import Plugin
 
 logger = logging.getLogger(__name__)
@@ -18,10 +19,20 @@ class Widget(Plugin):
     """
 
     def scaleFont(self, props, height):
-        """sizes text the way core does, under the layout this widget sits in
-        rather than whichever page happened to be built last"""
+        """sizes text the way core does, under the layout this widget
+        sits in rather than whichever page happened to be built last"""
         return self.piclock.scaleFont(props, height,
                                       getattr(self, 'region', None))
+
+    def now(self):
+        """the time this widget shows.
+
+        A timezone: of its own is how six faces on one page show six
+        cities; without one it is the clock's own zone, and start-at:
+        moves them all together.
+        """
+        zone = self.piclock.expand(self.config.get('timezone'))
+        return self.piclock.now(zoneFor(zone) if zone else None)
 
     def themeDefault(self, name):
         """what the page says a Qt property should be, or None.
@@ -93,7 +104,7 @@ class Widget(Plugin):
     EFFECTS = ('glow', 'shadow')
 
     def _effect(self, spec):
-        """(kind, blur, color, offset, lighten) from either way of writing it"""
+        """(kind, blur, color, offset, lighten), either way of writing it"""
         off = (None, 0, None, (0, 0), 100)
         if not spec or spec == 'none':
             return off
@@ -103,7 +114,8 @@ class Widget(Plugin):
             word = spec.split()
             try:
                 blur = float(word[1]) if len(word) > 1 else self.EFFECT['blur']
-                light = int(word[2]) if len(word) > 2 else self.EFFECT['lighten']
+                light = (int(word[2]) if len(word) > 2
+                         else self.EFFECT['lighten'])
             except ValueError:
                 logger.warning('%s: cannot read effect %r', self.name, spec)
                 return off

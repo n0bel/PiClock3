@@ -151,10 +151,11 @@ python3 PyQtPiClock3.py examples/meadow.yaml
 | `examples/london.yaml` | the Thames at night - and the same clock somewhere else: London, metric, its own timezone |
 | `examples/berlin.yaml` | the same clock in German - `language: de`, metric, Berlin's timezone |
 | `examples/digital.yaml` | a digital face instead of hands, and what a theme reaches without being asked |
-| `examples/gallery.yaml` | the clock page works through every shipped background in turn; the maps page holds one |
+| `examples/gallery.yaml` | the clock page works through six shipped backgrounds in turn; the maps page holds one |
 | `examples/australia.yaml` | Sydney - the southern hemisphere, where December is midsummer |
 | `examples/arctic.yaml` | Tromso, above the Arctic Circle: months with no sunrise to print |
 | `examples/mcmurdo.yaml` | McMurdo, as far the other way, under a theme whose art is generated rather than photographed |
+| `examples/clockwall.yaml` | six faces and six city names, the wall behind a hotel desk |
 | `examples/ApiKeys.yaml` | the keys file to copy, with links to where to get one |
 
 A theme is one line of a page: `maps-page: {order: 1, layout: bigmaps, theme:

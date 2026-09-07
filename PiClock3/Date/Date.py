@@ -18,7 +18,8 @@ class Date(Widget):
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
         self.timer = None
-        self.lastDay = -1
+        self.lastMinute = None
+        self.lastText = None
         self.format = None
         self.ordinal = {}
 
@@ -37,11 +38,18 @@ class Date(Widget):
         return
 
     def doDate(self):
-        now = self.piclock.now()
-        if now.day != self.lastDay:
-            self.lastDay = now.day
-        else:
+        """the line this format asks for, whenever it changes.
+
+        Once a minute rather than once a second, because a format naming
+        seconds is a clock rather than a date and there is a widget for
+        that.  Not once a day: a date line is free to carry %p, or the
+        hour, and one that only redrew when the day rolled over would sit
+        on the wrong half of noon until midnight.
+        """
+        now = self.now()
+        if now.minute == self.lastMinute:
             return
+        self.lastMinute = now.minute
 
         sup = self.ordinal.get(now.day, self.ordinal.get('default', ''))
         self.pluginData.sup = sup
@@ -52,4 +60,7 @@ class Date(Widget):
         # Then expand, so a {plugin-data.now:%A} template still works, and
         # strftime last for the bare directives.
         text = self.format.replace('{day}', str(now.day)).replace('{sup}', sup)
-        self.region.setText(now.strftime(self.piclock.expand(text)))
+        text = now.strftime(self.piclock.expand(text))
+        if text != self.lastText:
+            self.lastText = text
+            self.region.setText(text)

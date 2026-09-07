@@ -1,0 +1,35 @@
+name: Clock Wall
+description: A dark wall under one light, for faces and city names and nothing else
+
+# Not a picture: a lit surface.  Six clocks are the only thing on this page
+# and anything with a subject in it would be competing with them, so the
+# wall falls away at the corners and holds a pool of light where the faces
+# hang.
+background: 'background.png'
+
+kind-settings:
+  analog-clock: {clock-images-folder: lightblue}
+
+  # ivory against the blue faces, the way a name plate reads under a clock,
+  # and a glow so it belongs to the same lit wall
+  text:
+    color: '#e8dfcb'
+    effect: glow 0.10
+
+styles:
+  # the same ivory held back, because the day answers a question the face
+  # raises rather than saying which clock this is.
+  #
+  # Set on the style rather than under kind-settings: date:, which is where
+  # it belongs and does not reach.  A date widget draws in the region
+  # itself, and this layout asks that region to fit its text - so the
+  # region's stylesheet is rebuilt as the day is sized, and only what the
+  # page put there survives it.
+  day:
+    color: '#a99f88'
+
+default:
+  font-size: 0.019
+  font-family: Arial
+  background-color: transparent
+  color: '#8fd6ee'

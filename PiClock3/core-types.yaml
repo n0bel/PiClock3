@@ -36,6 +36,8 @@
 #         layouts     a file in layouts/
 #         themes      a folder in themes/
 #         unit-sets   a set in units/sets.yaml, or one added to it
+#         languages   a file in languages/
+#         timezones   a zone this machine has, blank being its own
 #
 #     provides: [<what>, ...]
 #                         beside names: providers, the questions the
@@ -44,9 +46,9 @@
 #                         which it answers with a provides: of its own,
 #                         beside its settings:, and the words are the
 #                         questions its role defines: map, frames,
-#                         conditions, hourly, daily.  This is what tells a
-#                         radar's frame-provider: from its base-provider:,
-#                         which names: providers cannot.
+#                         conditions, hourly, daily, text.  This is what
+#                         tells a radar's frame-provider: from its
+#                         base-provider:, which names: providers cannot.
 #
 # of: is always type names and one-of: is always values, so neither has to
 # be read in context.
@@ -132,7 +134,7 @@ types:
     of:
       latitude:  {is: number, range: [-90, 90], required: true}
       longitude: {is: number, range: [-180, 180], required: true}
-      timezone:  {is: string}
+      timezone:  {is: string, names: timezones}
       elevation: {of: [number, measure], quantity: altitude}
     # an IANA name - Europe/Oslo - and how high, as 1600 for meters or
     # '5280ft' to say otherwise.  Blank takes the machine's zone, and

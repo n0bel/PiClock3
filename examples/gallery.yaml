@@ -1,7 +1,7 @@
 # PiClock3 - Gallery.
 #
-# The same clock as default.yaml, with the clock page working through every
-# background the shipped themes use instead of holding one.  A theme's
+# The same clock as default.yaml, with the clock page working through six of
+# the shipped backgrounds instead of holding one.  A theme's
 # background: takes a folder of pictures, or names them one by one as this
 # one does - the shipped backgrounds live in their own theme folders and all
 # answer to background.png, so they have to be named.

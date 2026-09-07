@@ -17,6 +17,7 @@ from PiClock3.Widget import Widget      # draws in a region
 from PiClock3.BaseMap import BaseMap    # the map under the frames
 from PiClock3.Frames import Frames      # timestamped tiles, animated
 from PiClock3.Weather import Weather    # what the sky is doing, or will be
+from PiClock3.TextSource import TextSource   # words that change on their own
 ```
 
 What each one asks of you is written beside it in that file.  Leave out
@@ -28,7 +29,7 @@ your plugin, rather than a failure in the middle of a redraw.
 
 ```yaml
 provides: [frames]        # BaseMap: [map].  Weather: any of
-                          # conditions, hourly, daily
+                          # conditions, hourly, daily.  TextSource: [text]
 ```
 
 Required, not optional: a provider exists to be asked something, and this
