@@ -323,19 +323,21 @@ of the others along with it:
 
 | a published ... | may also hold |
 |---|---|
-| plugin, in `plugins/` | a layout, a theme, its own words and units, its art, examples |
-| theme, in `themes/` | a layout, another theme, its art, examples |
-| layout, in `layouts/` | a theme, another layout, examples |
+| plugin, in `plugins/` | a layout, a theme, language files, units, its art, examples |
+| theme, in `themes/` | a layout, another theme, language files, units, its art, examples |
+| layout, in `layouts/` | a theme, another layout, language files, units, examples |
 
 Carrying is not depending: a page still names its layout and its theme
 separately.  And **a bundled part can add a name, never replace one** - a
 cloned repository cannot quietly become the `classic` your config already
 names, and `--check` says so when two folders hold one name.
 
-Two things stay where they are.  Nothing carries a plugin but a plugin,
-since `plugin:` names a module path.  And only a plugin carries words and
-units, because those are looked for under `plugins/` and not under
-`themes/`.
+One thing stays where it is: nothing carries a plugin but a plugin, since
+`plugin:` names a module path.
+
+A language file is worth knowing about here even if you speak the one the
+clock ships: a plugin uses one to name what it draws, and a theme can use
+one to rename what the clock already draws.
 
 [CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository
 rather than building on it.
