@@ -23,6 +23,7 @@ again here.  A checker with its own idea of the merge agrees with the loader
 only by coincidence, and fails the worst way: calling a setting unset when
 the clock will find it, and going quiet about one the clock will drop.
 """
+import collections
 import contextlib
 import difflib
 import glob
@@ -57,6 +58,12 @@ MINKEY = 5
 PATTERNS = {'geometry': (GEOMETRY, 'WIDTHxHEIGHT, or WIDTHxHEIGHT+X+Y')}
 
 PRIMITIVES = {'number': (int, float), 'string': str, 'boolean': bool}
+
+# who declares a setting, for the times that is not the entry's own plugin.
+# A widget hands its config to the providers it names, so `types` and
+# `module` are theirs rather than the entry's: a spec is unreadable without
+# the types the schema that wrote it invented.
+Declared = collections.namedtuple('Declared', 'spec types module')
 
 # what to call the shape of a value, in a sentence.  In order and read
 # with isinstance rather than keyed on the exact class: a bool is an int,
@@ -247,6 +254,21 @@ class Check():
             yield
         finally:
             self.types = saved
+
+    @contextlib.contextmanager
+    def aside(self):
+        """findings collected rather than kept, and handed to the caller.
+
+        For a value that has to satisfy only one of several specs: it is
+        checked against each, and whichever complaints come of the ones it
+        failed are the caller's to keep or to drop.
+        """
+        saved, mine = self.found, []
+        self.found = mine
+        try:
+            yield mine
+        finally:
+            self.found = saved
 
     def pluginSchema(self, module):
         """a plugin's own schema, and the types it invents, or None"""
@@ -448,7 +470,7 @@ class Check():
         for entry in self.alternatives(spec) or [spec]:
             fields = self.fields(entry)
             if fields:
-                self.checkEntry(where, value, fields, (), value)
+                self.checkEntry(where, value, fields, {}, value)
                 return
             if entry.get('is') == 'table':
                 of = entry.get('of')
@@ -573,7 +595,7 @@ class Check():
                                         for v in (None, '', [], {}))
 
     def checkEntry(self, where, entry, settings, declared, merged=None,
-                   quiet=False, required=True):
+                   quiet=False, required=True, module=None):
         """one block of settings against what declares them.
 
         Two questions, two subjects.  `required` is asked of `merged`,
@@ -583,6 +605,11 @@ class Check():
 
         A kind-settings: block is only part of what a plugin will get, so
         it answers the second question and not the first.
+
+        `declared` is what somebody other than this entry's own plugin
+        declares - the providers it names - as name to the specs that
+        declare it.  A setting in there used to be skipped, which said its
+        name was legal and never looked at its value.
         """
         if not isinstance(entry, dict):
             return
@@ -591,14 +618,52 @@ class Check():
             if spec.get('required') and self.blank(merged, name):
                 self.problem('%s.%s' % (where, name), 'must be set')
         for name, value in entry.items():
-            if name in declared:
-                continue
+            candidates = list((declared or {}).get(name) or ())
             if name in (settings or {}):
-                self.checkValue('%s.%s' % (where, name), value, settings[name])
+                # this entry's own plugin first, and with no types of its
+                # own to install: typesOf has already installed them
+                candidates.insert(0, Declared(settings[name], None, module))
+            if candidates:
+                self.checkDeclared('%s.%s' % (where, name), value, candidates)
             elif not quiet:
                 self.warning('%s.%s' % (where, name),
                              'nothing declares this setting, so it is'
                              ' dropped')
+
+    def checkDeclared(self, where, value, candidates):
+        """one value against every spec that declares its name.
+
+        Usually there is one.  Several is a widget naming two providers
+        that both declare `style:`, or a kind block reaching every plugin
+        wearing the kind - and they rarely agree, since `style:` is a
+        Mapbox style id to one and one of Google's four maptypes to the
+        other.  So a value any of them takes is taken here: the config
+        names which plugin actually reads it, and that one is entitled to
+        its own vocabulary.
+        """
+        if len(candidates) == 1:
+            with self.typesOf({'types': candidates[0].types},
+                              candidates[0].module):
+                self.checkValue(where, value, candidates[0].spec)
+            return
+        blamed = []
+        for candidate in candidates:
+            with self.typesOf({'types': candidate.types}, candidate.module):
+                with self.aside() as found:
+                    self.checkValue(where, value, candidate.spec)
+            if not found:
+                return
+            blamed.append(candidate.module)
+        # one line rather than one per candidate, which is what checking a
+        # value against each of them gives and is several ways of saying
+        # the same thing about the same line.
+        #
+        # A kind-settings: block belongs to no one plugin, so its own spec
+        # has no name to give - and where none of them has, the sentence
+        # ends without a list rather than with an empty one.
+        named = sorted(set(m for m in blamed if m))
+        self.problem(where, '%r suits nothing that declares it%s'
+                     % (value, ': %s' % ', '.join(named) if named else ''))
 
     # ----------------------------------------------------------- walking
 
@@ -631,7 +696,7 @@ class Check():
         page = self.types.get('page') or {}
         for name, entry in mapping(self.config.get('pages')).items():
             if self.checkShape('pages.' + name, entry, self.resolve(page)):
-                self.checkEntry('pages.' + name, entry, page.get('of'), ())
+                self.checkEntry('pages.' + name, entry, page.get('of'), {})
 
         for kind in ('providers', 'widgets'):
             for name, entry in mapping(self.config.get(kind)).items():
@@ -669,7 +734,7 @@ class Check():
                 seen.add(name)
                 part = part[0 if kind == 'layouts' else 1]
                 self.checkEntry('%s.%s' % (kind, name), part,
-                                schema.get('settings') or {}, ())
+                                schema.get('settings') or {}, {})
                 if kind == 'themes':
                     self.checkSettings('%s.%s.' % (kind, name), part)
 
@@ -737,12 +802,22 @@ class Check():
 
         A widget passes its own config down, so naming one of these in a
         settings block is how a radar sets its frame provider's palette.
+        Which provider is not knowable here - a block reaches whatever a
+        widget happens to name - so every one of them is a candidate and
+        the value has only to suit one.
         """
-        passed = set()
+        passed = {}
         for entry in (self.config.get('providers') or {}).values():
-            schema = self.pluginSchema(mapping(entry).get('plugin') or '')
-            passed |= set((schema or {}).get('settings') or {})
+            module = mapping(entry).get('plugin') or ''
+            self.addDeclared(passed, self.pluginSchema(module), module)
         return passed
+
+    @staticmethod
+    def addDeclared(passed, schema, module):
+        """what one schema declares, into a name-to-candidates mapping"""
+        for name, spec in ((schema or {}).get('settings') or {}).items():
+            passed.setdefault(name, []).append(
+                Declared(spec, schema.get('types') or {}, module))
 
     def checkKinds(self):
         """a kind two plugins wear and disagree about.
@@ -875,7 +950,7 @@ class Check():
         # the frame provider's palette: on itself.  A name that resolves to
         # nothing leaves us unable to say what is legal here, so the entry
         # keeps its one real complaint rather than one per setting.
-        passed, unresolved = set(), False
+        passed, unresolved = {}, False
         with self.typesOf(schema, module):
             for name, value in entry.items():
                 spec = self.resolve(settings.get(name) or {})
@@ -887,7 +962,7 @@ class Check():
                 if theirs is None:
                     unresolved = True
                 else:
-                    passed |= set(theirs.get('settings') or {})
+                    self.addDeclared(passed, theirs, named.get('plugin'))
 
             # a plugin's defaults against its own schema, once however
             # many instances there are: the two describe one thing
@@ -903,4 +978,4 @@ class Check():
             merged, _ = self.resolved.pluginConfig(pluginFolder(module),
                                                    entry, isWidget)
             self.checkEntry(where, entry, settings, passed, merged,
-                            quiet=unresolved)
+                            quiet=unresolved, module=module)
