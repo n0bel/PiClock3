@@ -1,0 +1,15 @@
+description: >
+  OpenWeather's free tier - what the sky is doing now, and 120 hours of
+  forecast in three-hour steps.  Needs a key, which the free account gives
+  for an email address and no card.  The days are rolled up here, since
+  the daily grid belongs to the paid One Call plan.
+
+provides: [conditions, hourly, daily]
+
+settings:
+
+  apikey:        {is: apikey, required: true}
+  refresh:       {is: number, unit: minutes}
+  forecast-days: {is: number, range: [1, 6]}
+  # 120 hours reaches six local dates, part days at both ends
+  location:      {is: location}

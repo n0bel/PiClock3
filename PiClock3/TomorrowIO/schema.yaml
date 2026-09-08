@@ -1,0 +1,14 @@
+description: >
+  Tomorrow.io - what the sky is doing now, 120 hours of hourly forecast and
+  six days of daily.  Needs a key; the free plan gives 500 requests a day
+  and 25 an hour, which is what refresh: has to stay inside.
+
+provides: [conditions, hourly, daily]
+
+settings:
+
+  apikey:        {is: apikey, required: true}
+  refresh:       {is: number, unit: minutes}
+  forecast-days: {is: number, range: [1, 6]}
+  # six is what the free plan sends, whatever the plan page says
+  location:      {is: location}

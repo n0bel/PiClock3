@@ -1,0 +1,19 @@
+kind: forecast-source
+apikey: '{apikeys.tmapi}'
+
+# minutes.  The free plan allows 25 requests an hour and 500 a day, and
+# this spends two of them each time round: at 30 minutes one clock uses 96
+# a day, which leaves room for a second clock and the odd restart.  Below
+# about 5 minutes a single clock runs out of hour.
+refresh: 30
+
+# how many days to answer with.  The free plan says five days and sends
+# six - today and five ahead - along with 120 hours of hourly, which is
+# exactly what the forecast widget asks for.  If a plan ever sends fewer
+# the log says so and a cell draws empty.
+forecast-days: 6
+
+# the place the clock is pointed at
+location:
+    latitude: "{location.latitude}"
+    longitude: "{location.longitude}"

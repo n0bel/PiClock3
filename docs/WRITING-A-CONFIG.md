@@ -565,9 +565,10 @@ face, a line travelling past.
 
 | | |
 |---|---|
-| `refresh` | minutes between asks - 10 for `Metar`, whose stations report about hourly, and 30 for `OpenMeteo`, whose free tier is generous rather than unlimited |
+| `refresh` | minutes between asks - 10 for `Metar`, whose stations report about hourly, and 30 for the three forecast sources, whose free plans are generous rather than unlimited.  `TomorrowIO` is the one with a ceiling worth knowing: 25 requests an hour, and it spends two each time round |
 | `METAR` | the airfield `Metar` reads, by ICAO id - `KMSP` unless you say, and the nearest field to you is almost certainly better.  It is also what the reading is credited as, which is why the conditions block ends in a station id rather than a service name |
-| `forecast-days` | how many days `OpenMeteo` is asked for, 9.  It will give up to 16 and the classic layout has room for 9 |
+| `forecast-days` | how many days a forecast source is asked for.  9 for `OpenMeteo`, which will give up to 16, and 6 for the two keyed ones - six being what the forecast widget asks for.  `OpenWeatherMap` reaches it by rolling up 120 hours of three-hour steps, and `TomorrowIO` sends six days outright.  A source that comes up short says so in the log, and the fix is `hourly: 4` with `daily: 5` |
+| `apikey` | the key `OpenWeatherMap` and `TomorrowIO` need, as `{apikeys.owmapi}` and `{apikeys.tmapi}` - the names v1 used, so keys carry across unrenamed |
 
 ## `locale:`
 

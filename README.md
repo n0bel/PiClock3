@@ -264,6 +264,7 @@ widgets and occupies no region of its own.
 |---|---|
 | `Metar` | an observation from an airfield.  No key, no forecast |
 | `OpenMeteo` | conditions and forecast from a model.  No key |
+| `OpenWeatherMap`, `TomorrowIO` | the same three answers, for people who already have one of those keys.  Both free plans |
 | `Mapbox`, `GoogleMaps` | the base map under a radar - each needs a key |
 | `RainViewer`, `LibreWXR` | radar frames.  Neither needs a key |
 
@@ -341,15 +342,6 @@ one to rename what the clock already draws.
 
 [CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository
 rather than building on it.
-
-### Not written yet
-
-* An OpenWeatherMap provider.  The widgets are ready for one - it only has to
-  answer the same three questions `OpenMeteo` does, and say what the sky is
-  doing in the same notation.  See CONTRIBUTING.md.
-* A Tomorrow.io provider.  v1 has one, and it already asks for current,
-  hourly and daily separately - the same three questions a provider answers
-  here - so it maps across without rethinking.  Needs a key.
 
 ### Investigating
 

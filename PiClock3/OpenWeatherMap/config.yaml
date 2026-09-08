@@ -1,0 +1,18 @@
+kind: forecast-source
+apikey: '{apikeys.owmapi}'
+
+# minutes.  The free tier allows 60 calls a minute and a million a month,
+# so this is politeness rather than a limit - the forecast behind it is
+# recomputed hourly and asking oftener re-reads the same numbers.
+refresh: 30
+
+# how many days to answer with.  The free tier sends 40 entries three
+# hours apart - 120 hours from the next boundary - which crosses six local
+# dates at every start time but midnight, the first and last of them being
+# part days.  Six is what the forecast widget asks for.
+forecast-days: 6
+
+# the place the clock is pointed at
+location:
+    latitude: "{location.latitude}"
+    longitude: "{location.longitude}"
