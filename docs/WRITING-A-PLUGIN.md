@@ -161,6 +161,26 @@ locations exist rather than one.  See [CONTRIBUTING.md](../CONTRIBUTING.md).
     README.md           what it does, and any key it needs
     languages/en.yaml   optional, words of its own
     units/*.yaml        optional, quantities of its own
+    layouts/tall.yaml   optional, a layout with a region for what it draws
+    themes/tidal/       optional, a theme
+    examples/tides.yaml optional, run by naming it
+
+A widget that draws something new usually needs somewhere to draw it, and
+no shipped layout declares a region for a thing that did not exist.  So a
+`layouts/` folder in your repository is searched - see
+[WRITING-A-LAYOUT.md](WRITING-A-LAYOUT.md) for where it sits in the order.
+One rule: **a layout you bring can add a name, never replace one.**  Calling
+it `classic` gets you a `--check` warning and the shipped `classic`.
+
+An example is run by naming it, from the clock's own directory:
+
+    python3 PyQtPiClock3.py plugins/tides/examples/tides.yaml
+
+`{this-folder}` is the folder of the file that said it, so art beside the
+example is found wherever the repository was cloned.  `apikeys: !include
+ApiKeys.yaml` is read relative to the directory the clock was **started**
+in, so write the same line the shipped examples write and it finds the
+user's own keys.
 
 A `schema.yaml` is required, and `description:` is the only part of one that
 is - see [WRITING-A-SCHEMA.md](WRITING-A-SCHEMA.md).

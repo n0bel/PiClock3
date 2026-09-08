@@ -34,8 +34,24 @@ of your own named `classic` is used instead of the shipped one without
 touching what ships.  It is in `.gitignore`, so `git pull` never has anything
 of yours to conflict with.
 
-    PiClock3/layouts/       shipped with the project
     layouts/                yours, and searched first
+    PiClock3/layouts/       shipped with the project
+    plugins/*/layouts/      what a plugin brought with it
+    themes/*/layouts/       what a theme brought with it
+    layouts/*/layouts/      what a layout brought with it
+
+**A layout somebody bundled can add a name, never replace one.**  The three
+bottom rows are searched last, so a plugin that carries a layout called
+`classic` does not change which `classic` your pages get.  Where two
+folders hold the same name, `--check` says which one wins:
+
+    warning  layouts.tall: 2 folders hold a layout called 'tall'.
+             plugins/tides/layouts/tall.yaml is used;
+             themes/frost/layouts/tall.yaml is not
+
+The `plugins/*/layouts/` row is how a widget that needs a region no shipped
+layout declares can ship the layout that declares it.  A theme may carry
+the layout it was drawn against, too.
 
 Somebody else's is a git repository, cloned straight in, and named in a page:
 
@@ -68,6 +84,21 @@ is a real constraint.
 So name the themes you drew it against in the `description`, and if you
 publish it, in the README.  It saves the next person discovering the pairing
 by looking at something that overlaps.
+
+**Or carry one.**  A `themes/` folder inside your repository is searched, so
+a layout may bring the theme it was drawn against and a theme may bring the
+layout:
+
+    piclock3-layout-tall/       cloned into layouts/tall/
+      layout.yaml
+      themes/tall-dark/         one that suits it
+        theme.yaml
+      examples/tall.yaml
+      README.md
+
+Carrying one is not the same as needing one: a page still names its layout
+and its theme separately, and any theme still works with any layout.  What
+it saves is the second hunt.
 
 ## Say which screen it was designed for
 

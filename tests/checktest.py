@@ -696,6 +696,30 @@ CASES = [
     dict(name='a misspelling is still nobody\'s setting',
          config=config(a=put('widgets', 'radar1', 'stlye', 'terrain')),
          wants=['nothing declares'], forbids=[]),
+    # --------------------------- what a repository brought with it
+    dict(name='a layout a plugin brought along',
+         needs='BundledLayout',
+         config=config(a=put('pages', 'clock-page', 'layout', 'tall'),
+                       b=put('widgets', 'clock', 'region', 'clock'),
+                       c=drop('widgets', 'radar1'),
+                       d=drop('widgets', 'current-conditions')),
+         wants=[], forbids=['no layout', 'folders hold']),
+    dict(name='two of them holding the same name',
+         needs=('BundledLayout', 'RivalLayout'),
+         config=config(a=put('pages', 'clock-page', 'layout', 'tall'),
+                       b=put('widgets', 'clock', 'region', 'clock'),
+                       c=drop('widgets', 'radar1'),
+                       d=drop('widgets', 'current-conditions')),
+         wants=['layouts.tall', '2 folders hold a layout',
+                'plugins/_selftest/layouts/tall.yaml is used'],
+         forbids=['no layout'], once='folders hold a layout'),
+    # the rule the whole ordering exists for
+    dict(name='a brought layout cannot take a shipped name',
+         needs='ShadowingLayout',
+         config=config(),
+         wants=['layouts.classic', 'PiClock3/layouts/classic.yaml is used'],
+         forbids=['no layout']),
+
     dict(name='a widget naming a provider that does not resolve',
          config=config(a=put('providers', 'ghost',
                              {'plugin': 'PiClock3.NoSuch'}),
@@ -704,6 +728,11 @@ CASES = [
          wants=['no plugin'], forbids=['nothing declares']),
 ]
 
+
+# a layout is geometry and nothing else, so one is short enough to carry
+# here whole
+LAYOUT = ('name: %s\ndescription: brought along by something else\n'
+          'regions:\n  clock: {left: 0, top: 0, width: 1, height: 1}\n')
 
 # a case needing a plugin the repo does not ship gets one made under
 # plugins/, which is git-ignored, and taken away again afterwards
@@ -740,6 +769,20 @@ FIXTURES = {
                                  '    one-of: [matte, gloss]\n\n'
                                  'settings:\n'
                                  '  style: {is: finish}\n'},
+    # a repository that brought a layout along with it, and two more that
+    # brought one of the same name - which is what makes the collision
+    # warning worth having
+    'BundledLayout': {os.path.join('layouts', 'tall.yaml'): LAYOUT % 'Tall',
+                      'config.yaml': 'kind: basemap\nstyle: a\n',
+                      'schema.yaml': 'description: >\n  Brought a layout.\n\n'
+                                     'provides: [map]\n\nsettings:\n'
+                                     '  style: {is: string}\n'},
+    'RivalLayout': {os.path.join('layouts', 'tall.yaml'): LAYOUT % 'Also Tall',
+                    'theme.yaml': 'name: Selftest\ndescription: a theme\n'},
+    # and one calling its layout by a name the project already ships
+    'ShadowingLayout': {os.path.join('layouts', 'classic.yaml'):
+                        LAYOUT % 'Not The Real Classic',
+                        'layout.yaml': LAYOUT % 'Selftest'},
     # and one inventing a name core already uses
     'TwinCore': {'config.yaml': 'kind: basemap\nstyle: streets\n',
                  'schema.yaml': 'description: >\n  Redefines a core'
@@ -754,39 +797,47 @@ FIXTURES = {
 # underscore is the whole safety of it: these folders are deleted after a
 # run, and one named Twin could be somebody's own installed plugin.
 TWIN = os.path.join('plugins', '_selftest')
-WHERE = {'Nested': os.path.join('plugins', '_selftest_vendor', 'Thing')}
+WHERE = {'Nested': os.path.join('plugins', '_selftest_vendor', 'Thing'),
+         'BundledLayout': os.path.join('plugins', '_selftest'),
+         'RivalLayout': os.path.join('themes', '_selftest'),
+         'ShadowingLayout': os.path.join('layouts', '_selftest')}
 
 
 class fixture():
-    """a plugin the repo does not ship, made under plugins/ and taken away
-    again.  Written to _selftest unless WHERE says otherwise, so a case can
-    pick a variant without the config having to know which."""
+    """what the repo does not ship, made on disk and taken away again.
 
-    def __init__(self, name):
-        self.name = name
-        self.folder = WHERE.get(name, TWIN) if name else None
+    Written to _selftest under plugins/ unless WHERE says otherwise, so a
+    case can pick a variant without the config having to know which.  A
+    case wanting two at once - which is what a name in two folders needs -
+    names them both.
+    """
+
+    def __init__(self, names):
+        if isinstance(names, str):
+            names = (names,)
+        self.names = tuple(names or ())
+        self.folders = [WHERE.get(n, TWIN) for n in self.names]
 
     def __enter__(self):
-        if not self.folder:
-            return
-        if os.path.exists(self.folder):
-            # never delete what this did not make
-            raise SystemExit('%s is in the way - remove it and run again'
-                             % self.folder)
-        os.makedirs(self.folder)
-        for leaf, text in FIXTURES[self.name].items():
-            with open(os.path.join(self.folder, leaf), 'w',
-                      encoding='utf-8') as fh:
-                fh.write(text)
+        for name, folder in zip(self.names, self.folders):
+            if os.path.exists(folder):
+                # never delete what this did not make
+                raise SystemExit('%s is in the way - remove it and run again'
+                                 % folder)
+            for leaf, text in FIXTURES[name].items():
+                path = os.path.join(folder, leaf)
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, 'w', encoding='utf-8') as fh:
+                    fh.write(text)
 
     def __exit__(self, *exc):
-        if not self.folder:
-            return
-        shutil.rmtree(self.folder, ignore_errors=True)
-        # a fixture a level down leaves the folder it sat in behind
-        parent = os.path.dirname(self.folder)
-        if parent != 'plugins' and not os.listdir(parent):
-            os.rmdir(parent)
+        for folder in self.folders:
+            shutil.rmtree(folder, ignore_errors=True)
+            # a fixture a level down leaves the folder it sat in behind
+            parent = os.path.dirname(folder)
+            if parent not in ('plugins', 'themes', 'layouts', '') \
+                    and os.path.isdir(parent) and not os.listdir(parent):
+                os.rmdir(parent)
 
 
 def findings(cfg):

@@ -19,8 +19,20 @@ of your own named `circuit` is used instead of the shipped one without
 touching what ships - and `git pull` never has anything of yours to conflict
 with.  It is in `.gitignore` for the same reason.
 
-    PiClock3/themes/        shipped with the project
     themes/                 yours, and searched first
+    PiClock3/themes/        shipped with the project
+    plugins/*/themes/       what a plugin brought with it
+    themes/*/themes/        what a theme brought with it
+    layouts/*/themes/       what a layout brought with it
+
+**A theme somebody bundled can add a name, never replace one.**  The three
+bottom rows are searched last, so cloning a plugin that carries a theme
+called `circuit` does not change which `circuit` your pages get - and
+`--check` says so rather than leaving you to notice:
+
+    warning  themes.circuit: 2 folders hold a theme called 'circuit'.
+             PiClock3/themes/circuit/theme.yaml is used;
+             plugins/tides/themes/circuit/theme.yaml is not
 
 Somebody else's theme is a git repository, cloned straight in:
 
@@ -78,11 +90,32 @@ write in a file that might be `!include`d from somewhere else.
 
 ### Publishing one
 
-A theme repository needs nothing but the yaml and the art.  Worth adding: a
-README with a screenshot, a line saying which layouts it was drawn against
-(see [WRITING-A-LAYOUT.md](WRITING-A-LAYOUT.md)), and a license for the
-images - a theme is mostly pictures, and the license on those is the part
-somebody actually has to check.
+A theme repository needs nothing but the yaml and the art.  It may hold
+more:
+
+    piclock3-theme-frost/       cloned into themes/frost/
+      theme.yaml
+      background.png  frame.png
+      markers/  hands/  icons-frost/     art the widgets use
+      layouts/tall.yaml                  the layout it was drawn against
+      examples/frost.yaml                run by path
+      README.md
+
+Worth adding: a README with a screenshot, a line saying which layouts it was
+drawn against (see [WRITING-A-LAYOUT.md](WRITING-A-LAYOUT.md)), and a
+license for the images - a theme is mostly pictures, and the license on
+those is the part somebody actually has to check.
+
+An example is run by naming it, from the clock's own directory:
+
+    python3 PyQtPiClock3.py themes/frost/examples/frost.yaml
+
+Two things make that work wherever the repository was cloned.
+`{this-folder}` is the folder of the file that said it, so art beside the
+example is found; and `apikeys: !include ApiKeys.yaml` is read relative to
+the directory the clock was **started** in rather than the one that said it,
+so a bundled example writes the same line every shipped example writes and
+finds the user's own keys.
 
 ## The file
 

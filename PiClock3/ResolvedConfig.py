@@ -13,6 +13,7 @@ Finding a plugin is the one thing this leaves to its caller: the clock has
 the imported module and takes the folder from that, Check finds one on
 disk.  So the folder arrives as an argument.
 """
+import glob
 import logging
 import os
 
@@ -79,6 +80,12 @@ def pluginFolder(module):
     return None
 
 
+# what may carry a layout or a theme along with it.  Not plugins: `plugin:`
+# names a module path, so one inside a theme would have to be called
+# themes.frost.plugins.tides.
+HOLDERS = ('plugins', 'themes', 'layouts')
+
+
 def partRoots(kind):
     """the folders a layout or a theme may sit in, most specific first.
 
@@ -86,13 +93,22 @@ def partRoots(kind):
     spelling a name against what exists, and the sentence about a name
     that is nowhere.  Three copies of it drift into a layout the clock
     loads and --check calls a mistake.
+
+    Yours, then the shipped one, then whatever a cloned repository brought
+    with it.  Bundles come last on purpose: a bundled part can add a name
+    and never replace one, so somebody's theme may bring the layout it was
+    drawn against and may not quietly become the `classic` a config
+    already names.
     """
     yield kind
     yield os.path.join('PiClock3', kind)
+    for holder in HOLDERS:
+        for found in sorted(glob.glob(os.path.join(holder, '*', kind))):
+            yield found
 
 
-def partPaths(kind, name):
-    """where a layout or a theme of this name could be, in the order tried.
+def partPathsIn(root, kind, name):
+    """the three shapes a part may take inside one folder.
 
     Either a file or a folder will do.  A folder is what a git checkout of
     somebody else's theme looks like, so themes/mine.yaml and
@@ -100,11 +116,33 @@ def partPaths(kind, name):
     file after itself.
     """
     stem = 'theme' if kind == 'themes' else 'layout'
-    for base in partRoots(kind):
-        folder = os.path.join(base, name)
-        yield os.path.join(base, name + '.yaml'), None
-        yield os.path.join(folder, stem + '.yaml'), folder
-        yield os.path.join(folder, name + '.yaml'), folder
+    folder = os.path.join(root, name)
+    yield os.path.join(root, name + '.yaml'), None
+    yield os.path.join(folder, stem + '.yaml'), folder
+    yield os.path.join(folder, name + '.yaml'), folder
+
+
+def partPaths(kind, name):
+    """where a layout or a theme of this name could be, in the order tried"""
+    for root in partRoots(kind):
+        for path, home in partPathsIn(root, kind, name):
+            yield path, home
+
+
+def partHolders(kind, name):
+    """every folder that answers to this name, in the order tried.
+
+    One path per folder rather than one per shape: two shapes of a name in
+    a single folder is that folder's own business, and two folders holding
+    the name is the thing worth reporting.
+    """
+    found = []
+    for root in partRoots(kind):
+        for path, _ in partPathsIn(root, kind, name):
+            if os.path.isfile(path):
+                found.append(path)
+                break
+    return found
 
 
 def loadPart(kind, name):
@@ -129,15 +167,16 @@ def loadPart(kind, name):
 def noSuchPart(kind, name):
     """what to say about a layout or theme that is not there.
 
-    The folders come from partRoots rather than from this sentence, so a
-    place that is searched and not named here cannot happen.
+    The two fixed folders by name and the rest as the rule that made them,
+    because a clock with twenty plugins installed has twenty bundle
+    folders and listing them all says less than saying what they are.
     """
     stem = 'theme' if kind == 'themes' else 'layout'
-    where = ' and in '.join('%s/' % root.replace(os.sep, '/')
-                            for root in partRoots(kind))
     return ("no %s named '%s'.  looked for %s.yaml, %s/%s.yaml and "
-            "%s/%s.yaml, in %s\n"
-            % (stem, name, name, name, stem, name, name, where))
+            "%s/%s.yaml, in %s/, in PiClock3/%s/, and in any %s/ that a %s "
+            "brought with it\n"
+            % (stem, name, name, name, stem, name, name, kind, kind, kind,
+               ' or '.join(h.rstrip('s') for h in HOLDERS)))
 
 
 def cellNames(name, spec):

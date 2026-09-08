@@ -317,6 +317,26 @@ Ten guides, each answering one question:
 
 A theme, a layout and a plugin are separate on purpose: any theme works with
 any layout, and neither knows what the other is called.
+
+Each is a git repository cloned into its own folder, and each may carry some
+of the others along with it:
+
+| a published ... | may also hold |
+|---|---|
+| plugin, in `plugins/` | a layout, a theme, its own words and units, its art, examples |
+| theme, in `themes/` | a layout, another theme, its art, examples |
+| layout, in `layouts/` | a theme, another layout, examples |
+
+Carrying is not depending: a page still names its layout and its theme
+separately.  And **a bundled part can add a name, never replace one** - a
+cloned repository cannot quietly become the `classic` your config already
+names, and `--check` says so when two folders hold one name.
+
+Two things stay where they are.  Nothing carries a plugin but a plugin,
+since `plugin:` names a module path.  And only a plugin carries words and
+units, because those are looked for under `plugins/` and not under
+`themes/`.
+
 [CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository
 rather than building on it.
 

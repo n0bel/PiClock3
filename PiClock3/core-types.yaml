@@ -33,8 +33,8 @@
 #
 #         providers   an entry of the config's own providers:
 #         regions     one a page's layout declares, cells included
-#         layouts     a file in layouts/
-#         themes      a folder in themes/
+#         layouts     one of the folders a layout is looked for in
+#         themes      the same, for a theme
 #         unit-sets   a set in units/sets.yaml, or one added to it
 #         languages   a file in languages/
 #         timezones   a zone this machine has, blank being its own

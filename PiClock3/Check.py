@@ -33,8 +33,8 @@ import re
 import zoneinfo
 
 from .Config import ConfigError, GEOMETRY, Lines, readYaml as read
-from .ResolvedConfig import (partPaths, partRoots, pluginFolder,
-                             ResolvedConfig)
+from .ResolvedConfig import (partHolders, partPaths, partRoots,
+                             pluginFolder, ResolvedConfig)
 from .Units import MEASURE, Units
 
 logger = logging.getLogger(__name__)
@@ -714,6 +714,7 @@ class Check():
                          ' default' % (key, name))
 
         self.checkParts()
+        self.checkClashes()
         self.checkKinds()
         self.checkSettings('', self.config)
         # last, because it only asks about providers a widget named, and
@@ -742,6 +743,32 @@ class Check():
                                 schema.get('settings') or {}, {})
                 if kind == 'themes':
                     self.checkSettings('%s.%s.' % (kind, name), part)
+
+    def checkClashes(self):
+        """a layout or theme name that more than one folder answers to.
+
+        loadPart takes the first that exists and says nothing, which was
+        fine while there were two folders and one of them was yours.  A
+        repository may now bring a part along with it, so two installed
+        themes can each carry a layout called `tall` and the one that wins
+        is whichever sorted first.
+
+        Every name, not only the ones a page uses: somebody who installs
+        two themes should hear about it before they switch pages and
+        wonder.
+        """
+        for kind in ('layouts', 'themes'):
+            for name in sorted(self.named(kind) or ()):
+                paths = [p.replace(os.sep, '/')
+                         for p in partHolders(kind, name)]
+                if len(paths) < 2:
+                    continue
+                self.warning(
+                    '%s.%s' % (kind, name),
+                    '%d folders hold a %s called %r.  %s is used; %s %s not'
+                    % (len(paths), kind[:-1], name, paths[0],
+                       ' and '.join(paths[1:]),
+                       'is' if len(paths) == 2 else 'are'))
 
     def installed(self):
         """every plugin folder on this machine, whether a config uses it.
