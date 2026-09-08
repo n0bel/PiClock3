@@ -39,6 +39,7 @@ defaults, or do nothing until you want them.
 | `kind-settings:` / `plugin-settings:` | settings for every widget of a kind, or of a plugin |
 | `folders:` | named paths a setting can expand |
 | `logging-level:` | `debug`, `info`, `warning` |
+| `logging-rotate:` / `logging-max-size:` / `logging-keep:` | when the log is rolled, and how many are kept |
 | `geometry:` | run in a window of a given size rather than filling the screen |
 | `apikeys:` | pulled in from `ApiKeys.yaml` with `!include` |
 | `locale:` | overrides the locale the language file asks for |
@@ -683,12 +684,33 @@ This is not the same as the search path that finds layouts, themes, units and
 languages - those are found by looking in your folder before the shipped one,
 and need no entry here.
 
-## `logging-level:`
+## `logging-level:` and the log file
 
 `debug`, `info` or `warning`.  Output goes to `PyQtPiClock3.log` beside the
 program and to stderr.  `debug` is what the examples ship with; it logs every
 region's geometry, every web request with its timing, and what each layout
 and theme resolved to.
+
+```yaml
+logging-level: info
+logging-rotate: per-run   # per-run or daily
+logging-max-size: 10      # MB; 0 for no limit
+logging-keep: 7
+```
+
+`per-run` rolls the log at every start, so `PyQtPiClock3.log.1` is the run
+before this one - which is what makes trying a config four times leave four
+logs to compare.  It rolls again at `logging-max-size`, so a clock left up
+for months cannot fill the card.
+
+`daily` rolls at midnight instead and **not** on a restart, so several runs
+of one day share a file, named `PyQtPiClock3.log.2026-09-07`.  Choose it to
+compare one day with another rather than one run with the run before.
+`logging-max-size` means nothing under it.
+
+`logging-keep` is how many older logs to hold - runs under `per-run`, days
+under `daily`.  All three are read before the log is opened, so a change
+takes effect on the run that asks for it rather than the next one.
 
 ## `apikeys:`
 

@@ -363,8 +363,15 @@ built with - which is how to find out where a color actually came from,
 rather than reasoning about which tier should have won.
 
 Output goes to `PyQtPiClock3.log` beside the program, and to stderr.  The
-log is rolled at every start and seven are kept, so the run before last is
-still there when you realize you needed it.
+log is rolled at every start and again at 10 MB, and seven are kept - so
+the run before last is still there when you realize you needed it, and one
+long run cannot fill a card.  `logging-rotate:`, `logging-max-size:` and
+`logging-keep:` change that, in
+[WRITING-A-CONFIG.md](WRITING-A-CONFIG.md).
+
+`--check` writes to stderr and never opens the log file, so running it in
+a loop while fixing a config does not push the last real run out of the
+backups.
 
 ## While it is running
 

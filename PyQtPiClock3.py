@@ -1,4 +1,5 @@
 import logging.handlers
+import re
 import traceback
 import os
 import sys
@@ -102,10 +103,8 @@ def loadConfig(configName, settings):
     overridden = []
 
     def setLevel():
-        levels = {'debug': logging.DEBUG, 'info': logging.INFO,
-                  'warning': logging.WARNING}
-        if config.get('logging-level') in levels:
-            logging.getLogger().setLevel(levels[config['logging-level']])
+        if config.get('logging-level') in LEVELS:
+            logging.getLogger().setLevel(LEVELS[config['logging-level']])
 
     # the file's level first, so that each --set can say what it did as it
     # does it - which is the only way to catch a mistyped path, since one
@@ -217,6 +216,73 @@ class LogHandler(logging.handlers.RotatingFileHandler):
         self.doRollover()
 
 
+LOGFILE = 'PyQtPiClock3.log'
+
+LEVELS = {'debug': logging.DEBUG, 'info': logging.INFO,
+          'warning': logging.WARNING}
+
+
+def early(configName, settings, key):
+    """one top-level setting, read from the text before the config is.
+
+    The log is opened first, so the settings about the log have to come
+    from somewhere earlier.  --set wins, then a key at column 0.  Only
+    the handler leans on this; the loaded config is what everything else
+    reads, and it has the last word.
+
+    Quotes come off, because this reads text where yaml would have read a
+    value - and 'daily' with its quotes still on matches nothing.
+    """
+    for one in reversed(settings):
+        name, _, value = one.partition('=')
+        if name.strip() == key:
+            return unquoted(value)
+    try:
+        with open(configName, encoding='utf-8') as fh:
+            found = re.search(
+                r'(?m)^%s:[ \t]*(.*?)[ \t]*(?:#.*)?$' % re.escape(key),
+                fh.read())
+    except OSError:
+        return None
+    return unquoted(found.group(1)) if found else None
+
+
+def unquoted(value):
+    value = value.strip()
+    if len(value) > 1 and value[0] == value[-1] and value[0] in '\'"':
+        value = value[1:-1].strip()
+    return value or None
+
+
+def number(value, default):
+    """a number out of the config text, or the default.
+
+    Never raises: this runs before there is a log to complain into, and
+    --check is where a value out of range gets named.
+    """
+    try:
+        found = type(default)(float(value))
+    except (TypeError, ValueError):
+        return default
+    return found if found >= 0 else default
+
+
+def logHandler(configName, settings):
+    """the log, rolled the way the config asks.
+
+    per-run at every start and again at logging-max-size, so the run
+    before this one is still there and no one run fills a card.  daily
+    at midnight instead, and not on a restart.
+    """
+    keep = number(early(configName, settings, 'logging-keep'), 7)
+    if early(configName, settings, 'logging-rotate') == 'daily':
+        return logging.handlers.TimedRotatingFileHandler(
+            LOGFILE, when='midnight', backupCount=keep)
+    mb = number(early(configName, settings, 'logging-max-size'), 10.0)
+    return LogHandler(LOGFILE, maxBytes=int(mb * 1024 * 1024),
+                      backupCount=keep)
+
+
 if __name__ == '__main__':
 
     # padded, so the messages still line up under each other - the level
@@ -226,13 +292,15 @@ if __name__ == '__main__':
     # everywhere else in this project and the only one RFC 3339 allows
     fmt.default_msec_format = '%s.%03d'
     logger = logging.getLogger()
-    fileh = LogHandler(filename='PyQtPiClock3.log', backupCount=7)
-    fileh.setFormatter(fmt)
-    logger.addHandler(fileh)
+    # the arguments first: they need no log, and the log is built from them
+    configName, settings, checking = readArgs(sys.argv[1:])
     errh = logging.StreamHandler(sys.stderr)
     errh.setFormatter(fmt)
     logger.addHandler(errh)
-    logger.setLevel(logging.WARNING)
+    # from the text, since the config is not read yet.  setLevel() sets it
+    # again from the loaded config, which is the one that counts
+    logger.setLevel(LEVELS.get(early(configName, settings, 'logging-level'),
+                               logging.WARNING))
 
     def excepthook(etype, value, tb):
         logging.error("unhandled exception:\n%s",
@@ -241,10 +309,14 @@ if __name__ == '__main__':
     sys.excepthook = excepthook
 
     # before any of Qt, so --check runs where there is no screen to open a
-    # window on
-    configName, settings, checking = readArgs(sys.argv[1:])
+    # window on, and before the log file, because opening it rolls it -
+    # checking a config in a loop should not push the last real run out
     if checking:
         sys.exit(runCheck(configName, settings))
+
+    fileh = logHandler(configName, settings)
+    fileh.setFormatter(fmt)
+    logger.addHandler(fileh)
 
     try:
         app = QApplication(sys.argv)

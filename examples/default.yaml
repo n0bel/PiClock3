@@ -129,4 +129,18 @@ widgets:
 
 logging-level: debug
 
+# These three are the defaults, written out so they are easy to find.
+#
+# When PyQtPiClock3.log is rolled, and how many older ones are kept.
+#
+#   'per-run'  rolled at every start, so PyQtPiClock3.log.1 is the run
+#              before this one and .2 the one before that - and rolled
+#              again whenever it reaches logging-max-size
+#   'daily'    rolled at midnight and not on a restart, so every run of
+#              one day shares a file, named PyQtPiClock3.log.2026-09-07
+#
+logging-rotate: per-run
+logging-max-size: 10      # MB before it rolls; 0 for no limit
+logging-keep: 7           # how many older logs to keep
+
 apikeys: !include ApiKeys.yaml

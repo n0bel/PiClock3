@@ -66,6 +66,13 @@ settings:
   # a set in units/sets.yaml, or one a plugin or you added
 
   logging-level: {is: levels}
+
+  logging-rotate:   {is: scalar, one-of: [per-run, daily]}
+  logging-max-size: {is: number, unit: megabytes, range: [0, 1000]}
+  logging-keep:     {is: number, range: [0, 100]}
+  # per-run rolls at every start and at logging-max-size; daily rolls at
+  # midnight and not on a restart, so a day's runs share a file.  0 is no
+  # size limit, and max-size means nothing under daily.
   geometry:      {is: string, pattern: geometry}
   # WIDTHxHEIGHT, or WIDTHxHEIGHT+X+Y: a window rather than full screen,
   # for looking at a clock built for a screen you do not have here
