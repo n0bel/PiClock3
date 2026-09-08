@@ -8,6 +8,8 @@ the shipped table and you can change a word without editing a plugin.
     PiClock3/languages/     shipped
     PiClock3/*/languages/   a core plugin's own words
     plugins/*/languages/    a third-party plugin's
+    themes/*/languages/     what a theme brought with it
+    layouts/*/languages/    what a layout brought with it
     languages/              yours
 
 A file lists the codes it answers to, the everyday one first:
@@ -25,6 +27,7 @@ import logging
 import os
 
 from .Config import readYaml
+from .ResolvedConfig import HOLDERS
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +54,17 @@ class Languages():
         return destination
 
     def folders(self):
+        """every place a language file can be, least specific first.
+
+        A cloned repository may bring words of its own whatever it was
+        cloned for: a plugin naming what it draws, a theme renaming what
+        the clock calls things.  So every folder one is cloned into is
+        looked in, not only plugins/.
+        """
         found = [os.path.join('PiClock3', 'languages')]
-        for base in (os.path.join('PiClock3', '*'),
-                     os.path.join('plugins', '*')):
-            found += sorted(glob.glob(os.path.join(base, 'languages')))
+        for holder in ('PiClock3',) + HOLDERS:
+            found += sorted(glob.glob(
+                os.path.join(holder, '*', 'languages')))
         found.append('languages')
         return [f for i, f in enumerate(found) if f not in found[:i]]
 

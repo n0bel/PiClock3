@@ -20,6 +20,8 @@ checkout, and that one is yours.  Create it - unlike `themes/` and
     PiClock3/languages/     shipped with the project
     PiClock3/*/languages/   a core plugin's own words
     plugins/*/languages/    a third-party plugin's
+    themes/*/languages/     what a theme brought with it
+    layouts/*/languages/    what a layout brought with it
     languages/              yours, and read last
 
 Every file claiming the same language is **merged**, later winning, rather

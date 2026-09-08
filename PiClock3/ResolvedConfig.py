@@ -80,9 +80,10 @@ def pluginFolder(module):
     return None
 
 
-# what may carry a layout or a theme along with it.  Not plugins: `plugin:`
-# names a module path, so one inside a theme would have to be called
-# themes.frost.plugins.tides.
+# the three folders a published repository is cloned into, and so the three
+# that may carry something else along with them - a layout, a theme, words,
+# units.  Not a plugin: `plugin:` names a module path, so one inside a theme
+# would have to be called themes.frost.plugins.tides.
 HOLDERS = ('plugins', 'themes', 'layouts')
 
 

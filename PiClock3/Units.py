@@ -9,10 +9,13 @@ The table is data - see PiClock3/units/quantities.yaml.  Files are found the
 way themes and layouts are found, and merged rather than first-wins, so a
 plugin can add a quantity and you can override any of it:
 
-    PiClock3/units/     shipped
-    plugins/*/units/    what a plugin brought with it
-    units/             yours
-    Config.yaml        units: names the set, unit-sets: may define one
+    PiClock3/units/      shipped
+    PiClock3/*/units/    a core plugin's own
+    plugins/*/units/     what a plugin brought with it
+    themes/*/units/      what a theme brought with it
+    layouts/*/units/     what a layout brought with it
+    units/               yours
+    Config.yaml          units: names the set, unit-sets: may define one
 
 Merged at load time, so a malformed file is a readable startup message
 rather than a KeyError inside a Qt callback with nothing in the log.
@@ -23,6 +26,7 @@ import os
 import re
 
 from .Config import readYaml
+from .ResolvedConfig import HOLDERS
 from compassheadinglib import Compass
 
 logger = logging.getLogger(__name__)
@@ -65,12 +69,13 @@ class Units():
 
         Plugins are found on disk rather than from imported modules,
         because the table has to exist before the first widget draws and
-        modules are not imported until then.
+        modules are not imported until then.  A theme or a layout may
+        bring a units file too: every folder a repository is cloned into
+        is looked in, not only plugins/.
         """
         found = [os.path.join('PiClock3', 'units')]
-        for base in (os.path.join('PiClock3', '*'),
-                     os.path.join('plugins', '*')):
-            found += sorted(glob.glob(os.path.join(base, 'units')))
+        for holder in ('PiClock3',) + HOLDERS:
+            found += sorted(glob.glob(os.path.join(holder, '*', 'units')))
         found.append('units')
         # PiClock3/units also matches the PiClock3/* glob
         return [f for i, f in enumerate(found) if f not in found[:i]]

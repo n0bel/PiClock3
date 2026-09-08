@@ -174,6 +174,8 @@ path, merged, least specific first:
     PiClock3/units/           what ships
     PiClock3/*/units/         a bundled plugin's
     plugins/*/units/          an installed plugin's
+    themes/*/units/           what a theme brought with it
+    layouts/*/units/          what a layout brought with it
     units/                    yours, beside Config.yaml
 
 The last one is not there until you make it, and is in `.gitignore` once
