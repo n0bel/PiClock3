@@ -176,6 +176,9 @@ path, merged, least specific first:
     plugins/*/units/          an installed plugin's
     units/                    yours, beside Config.yaml
 
+The last one is not there until you make it, and is in `.gitignore` once
+you do.
+
 So a `units/quantities.yaml` of your own holding just
 
 ```yaml

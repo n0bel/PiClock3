@@ -156,4 +156,11 @@ env*.bat
 !/layouts/.gitkeep
 /themes/*
 !/themes/.gitkeep
+
+# the other three the clock looks in at the top of the checkout.  No
+# .gitkeep: these are not made for you, so a checkout that has one has one
+# because somebody put something in it.
+/icons/
+/languages/
+/units/
 Thumbs.db

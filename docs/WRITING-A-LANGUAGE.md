@@ -14,7 +14,8 @@ shape of a date, the everyday words, and a table of weather conditions.
 
 There is a `languages` folder beside `Config.yaml`, at the top of the
 checkout, and that one is yours.  Create it - unlike `themes/` and
-`layouts/` it is not there already.
+`layouts/` it is not there already.  It is in `.gitignore` once you do, so
+`git pull` never has anything of yours to conflict with.
 
     PiClock3/languages/     shipped with the project
     PiClock3/*/languages/   a core plugin's own words

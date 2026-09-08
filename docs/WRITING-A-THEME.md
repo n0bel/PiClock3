@@ -158,6 +158,14 @@ supplies its own by shipping a folder of the same names and saying where it
 is.  `{this-folder}` is the theme's own directory, so `marker-images-folder:
 markers` above means `themes/mine/markers/`.
 
+Weather icons are the one set found by name rather than by path.  A bare
+name is looked for in `icons/` at the top of the checkout and then in
+`PiClock3/icons/`, so a set installed as `icons/frost/` is named
+`icons-folder: frost` from anywhere.  Like `themes/` and `layouts/` that
+folder is yours and is in `.gitignore`; unlike them it is not there until
+you make it.  A name with a `/` in it is a path instead, which is how a
+theme reaches a set it ships: `icons-folder: '{this-folder}/icons-frost'`.
+
 Markers are the one worth a note.  Which pins a radar draws, and where they
 go, are the config's - a theme that named the list would be dictating where
 somebody lives.  Naming the *set* restyles all of them and touches nobody's
