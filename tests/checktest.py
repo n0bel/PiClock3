@@ -100,7 +100,11 @@ CASES = [
     dict(name='the base config itself',
          config=config(),
          wants=[], forbids=['must be set', 'nothing declares', 'no region',
-                            'apikeys']),
+                            'apikeys',
+                            # it names a shipped layout and a shipped theme,
+                            # so a checker that cannot find those is broken
+                            # in a way every other case would sail past
+                            'no layout', 'no theme']),
 
     # ------------------------------------------------ names
     dict(name='a widget naming a provider that is not there',
@@ -850,8 +854,56 @@ def reads():
     return out
 
 
+def agreements():
+    """the three things that walk a part's folders, against each other.
+
+    A layout the clock loads and --check has never heard of is the worst
+    thing either of them can say, and it is what three copies of the same
+    folder list would eventually produce.  So the copies were made one -
+    and this is what says they stayed one.
+    """
+    import glob
+    from PiClock3.ResolvedConfig import (loadPart, noSuchPart, partPaths,
+                                         partRoots)
+    out = []
+    for kind in ('layouts', 'themes'):
+        known = Check({}).named(kind)
+
+        missed = sorted(n for n in known if loadPart(kind, n)[0] is None)
+        out.append(('every %s --check knows of, the clock loads' % kind[:-1],
+                    missed, 'these are named and do not load: %s' % missed))
+
+        # and the other way, which is the one that bites: a name --check
+        # has never heard of is a config it calls wrong and the clock runs
+        walked = set()
+        for root in partRoots(kind):
+            for entry in glob.glob(os.path.join(root, '*')):
+                walked.add(os.path.splitext(os.path.basename(entry))[0])
+        real = {n for n in walked
+                if any(os.path.isfile(p) for p, _ in partPaths(kind, n))}
+        unknown = sorted(real - known)
+        out.append(('every %s under a searched folder, --check knows of'
+                    % kind[:-1], unknown,
+                    'these load and are not named: %s' % unknown))
+
+        sentence = noSuchPart(kind, 'nosuch')
+        absent = [r.replace(os.sep, '/') for r in partRoots(kind)
+                  if r.replace(os.sep, '/') + '/' not in sentence]
+        out.append(('the "no %s named" sentence names every folder searched'
+                    % kind[:-1], absent,
+                    'searched and not named: %s' % absent))
+    return out
+
+
 def main():
     failed = fixed = 0
+    for name, bad, complaint in agreements():
+        if bad:
+            failed += 1
+            print('  FAIL  %s\n          %s' % (name, complaint))
+        else:
+            print('  ok    %s' % name)
+
     for name, wants, said in reads():
         bad = [w for w in wants if w not in said]
         if not wants and said:
@@ -897,7 +949,7 @@ def main():
             print('  ok    %s' % case['name'])
 
     print('\n  %d cases, %d failed, %d expected failures now fixed'
-          % (len(CASES) + len(READING), failed, fixed))
+          % (len(CASES) + len(READING) + len(agreements()), failed, fixed))
     return 1 if failed else 0
 
 

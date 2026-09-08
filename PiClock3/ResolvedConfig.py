@@ -79,6 +79,18 @@ def pluginFolder(module):
     return None
 
 
+def partRoots(kind):
+    """the folders a layout or a theme may sit in, most specific first.
+
+    One list, because three things walk it: the loader, the checker
+    spelling a name against what exists, and the sentence about a name
+    that is nowhere.  Three copies of it drift into a layout the clock
+    loads and --check calls a mistake.
+    """
+    yield kind
+    yield os.path.join('PiClock3', kind)
+
+
 def partPaths(kind, name):
     """where a layout or a theme of this name could be, in the order tried.
 
@@ -88,7 +100,7 @@ def partPaths(kind, name):
     file after itself.
     """
     stem = 'theme' if kind == 'themes' else 'layout'
-    for base in (kind, os.path.join('PiClock3', kind)):
+    for base in partRoots(kind):
         folder = os.path.join(base, name)
         yield os.path.join(base, name + '.yaml'), None
         yield os.path.join(folder, stem + '.yaml'), folder
@@ -115,11 +127,17 @@ def loadPart(kind, name):
 
 
 def noSuchPart(kind, name):
-    """what to say about a layout or theme that is not there"""
+    """what to say about a layout or theme that is not there.
+
+    The folders come from partRoots rather than from this sentence, so a
+    place that is searched and not named here cannot happen.
+    """
     stem = 'theme' if kind == 'themes' else 'layout'
+    where = ' and in '.join('%s/' % root.replace(os.sep, '/')
+                            for root in partRoots(kind))
     return ("no %s named '%s'.  looked for %s.yaml, %s/%s.yaml and "
-            "%s/%s.yaml, in %s/ and in PiClock3/%s/\n"
-            % (stem, name, name, name, stem, name, name, kind, kind))
+            "%s/%s.yaml, in %s\n"
+            % (stem, name, name, name, stem, name, name, where))
 
 
 def cellNames(name, spec):

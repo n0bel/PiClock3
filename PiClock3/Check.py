@@ -33,7 +33,8 @@ import re
 import zoneinfo
 
 from .Config import ConfigError, GEOMETRY, Lines, readYaml as read
-from .ResolvedConfig import partPaths, pluginFolder, ResolvedConfig
+from .ResolvedConfig import (partPaths, partRoots, pluginFolder,
+                             ResolvedConfig)
 from .Units import MEASURE, Units
 
 logger = logging.getLogger(__name__)
@@ -289,9 +290,13 @@ class Check():
         if kind in ('layouts', 'themes'):
             # a name only counts if loadPart would find something under it,
             # asked with the paths loadPart itself walks - otherwise art
-            # sitting loose in themes/ is offered as a theme
-            found = glob.glob(os.path.join(kind, '*')) + \
-                glob.glob(os.path.join('PiClock3', kind, '*'))
+            # sitting loose in themes/ is offered as a theme.  The folders
+            # are partRoots' answer rather than a second copy of it: a name
+            # the clock loads and this does not know about is the worst
+            # thing either of them can say
+            found = []
+            for root in partRoots(kind):
+                found += glob.glob(os.path.join(root, '*'))
             names = {os.path.splitext(os.path.basename(f))[0] for f in found}
             return {n for n in names
                     if any(os.path.isfile(p) for p, _ in partPaths(kind, n))}
