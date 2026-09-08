@@ -16,7 +16,17 @@ types:
     is: block
     of:
       location: {is: location, required: true}
-      image:    {is: string}
+      image:
+        is: string
+        names:
+          files:
+            - '{folders.marker}/*.png'
+            - '{marker-images-base-folder}/{marker-images-folder}/*.png'
+        # a pin from the set this radar draws, without the .png - the two
+        # folders markerPath looks in, in the order it looks.  A theme
+        # pointing at a set of its own moves the second one, so a shipped
+        # name it does not hold really is a marker that will not draw.
+        # A value with a / in it is a path, the way markerPath reads one.
       color:    {is: color}
       size:     {of: [number, measure, marker-sizes]}
       visible:  {of: [boolean, number]}

@@ -142,8 +142,11 @@ config has to be edited for it - see
 
 ## Checking your work
 
-Run the clock and look at it; there is no preview tool.  Worth checking
-specifically:
+`--check` catches a misspelled `image:` before the clock draws anything -
+it looks in the same two folders `markerPath` does and names them.  A set
+that is missing a name the shipped one has shows up here too, since
+nothing falls back to shipped.  Everything else wants the clock run and
+looked at; there is no preview tool.  Worth checking specifically:
 
 - **the anchor.** Put one marker on a coordinate you can recognize - a
   bridge, a runway, a lake's north tip - and look at two zoom levels.  The

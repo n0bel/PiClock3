@@ -183,6 +183,45 @@ this".  A radar names a base map and a frame source, neither can stand in
 for the other, and the config that swaps them reads perfectly well - so say
 which a setting is for wherever there is more than one sort to name.
 
+### Naming a file in a folder of your own
+
+Those seven are the ones the checker knows how to list.  Your own art is
+not one of them, so a block names the folder instead - written as your own
+settings, not as a path:
+
+```yaml
+  dial-folder: {is: string}
+  dial:
+    is: string
+    names:
+      files: '{dial-folder}/*.png'
+```
+
+The names are the basenames of whatever the glob finds, so `clear-day` is
+accepted and `clear-nigth` is a problem that says which folder was looked
+in and what is in it.  Four things worth knowing:
+
+- **Write the folders your code searches, and no others.**  A list is
+  several patterns, read as one set of names the way several folders are
+  one place to find a file - so `MapLoop` lists the deprecated
+  `folders: marker:` ahead of the set a radar draws from, because that is
+  the order `markerPath` looks in.  What your plugin ships is not a folder
+  of its own: a theme pointing `dial-folder` somewhere else *moves* that
+  folder rather than adding to it, and a shipped name the theme's set does
+  not hold really is a picture that will not draw.
+- **A value with a `/` in it is a path**, checked as a file rather than as
+  a name.  That is how `MapLoop` reads a marker image, and a setting using
+  this should read one the same way.
+- **A name is one of your settings, or a dotted one in the config** -
+  `{folders.marker}` is the second sort.  `{plugin-folder}` works too,
+  being the folder your plugin was found in, and `{this-folder}` needs no
+  help: it is a real path by the time anything reads it.
+- **A pattern with a name left over is skipped**, so a config that sets
+  none of `folders:` is not offered it as somewhere to have looked.  Where
+  that leaves nothing at all to spell against, nothing is said - a checker
+  that reported every value as missing because it could not find the
+  folder would be worse than one that stayed quiet.
+
 ## Types you already have
 
 `core-types.yaml` holds the shapes more than one plugin needs.  Use them by

@@ -86,6 +86,22 @@ def put(*path):
     return do
 
 
+def pins(image):
+    """one marker on the radar, drawn with the named pin"""
+    def do(cfg):
+        cfg['widgets']['radar1']['markers'] = [
+            {'location': {'latitude': 45, 'longitude': -93},
+             'image': image}]
+    return do
+
+
+def themed():
+    """the page on the fixture theme, which brings pins of its own"""
+    def do(cfg):
+        cfg['pages']['clock-page']['theme'] = '_selftest'
+    return do
+
+
 def google():
     """GoogleMaps as a second base map, with a key so the cases about
     style: are not read past an apikey complaint"""
@@ -696,6 +712,43 @@ CASES = [
     dict(name='a misspelling is still nobody\'s setting',
          config=config(a=put('widgets', 'radar1', 'stlye', 'terrain')),
          wants=['nothing declares'], forbids=[]),
+    # --------------------------- a name in a folder the plugin declares
+    dict(name='a marker naming a pin that ships',
+         config=config(a=pins('teardrop-home')),
+         wants=[], forbids=['no file called']),
+    dict(name='a marker naming one that does not exist',
+         config=config(a=pins('teardrop-hom')),
+         # six pins is a list worth printing rather than a guess at which
+         # one was meant - suggest() decides that, not this.  This config
+         # names no folders: marker:, so that pattern works out to nothing
+         # and the message must not offer it as somewhere to look.
+         wants=['widgets.radar1.markers.0.image', 'no file called',
+                'PiClock3/MapLoop/markers', 'There is teardrop'],
+         forbids=['folders.marker']),
+    dict(name='a marker naming a path that exists',
+         config=config(a=pins('PiClock3/MapLoop/markers/teardrop-home.png')),
+         wants=[], forbids=['no file']),
+    dict(name='a marker naming a path that does not',
+         config=config(a=pins('nosuch/pin.png')),
+         wants=['no file at'], forbids=[]),
+    # the rule that matters: a theme pointing at a set of its own moves the
+    # folder rather than adding to it, which is what markerPath does
+    dict(name="a theme's own pin, with its set installed",
+         needs='PinSet', config=config(a=pins('pin-red'), b=themed()),
+         wants=[], forbids=['no file called']),
+    dict(name='a shipped pin the theme\'s set does not hold',
+         needs='PinSet', config=config(a=pins('teardrop-home'), b=themed()),
+         wants=['no file called', 'themes/_selftest/pins'],
+         forbids=['PiClock3/MapLoop/markers']),
+    # the deprecated route is still a folder markerPath looks in, so a pin
+    # only there is not a misspelling
+    dict(name='a pin in the folder a config named itself',
+         needs='PinSet',
+         config=config(a=pins('teardrop-home'), b=themed(),
+                       c=put('folders', 'marker',
+                             'PiClock3/MapLoop/markers')),
+         wants=[], forbids=['no file called']),
+
     # --------------------------- what a repository brought with it
     dict(name='a layout a plugin brought along',
          needs='BundledLayout',
@@ -769,6 +822,13 @@ FIXTURES = {
                                  '    one-of: [matte, gloss]\n\n'
                                  'settings:\n'
                                  '  style: {is: finish}\n'},
+    # a theme supplying pins of its own, for the rule that its set adds to
+    # the shipped one rather than replacing it
+    'PinSet': {'theme.yaml': 'name: Selftest\ndescription: its own pins\n'
+                             'kind-settings:\n  radar:\n'
+                             "    marker-images-base-folder: '{this-folder}'"
+                             '\n    marker-images-folder: pins\n',
+               os.path.join('pins', 'pin-red.png'): 'not really a png\n'},
     # a repository that brought a layout along with it, and two more that
     # brought one of the same name - which is what makes the collision
     # warning worth having
@@ -798,6 +858,7 @@ FIXTURES = {
 # run, and one named Twin could be somebody's own installed plugin.
 TWIN = os.path.join('plugins', '_selftest')
 WHERE = {'Nested': os.path.join('plugins', '_selftest_vendor', 'Thing'),
+         'PinSet': os.path.join('themes', '_selftest'),
          'BundledLayout': os.path.join('plugins', '_selftest'),
          'RivalLayout': os.path.join('themes', '_selftest'),
          'ShadowingLayout': os.path.join('layouts', '_selftest')}

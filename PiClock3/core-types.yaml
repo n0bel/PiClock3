@@ -39,6 +39,21 @@
 #         languages   a file in languages/
 #         timezones   a zone this machine has, blank being its own
 #
+#                         Those are the ones this file knows how to list.
+#                         A plugin's own art is not, so a block names the
+#                         folder instead, in the plugin's own settings:
+#
+#                             names:
+#                               files: '{icons-folder}/*.png'
+#
+#                         The answer is the basenames found there.  A list
+#                         is the several folders the plugin looks in, so
+#                         write the ones the code searches and no others.
+#                         A name is a setting of the plugin's or a dotted
+#                         one in the config, and a pattern with one left
+#                         over is skipped.  A value with a / in it is a
+#                         path and is checked as one.
+#
 #     provides: [<what>, ...]
 #                         beside names: providers, the questions the
 #                         provider named here has to be able to answer -

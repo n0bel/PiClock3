@@ -61,10 +61,12 @@ PATTERNS = {'geometry': (GEOMETRY, 'WIDTHxHEIGHT, or WIDTHxHEIGHT+X+Y')}
 PRIMITIVES = {'number': (int, float), 'string': str, 'boolean': bool}
 
 # who declares a setting, for the times that is not the entry's own plugin.
-# A widget hands its config to the providers it names, so `types` and
-# `module` are theirs rather than the entry's: a spec is unreadable without
-# the types the schema that wrote it invented.
-Declared = collections.namedtuple('Declared', 'spec types module')
+# A widget hands its config to the providers it names, so everything here is
+# theirs rather than the entry's: a spec is unreadable without the types the
+# schema that wrote it invented, and a `names:` pointing into a folder is
+# unreadable without the settings that say where that folder is.
+Declared = collections.namedtuple('Declared',
+                                  'spec types module merged folder')
 
 # what to call the shape of a value, in a sentence.  In order and read
 # with isinstance rather than keyed on the exact class: a bool is an int,
@@ -150,6 +152,12 @@ class Check():
         self.units = None          # the units table, read once
         # every timezone, read once and only if a config names one
         self.zones = None
+        # the plugin whose settings are being read, as (merged, folder) -
+        # what a names: pointing into a folder that plugin declares needs.
+        # On self rather than an argument because it has to survive
+        # checkValue -> checkBlock -> checkEntry -> checkValue, which is the
+        # path an image: inside a markers: list takes.
+        self.declaring = ({}, None)
 
     # ------------------------------------------------------------ saying
 
@@ -255,6 +263,28 @@ class Check():
             yield
         finally:
             self.types = saved
+
+    @contextlib.contextmanager
+    def settingsOf(self, merged, folder):
+        """whose settings these are, while they are being read"""
+        saved = self.declaring
+        self.declaring = (merged or {}, folder)
+        try:
+            yield
+        finally:
+            self.declaring = saved
+
+    @contextlib.contextmanager
+    def readingAs(self, candidate):
+        """one candidate's whole world, for as long as its spec is read.
+
+        Its types, because a spec naming one its schema invented is
+        otherwise unreadable, and its settings, because a `names:` pointing
+        into a folder is answered by where that plugin says the folder is.
+        """
+        with self.typesOf({'types': candidate.types}, candidate.module):
+            with self.settingsOf(candidate.merged, candidate.folder):
+                yield
 
     @contextlib.contextmanager
     def aside(self):
@@ -535,7 +565,13 @@ class Check():
             return
 
         kind = spec.get('names')
-        if kind:
+        if isinstance(kind, dict):
+            # a folder the plugin itself declares, rather than one of the
+            # things this file knows how to enumerate
+            if kind.get('files'):
+                self.checkFiles(where, value, kind['files'])
+            kind = None
+        elif kind:
             self.checkName(where, value, kind)
         if kind == 'providers' and spec.get('provides'):
             self.checkProvides(where, value, spec['provides'])
@@ -563,6 +599,90 @@ class Check():
         if value not in known:
             self.problem(where, 'no %s named %r.  %s'
                          % (kind.rstrip('s'), value, suggest(known, value)))
+
+    def checkFiles(self, where, value, patterns):
+        """a name that has to be one of the files a folder holds.
+
+        The folder is one the plugin points at with settings of its own, so
+        a pattern names those settings rather than a path:
+
+            names: {files: '{marker-images-folder}/*.png'}
+
+        Several patterns are the several folders a plugin looks in, and the
+        answer is what they hold between them, so write the same ones the
+        code searches and no others.  Where a theme has pointed a plugin at
+        a set of its own, what ships is not among them - the clock does not
+        fall through to it, so neither does this.
+
+        A value with a separator in it is a path rather than a name, the
+        way `markerPath` reads one.
+        """
+        if not isinstance(value, str) or not value:
+            return
+        settings, folder = self.declaring
+        if '/' in value.replace(os.sep, '/'):
+            if not os.path.isfile(value):
+                self.problem(where, 'no file at %r' % value)
+            return
+
+        known, looked = set(), []
+        if isinstance(patterns, str):
+            patterns = [patterns]
+        for pattern in patterns:
+            found = self.pattern(pattern, settings, folder)
+            if found is None or found in looked:
+                continue
+            looked.append(found)
+            known |= {os.path.splitext(os.path.basename(f))[0]
+                      for f in glob.glob(found)}
+        # nothing to spell against is not a finding: a folder that is not
+        # there is the folder's problem, and saying so per value would say
+        # it once per marker
+        if not known:
+            return
+        if value not in known:
+            self.problem(where, 'no file called %r in %s.  %s'
+                         % (value, ' or '.join(
+                             os.path.dirname(p).replace(os.sep, '/')
+                             for p in looked), suggest(known, value)))
+
+    def pattern(self, text, settings, folder):
+        """a names: pattern with the names in it put in.
+
+        A name is one of the plugin's own settings, or a dotted one in the
+        config - MapLoop looks in `folders: marker:` before its own set, so
+        its patterns have to be able to say so.  Twice around, because a
+        setting's value can name another.
+
+        {plugin-folder} is put in from here rather than looked up: the
+        clock expands it at the moment a plugin asks, from the module doing
+        the asking, so what a config.yaml holds is the word itself.
+        {this-folder} is already a path by now, ResolvedConfig having
+        replaced it when the file was read.
+
+        None where a name is left over.  The folder is then not known, and
+        guessing at it would report every value in it as missing.
+        """
+        for _ in range(2):
+            for name in sorted(set(re.findall(r'{([^{}]+)}', text))):
+                if name == 'plugin-folder':
+                    found = folder and folder.replace(os.sep, '/')
+                else:
+                    found = (settings or {}).get(name)
+                    if not isinstance(found, str):
+                        found = self.dotted(name)
+                if isinstance(found, str):
+                    text = text.replace('{%s}' % name, found)
+        return None if '{' in text else text
+
+    def dotted(self, name):
+        """a dotted name against the config itself, or None"""
+        found = self.config
+        for part in name.split('.'):
+            if not isinstance(found, dict):
+                return None
+            found = found.get(part)
+        return found if isinstance(found, str) else None
 
     def checkProvides(self, where, name, wanted):
         """the provider a setting names has to answer the right question.
@@ -627,7 +747,9 @@ class Check():
             if name in (settings or {}):
                 # this entry's own plugin first, and with no types of its
                 # own to install: typesOf has already installed them
-                candidates.insert(0, Declared(settings[name], None, module))
+                candidates.insert(0, Declared(settings[name], None, module,
+                                              self.declaring[0],
+                                              self.declaring[1]))
             if candidates:
                 self.checkDeclared('%s.%s' % (where, name), value, candidates)
             elif not quiet:
@@ -647,13 +769,12 @@ class Check():
         its own vocabulary.
         """
         if len(candidates) == 1:
-            with self.typesOf({'types': candidates[0].types},
-                              candidates[0].module):
+            with self.readingAs(candidates[0]):
                 self.checkValue(where, value, candidates[0].spec)
             return
         blamed = []
         for candidate in candidates:
-            with self.typesOf({'types': candidate.types}, candidate.module):
+            with self.readingAs(candidate):
                 with self.aside() as found:
                     self.checkValue(where, value, candidate.spec)
             if not found:
@@ -844,12 +965,21 @@ class Check():
             self.addDeclared(passed, self.pluginSchema(module), module)
         return passed
 
-    @staticmethod
-    def addDeclared(passed, schema, module):
-        """what one schema declares, into a name-to-candidates mapping"""
+    def addDeclared(self, passed, schema, module):
+        """what one schema declares, into a name-to-candidates mapping.
+
+        The declaring plugin's own settings travel with each of them: a
+        `names:` pointing into a folder is answered by where *that* plugin
+        says its folder is, not where the entry writing the value does.
+        """
+        folder = pluginFolder(module or '')
+        merged = {}
+        if folder:
+            merged, _ = self.resolved.pluginConfig(folder, {}, False)
         for name, spec in ((schema or {}).get('settings') or {}).items():
             passed.setdefault(name, []).append(
-                Declared(spec, schema.get('types') or {}, module))
+                Declared(spec, schema.get('types') or {}, module,
+                         merged, folder))
 
     def checkKinds(self):
         """a kind two plugins wear and disagree about.
@@ -1011,5 +1141,6 @@ class Check():
             # what the clock will hand this plugin, all eight tiers of it
             merged, _ = self.resolved.pluginConfig(pluginFolder(module),
                                                    entry, isWidget)
-            self.checkEntry(where, entry, settings, passed, merged,
-                            quiet=unresolved, module=module)
+            with self.settingsOf(merged, folder):
+                self.checkEntry(where, entry, settings, passed, merged,
+                                quiet=unresolved, module=module)
