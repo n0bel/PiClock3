@@ -66,6 +66,8 @@ settings:
   # a set in units/sets.yaml, or one a plugin or you added
 
   logging-level: {is: levels}
+  # info when nothing says, so a clock that is behaving oddly rather than
+  # raising still has a log to attach to a bug report
 
   logging-rotate:   {is: scalar, one-of: [per-run, daily]}
   logging-max-size: {is: number, unit: megabytes, range: [0, 1000]}

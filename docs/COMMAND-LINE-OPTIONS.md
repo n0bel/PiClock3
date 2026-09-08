@@ -353,10 +353,11 @@ path was spelled right:
     set units = 'metric'
     set kind-settings.digital-clock.font-weight = 300
 
-Those appear at `info`, and the level has to be `info` or `debug` **in the
-config file** to see them - a `--set` cannot raise the level in time to
-report itself, since it has to be applied before anything can read it.  Most
-of the shipped examples already carry `logging-level: debug`.
+Those appear at `info`, which is the level a config gets when it says
+nothing, so they usually just show.  A config carrying
+`logging-level: warning` will not see them, and the level has to be `info`
+or `debug` **in the config file** - a `--set` cannot raise the level in time
+to report itself, since it has to be applied before anything can read it.
 
 `debug` adds the whole resolved config and the stylesheet each widget was
 built with - which is how to find out where a color actually came from,

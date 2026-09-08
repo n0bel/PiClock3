@@ -103,8 +103,8 @@ def loadConfig(configName, settings):
     overridden = []
 
     def setLevel():
-        if config.get('logging-level') in LEVELS:
-            logging.getLogger().setLevel(LEVELS[config['logging-level']])
+        logging.getLogger().setLevel(
+            LEVELS.get(config.get('logging-level'), DEFAULT_LEVEL))
 
     # the file's level first, so that each --set can say what it did as it
     # does it - which is the only way to catch a mistyped path, since one
@@ -221,6 +221,12 @@ LOGFILE = 'PyQtPiClock3.log'
 LEVELS = {'debug': logging.DEBUG, 'info': logging.INFO,
           'warning': logging.WARNING}
 
+# what a config that says nothing gets.  Not python's own WARNING: a clock
+# that is merely behaving oddly rather than raising then writes an empty
+# file, and the log is the first thing a bug report is asked for.  A start
+# costs 4.7 KB at info against 30 KB at debug, on a log that rolls at 10 MB.
+DEFAULT_LEVEL = logging.INFO
+
 
 def early(configName, settings, key):
     """one top-level setting, read from the text before the config is.
@@ -300,7 +306,7 @@ if __name__ == '__main__':
     # from the text, since the config is not read yet.  setLevel() sets it
     # again from the loaded config, which is the one that counts
     logger.setLevel(LEVELS.get(early(configName, settings, 'logging-level'),
-                               logging.WARNING))
+                               DEFAULT_LEVEL))
 
     def excepthook(etype, value, tb):
         logging.error("unhandled exception:\n%s",

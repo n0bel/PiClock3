@@ -89,8 +89,51 @@ BUILDS = [
 ]
 
 
+# (name, config text, --set, the level the root logger should end up at).
+# The one that matters is the first: a config saying nothing used to get
+# python's own WARNING and write an empty file, on a clock whose bug report
+# asks for the log.
+LEVELS = [
+    ('nothing said', 'pages: {}\n', [], 'INFO'),
+    ('the file says debug', 'logging-level: debug\n', [], 'DEBUG'),
+    ('the file says warning', 'logging-level: warning\n', [], 'WARNING'),
+    ('a word that is not a level', 'logging-level: chatty\n', [], 'INFO'),
+    ('--set with nothing in the file', 'pages: {}\n',
+     ['logging-level=debug'], 'DEBUG'),
+    ('--set over a file that says warning', 'logging-level: warning\n',
+     ['logging-level=debug'], 'DEBUG'),
+]
+
+
+def levels():
+    """what the root logger is set to before the config is even read.
+
+    clock.early() is what decides it, so this asks the same question the
+    program asks and not a second version of it.
+    """
+    import logging  # noqa: E402 - only this function needs it
+    out = []
+    for name, text, sets, want in LEVELS:
+        path = written(text)
+        try:
+            got = clock.LEVELS.get(clock.early(path, sets, 'logging-level'),
+                                   clock.DEFAULT_LEVEL)
+        finally:
+            os.unlink(path)
+        out.append((name, want, logging.getLevelName(got)))
+    return out
+
+
 def main():
     failed = 0
+    for name, want, got in levels():
+        if got == want:
+            print('  ok    level %-26s %s' % (name, got))
+        else:
+            failed += 1
+            print('  FAIL  level %-26s wanted %s, got %s'
+                  % (name, want, got))
+
     for name, text, sets, key, want in READS:
         path = written(text)
         try:
@@ -133,7 +176,8 @@ def main():
         else:
             print('  ok    build %-26s %s' % (name, kind))
 
-    print('\n  %d cases, %d failed' % (len(READS) + len(BUILDS), failed))
+    print('\n  %d cases, %d failed'
+          % (len(LEVELS) + len(READS) + len(BUILDS), failed))
     return 1 if failed else 0
 
 

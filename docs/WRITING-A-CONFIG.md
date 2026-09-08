@@ -686,10 +686,17 @@ and need no entry here.
 
 ## `logging-level:` and the log file
 
-`debug`, `info` or `warning`.  Output goes to `PyQtPiClock3.log` beside the
-program and to stderr.  `debug` is what the examples ship with; it logs every
-region's geometry, every web request with its timing, and what each layout
-and theme resolved to.
+`debug`, `info` or `warning`, and **`info` when you say nothing**.  Output
+goes to `PyQtPiClock3.log` beside the program and to stderr.
+
+`debug` is what the examples ship with; it logs every region's geometry,
+every web request with its timing, and what each layout and theme resolved
+to.  A start costs about 30 KB of log at `debug` and 5 KB at `info`.
+
+`warning` is quiet to the point of writing nothing at all on a clock that is
+working - which is worth knowing before choosing it, since
+[reporting a problem](../CONTRIBUTING.md) asks for the log and an empty one
+says nothing about what the clock was doing.
 
 ```yaml
 logging-level: info
