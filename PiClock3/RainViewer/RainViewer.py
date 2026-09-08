@@ -1,4 +1,3 @@
-import datetime
 import json
 import logging
 import time
@@ -45,7 +44,8 @@ class RainViewer(Frames):
 
     def gotIndex(self, error, data, params):
         if error:
-            logger.warning("%s index %s failed: %s", self.attribution, INDEX, error)
+            logger.warning("%s index %s failed: %s",
+                           self.attribution, INDEX, error)
             return
         try:
             index = json.loads(bytes(data).decode('utf-8'))

@@ -1,1 +1,1 @@
-from .Metar import *
+from .Metar import *  # noqa: F401,F403

@@ -1,7 +1,6 @@
 import datetime
 import logging
 
-import tzlocal
 from PyQt5.QtCore import QTimer
 from astral import LocationInfo
 from astral import moon
@@ -50,9 +49,10 @@ class Astral(Widget):
                                     self.piclock.timezone().key,
                                     self.piclock.expand(
                                         self.config.location.latitude),
-                                    self.piclock.expand(self.config.location.longitude))
+                                    self.piclock.expand(
+                                        self.config.location.longitude))
         s = Sun.sunTimes(now, locationInfo.latitude,
-                             locationInfo.longitude, locationInfo.timezone)
+                         locationInfo.longitude, locationInfo.timezone)
         for key, _ in Sun.EVENTS:
             if key not in s:
                 logger.info("no %s at %s,%s today", key,
@@ -72,8 +72,8 @@ class Astral(Widget):
         polar = 'sunrise' not in s or 'sunset' not in s
         if polar:
             up = Sun.daytime(now, locationInfo.latitude,
-                                 locationInfo.longitude,
-                                 locationInfo.timezone)
+                             locationInfo.longitude,
+                             locationInfo.timezone)
             self.pluginData['sun'] = self.piclock.language(
                 'polar_day' if up else 'polar_night')
         fmt = self.polarFormat if polar else self.format

@@ -37,7 +37,8 @@ class Languages():
 
     def __init__(self, piclock):
         self.piclock = piclock
-        self.languages = {}          # canonical name -> {'codes', 'name', 'strings'}
+        # canonical name -> {'codes', 'name', 'strings'}
+        self.languages = {}
         self.requested = None
 
     @staticmethod
@@ -51,7 +52,8 @@ class Languages():
 
     def folders(self):
         found = [os.path.join('PiClock3', 'languages')]
-        for base in (os.path.join('PiClock3', '*'), os.path.join('plugins', '*')):
+        for base in (os.path.join('PiClock3', '*'),
+                     os.path.join('plugins', '*')):
             found += sorted(glob.glob(os.path.join(base, 'languages')))
         found.append('languages')
         return [f for i, f in enumerate(found) if f not in found[:i]]
@@ -225,6 +227,7 @@ class Languages():
         if want != 'en':
             logger.warning('no language %r; known: %s', want,
                            ', '.join(sorted(
-                               c for e in self.languages.values() for c in e['codes'])))
+                               c for e in self.languages.values()
+                               for c in e['codes'])))
         english = self.languages.get('en')
         return english['strings'] if english else {}

@@ -4,19 +4,13 @@ import time
 
 from ..Widget import Widget
 
-from PyQt5 import (QtGui, QtNetwork)
-from PyQt5.QtCore import (QObject, QThread, pyqtSlot, pyqtSignal, Qt,
-                          QSize, QTimer)
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import (QPixmap, QImage, QPainter, QColor, QFont,
                          QFontMetrics, QPainterPath, QPen, QBrush)
-from PyQt5.QtWidgets import (QWidget, QLabel, QMessageBox, QListWidget,
-                             QPushButton, QApplication, QTableWidget,
-                             QGridLayout, QListWidgetItem, QTableWidgetItem,
-                             QLineEdit, QFrame)
+from PyQt5.QtWidgets import QLabel
 
 from ..DottedDict import Missing
-from ..Projection import (getCorners, getPoint, getTileXY, LatLng,
-                          MapView)
+from ..Projection import getPoint, LatLng, MapView
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +57,10 @@ class MapLoop(Widget):
         super().__init__(piclock, name, config)
         self.baseProvider = self.piclock.plugins[self.config['base-provider']]
         self.overlayProvider = self.piclock.plugins[
-            self.config.get('overlay-provider') or self.config['base-provider']]
-        self.frameProvider = self.piclock.plugins[self.config['frame-provider']]
+            self.config.get('overlay-provider')
+            or self.config['base-provider']]
+        self.frameProvider = self.piclock.plugins[
+            self.config['frame-provider']]
         self.view = None
         self.mapPixmap = None
         self.overlayPixmap = None
@@ -97,7 +93,8 @@ class MapLoop(Widget):
         self.mapLabel = QLabel(self.region)
         self.mapLabel.setObjectName("mapLabel")
         self.mapLabel.setGeometry(rr)
-        self.mapLabel.setStyleSheet("#mapLabel { background-color: transparent; }")
+        self.mapLabel.setStyleSheet(
+            "#mapLabel { background-color: transparent; }")
         self.mapLabel.setAlignment(Qt.AlignCenter)
         logger.debug("maploop geom %s", rr)
 
@@ -114,7 +111,7 @@ class MapLoop(Widget):
         self.frameCount = self.config.frames
         self.intervalTimer = QTimer()
         self.intervalTimer.timeout.connect(self.intervalTick)
-        self.intervalTimer.start(1000  * self.interval)
+        self.intervalTimer.start(1000 * self.interval)
         self.intervalTick()
         self.dwell = max(20, int(self.config.dwell)
                          if 'dwell' in self.config else 200)
@@ -124,7 +121,6 @@ class MapLoop(Widget):
         self.animationTimer.timeout.connect(self.animationTick)
         self.animationTimer.start(self.dwell)
         return
-
 
     def getBasePixmap(self):
         self.baseProvider.getMapPixmap(self.view, self.config,
@@ -157,9 +153,10 @@ class MapLoop(Widget):
 
     def animationTick(self):
         if not self.region.isVisible():
-            return;
+            return
         frameTimes = sorted(self.finished)
-        if len(frameTimes) < 1: return
+        if len(frameTimes) < 1:
+            return
         if self.frame >= len(frameTimes):
             self.frame = -int(self.hold / self.dwell)
         f = self.frame
@@ -169,7 +166,7 @@ class MapLoop(Widget):
         self.frame += 1
 
     def gotMapPixmap(self, pixmap, mask=None):
-        logger.info("maploop got map pixmap");
+        logger.info("maploop got map pixmap")
         if pixmap is None or pixmap.isNull():
             # a plain field rather than nothing: the weather is the part that
             # cannot wait, and there is no next base map coming on its own -
@@ -329,16 +326,16 @@ class MapLoop(Widget):
     def makeMarkerPixmap(self):
         self.markerPixmap = QPixmap(self.mapPixmap.size())
         self.markerPixmap.fill(Qt.transparent)
-        #br = QBrush(QColor(Config.dimcolor))
         painter = QPainter()
         painter.begin(self.markerPixmap)
-        #painter.fillRect(0, 0, self.mkpixmap.width(),
-        #                 self.mkpixmap.height(), br)
         markers = self.config['markers']
         for marker in markers:
             if 'visible' not in marker or marker['visible'] == 1:
-                loc = LatLng(float(self.piclock.expand(marker["location"]["latitude"])),
-                             float(self.piclock.expand(marker["location"]["longitude"])))
+                loc = LatLng(
+                    float(self.piclock.expand(
+                        marker["location"]["latitude"])),
+                    float(self.piclock.expand(
+                        marker["location"]["longitude"])))
                 pt = getPoint(
                     loc, self.view.center, self.view.zoom,
                     self.mapPixmap.width(), self.mapPixmap.height())
@@ -393,7 +390,8 @@ class MapLoop(Widget):
                 return
 
     def gotFramePixmap(self, pixmap, timeSlot):
-        logger.debug("got radar pixmap %s %s %s", pixmap, timeSlot, time.asctime(time.localtime(timeSlot)))
+        logger.debug("got radar pixmap %s %s %s", pixmap, timeSlot,
+                     time.asctime(time.localtime(timeSlot)))
         self.framePixmaps[timeSlot] = pixmap
         if self.ready():
             self.finished[timeSlot] = self.composite(timeSlot)
@@ -466,7 +464,8 @@ class MapLoop(Widget):
         try:
             return min(1.0, max(0.0, float(value)))
         except (TypeError, ValueError):
-            logger.warning("%s: %s is not a number: %r", self.name, name, value)
+            logger.warning("%s: %s is not a number: %r",
+                           self.name, name, value)
             return 1.0
 
     def frameCaption(self, timeSlot):
@@ -643,7 +642,7 @@ class MapLoop(Widget):
         path = QPainterPath()
         path.addText(float(x), float(y), font, text)
         width = max(1.0, font.pixelSize() / 8.0)
-        painter.strokePath(path, QPen(QColor(self.piclock.expand(str(outline))),
-                                      width, Qt.SolidLine, Qt.RoundCap,
-                                      Qt.RoundJoin))
+        pen = QPen(QColor(self.piclock.expand(str(outline))),
+                   width, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
+        painter.strokePath(path, pen)
         painter.fillPath(path, QBrush(color))

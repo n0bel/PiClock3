@@ -103,7 +103,8 @@ class Metar(Weather):
             if candidate.startswith(self.config.METAR):
                 line = candidate
         if not line:
-            logger.warning('metar %s: no report in the feed', self.config.METAR)
+            logger.warning('metar %s: no report in the feed',
+                           self.config.METAR)
             return
         logger.info('wxmetar: %s', line)
 
@@ -119,7 +120,7 @@ class Metar(Weather):
             'when': when,
             'station': self.config.METAR,
             'icon': self.variant(self.iconFor(notation, cover),
-                                    self.daytime(when)),
+                                 self.daytime(when)),
             'condition': notation or cover,
             'temp': temp,
             'dew': dew,

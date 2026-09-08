@@ -3,15 +3,9 @@ import logging
 from ..BaseMap import BaseMap
 from ..WebGet import WebGet, safeurl
 
-from PyQt5 import (QtGui, QtNetwork)
-from PyQt5.QtCore import (QObject, QThread, pyqtSlot, pyqtSignal, Qt, QRect,
-                          QSize, QUrl)
-from PyQt5.QtGui import (QPixmap, QImage)
-from PyQt5.QtWidgets import (QWidget, QLabel, QMessageBox, QListWidget,
-                             QPushButton, QApplication, QTableWidget,
-                             QGridLayout, QListWidgetItem, QTableWidgetItem,
-                             QLineEdit, QFrame)
-from PyQt5.QtNetwork import (QNetworkReply, QNetworkRequest)
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtNetwork import QNetworkReply
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +28,9 @@ class Mapbox(BaseMap):
         logger.debug("mapbox start")
 
         return
-        
+
     def pageChange(self):
         return
-
 
     def getMapPixmap(self, view, layerConfig, callback):
         frameRect = view.rect
@@ -53,20 +46,21 @@ class Mapbox(BaseMap):
         if rsize.width() > 640 or rsize.height() > 640:
             # QSize takes ints
             rsize = QSize(rsize.width() // 2, rsize.height() // 2)
-            zoom -= 1        
+            zoom -= 1
         mapUrl = 'https://api.mapbox.com/styles/v1/' + \
-               style + \
-               '/static/' + \
-               str(view.center.lng) + ',' + \
-               str(view.center.lat) + ',' + \
-               str(zoom) + ',0,0/' + \
-               str(rsize.width()) + 'x' + str(rsize.height()) + \
-               '?access_token=' + self.piclock.expand(self.config.apikey)
-        logger.info("mapbox url %s", safeurl(mapUrl)) 
-        params = { 'frameRect': frameRect, 'rsize': rsize }        
+                 style + \
+                 '/static/' + \
+                 str(view.center.lng) + ',' + \
+                 str(view.center.lat) + ',' + \
+                 str(zoom) + ',0,0/' + \
+                 str(rsize.width()) + 'x' + str(rsize.height()) + \
+                 '?access_token=' + self.piclock.expand(self.config.apikey)
+        logger.info("mapbox url %s", safeurl(mapUrl))
+        params = {'frameRect': frameRect, 'rsize': rsize}
         WebGet(mapUrl,
-                lambda error, data, parms: self.gotMapPixmap(error, data, callback, parms),
-                params)
+               lambda error, data, parms:
+               self.gotMapPixmap(error, data, callback, parms),
+               params)
 
         return
 
@@ -81,8 +75,8 @@ class Mapbox(BaseMap):
             logger.debug("mapPixmap %s", p.size())
             if p.size() != frameRect.size():
                 p = p.scaled(frameRect.size(),
-                    Qt.KeepAspectRatio,
-                    Qt.SmoothTransformation)
+                             Qt.KeepAspectRatio,
+                             Qt.SmoothTransformation)
             if not p.isNull():
                 band = self.WIDE_BAND if rsize.width() >= self.WIDE \
                     else self.BAND

@@ -37,7 +37,8 @@ VIA = {'compass': compass}
 
 # a number, then whatever is left is the unit.  Not letters-only: a unit
 # may hold anything the table's own key does, and rate: is mm/h.
-MEASURE = re.compile(r'^([-+]?(?:[0-9]*\.)?[0-9]+(?:[eE][-+]?[0-9]+)?)\s*(.*)$')
+MEASURE = re.compile(
+    r'^([-+]?(?:[0-9]*\.)?[0-9]+(?:[eE][-+]?[0-9]+)?)\s*(.*)$')
 
 
 class Units():
@@ -133,7 +134,8 @@ class Units():
             if u is None:
                 raise SystemExit('\nunknown unit %r for quantity %r.'
                                  '  Known: %s\n'
-                                 % (name, quantity, ', '.join(sorted(q['units']))))
+                                 % (name, quantity,
+                                    ', '.join(sorted(q['units']))))
         base = (value - a.get('offset', 0)) / a.get('factor', 1)
         return base * b.get('factor', 1) + b.get('offset', 0)
 
@@ -186,9 +188,11 @@ class Units():
         if 'via' in spec:
             fn = VIA.get(spec['via'])
             if fn is None:
-                raise SystemExit('\nunits: no function registered for via: %r\n'
-                                 % spec['via'])
-            return fn(self.convert(quantity, frm, self.quantities[quantity]['base'],
+                raise SystemExit(
+                    '\nunits: no function registered for via: %r\n'
+                    % spec['via'])
+            return fn(self.convert(quantity, frm,
+                                   self.quantities[quantity]['base'],
                                    value), to)
 
         out = self.convert(quantity, frm, to, value)

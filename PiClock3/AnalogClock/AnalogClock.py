@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 from PyQt5.QtCore import Qt, QTimer

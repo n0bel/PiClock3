@@ -1,1 +1,1 @@
-from .OpenMeteo import *
+from .OpenMeteo import *  # noqa: F401,F403

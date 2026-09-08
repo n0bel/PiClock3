@@ -837,7 +837,8 @@ class Check():
                         or {}).get('kind')
                 if not kind:
                     continue
-                schema = self.reading(os.path.join(folder, 'schema.yaml')) or {}
+                schema = self.reading(
+                    os.path.join(folder, 'schema.yaml')) or {}
                 role = 'provider' if schema.get('provides') else 'widget'
                 worn.setdefault(kind, {}).setdefault(role, set()).add(module)
 
@@ -968,7 +969,8 @@ class Check():
             # many instances there are: the two describe one thing
             if module not in self.described:
                 self.described.add(module)
-                defaults = self.reading(os.path.join(folder, 'config.yaml')) or {}
+                defaults = self.reading(
+                    os.path.join(folder, 'config.yaml')) or {}
                 for name in sorted(set(defaults) - set(settings) - {'kind'}):
                     self.problem('%s config.yaml' % module,
                                  '%s is a default and no schema declares it'

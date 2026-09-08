@@ -3,10 +3,9 @@ import logging
 import os
 import re
 import time
-from PyQt5 import (QtNetwork)
-from PyQt5.QtCore import (QObject, QThread, pyqtSlot, pyqtSignal, Qt, QRect,
-                          QSize, QTimer, QUrl)
-from PyQt5.QtNetwork import (QNetworkReply, QNetworkRequest, QNetworkAccessManager)
+from PyQt5 import QtNetwork
+from PyQt5.QtCore import QObject, QTimer, QUrl
+from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +31,12 @@ INFLIGHT = 6
 # is what they are queuing for.
 TOTAL = max(4, (os.cpu_count() or 1) * 4)
 
+
 def safeurl(url):
     """a key in a query parameter becomes <key>; one in a path would not"""
     return re.sub(r'((?:apikey|appid|key|access_token)=)[^&]*',
                   r'\1<key>', url)
+
 
 class WebGet(QObject):
     webGets = []
@@ -55,7 +56,7 @@ class WebGet(QObject):
         self.url = url
         self.callback = callback
         self.params = params if params is not None else {}
-        if self.manager == None:
+        if self.manager is None:
             if WebGet.sharedManager is None:
                 WebGet.sharedManager = QtNetwork.QNetworkAccessManager()
             self.manager = WebGet.sharedManager
@@ -126,9 +127,6 @@ class WebGet(QObject):
                            self.started - self.queued, safeurl(self.url))
             self.reply.abort()
 
-    #def __del__(self):
-    #    logger.debug("delete of WebGet Object %s", self.url)
-
     def finished(self):
         self.timer.stop()
         error = self.reply.error()
@@ -136,7 +134,8 @@ class WebGet(QObject):
         queued = len(WebGet.waiting.get(self.host, ()))
         # let the next one go before the callback runs, which may well ask
         # for another
-        WebGet.inflight[self.host] = max(0, WebGet.inflight.get(self.host, 1) - 1)
+        WebGet.inflight[self.host] = max(
+            0, WebGet.inflight.get(self.host, 1) - 1)
         WebGet.outstanding = max(0, WebGet.outstanding - 1)
         WebGet.send()
         if error != QNetworkReply.NoError:
@@ -149,20 +148,20 @@ class WebGet(QObject):
             self.callback(error, self.reply.readAll(), self.params)
         WebGet.webGets.remove(self)
 
+
 if __name__ == '__main__':
     import sys
-    from PyQt5.QtWidgets import (QMessageBox, QApplication, QWidget, QPushButton)
+    from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
 
     def callback(error, data):
         print(error, data)
 
     app = QApplication(sys.argv)
     w = QWidget()
-    l = QPushButton(w)
-    l.setText("Exit")
-    l.clicked.connect(lambda x: w.close())
+    quit = QPushButton(w)
+    quit.setText("Exit")
+    quit.clicked.connect(lambda x: w.close())
     w.screen = QApplication.desktop().screenGeometry()
     w.show()
     WebGet("https://google.com", callback)
     sys.exit(app.exec_())
-

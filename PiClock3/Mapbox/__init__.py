@@ -1,1 +1,1 @@
-from .Mapbox import *
+from .Mapbox import *  # noqa: F401,F403

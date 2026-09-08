@@ -1,1 +1,1 @@
-from .CurrentConditions import *
+from .CurrentConditions import *  # noqa: F401,F403

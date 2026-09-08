@@ -3,15 +3,9 @@ import logging
 from ..BaseMap import BaseMap
 from ..WebGet import WebGet, safeurl
 
-from PyQt5 import (QtGui, QtNetwork)
-from PyQt5.QtCore import (QObject, QThread, pyqtSlot, pyqtSignal, Qt, QRect,
-                          QSize, QUrl)
-from PyQt5.QtGui import (QPixmap, QImage)
-from PyQt5.QtWidgets import (QWidget, QLabel, QMessageBox, QListWidget,
-                             QPushButton, QApplication, QTableWidget,
-                             QGridLayout, QListWidgetItem, QTableWidgetItem,
-                             QLineEdit, QFrame)
-from PyQt5.QtNetwork import (QNetworkReply, QNetworkRequest)
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtNetwork import QNetworkReply
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +30,7 @@ class GoogleMaps(BaseMap):
         logger.debug("googlemaps start")
 
         return
-        
+
     def pageChange(self):
         return
 
@@ -69,15 +63,15 @@ class GoogleMaps(BaseMap):
 
         mapUrl = 'https://maps.googleapis.com/maps/api/staticmap?' + \
             '&'.join(urlp)
-        
-        logger.info("googlemaps url %s", safeurl(mapUrl))   
-        
+
+        logger.info("googlemaps url %s", safeurl(mapUrl))
+
         logger.debug("googlemaps getpixmap")
-        params = { 'frameRect': frameRect, 'rsize': rsize }
+        params = {'frameRect': frameRect, 'rsize': rsize}
         WebGet(mapUrl,
-                lambda error, data, parms: self.gotMapPixmap(error, data, callback, parms),
-                params
-                )
+               lambda error, data, parms:
+               self.gotMapPixmap(error, data, callback, parms),
+               params)
         return
 
     def gotMapPixmap(self, error, data, callback, params):
@@ -91,8 +85,8 @@ class GoogleMaps(BaseMap):
             logger.debug("mapPixmap %s", p.size())
             if p.size() != frameRect.size():
                 p = p.scaled(frameRect.size(),
-                    Qt.KeepAspectRatio,
-                    Qt.SmoothTransformation)
+                             Qt.KeepAspectRatio,
+                             Qt.SmoothTransformation)
             if not p.isNull():
                 mask = self.bottomBandMask(p, rsize, self.BAND)
         callback(p, mask)

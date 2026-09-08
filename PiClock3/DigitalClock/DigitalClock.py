@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 from PyQt5.QtCore import Qt, QTimer
@@ -31,7 +30,8 @@ class DigitalClock(Widget):
         props = self.scaleFont({
             'font-size': self.config['font-size'],
         }, self.clockrect.height())
-        extra = str(self.config['extra-font-attributes'] or '').strip().lstrip(';')
+        extra = str(self.config['extra-font-attributes']
+                    or '').strip().lstrip(';')
         self.clockface.setStyleSheet(
             "#clockface {%s%s }"
             % (self.piclock._buildStyleString(props),

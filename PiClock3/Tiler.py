@@ -66,7 +66,8 @@ class TileFetcher():
         if error == QNetworkReply.NoError:
             i.loadFromData(data)
         else:
-            logger.debug("tile %d,%d failed: %s", params['x'], params['y'], error)
+            logger.debug("tile %d,%d failed: %s",
+                         params['x'], params['y'], error)
         self.tiles[params['y']][params['x']]['image'] = i
         self.pending -= 1
         if self.pending < 1:

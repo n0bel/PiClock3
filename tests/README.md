@@ -62,16 +62,17 @@ The cheapest useful thing, and the one most likely to catch something:
 python3 tests/run.py
 ```
 
-Two more one-liners belong beside it. Lint what you touched, by name:
+Two more one-liners belong beside it. Lint, which takes no arguments:
 
 ```
-python3 -m flake8 PiClock3/Check.py tests/
+python3 -m flake8
 ```
 
-Named files rather than a bare `flake8`, which lints the whole tree.
+The tree is clean, so anything it says is yours. Keep it that way — and
+keep to what you are changing while you do, because
 [CONTRIBUTING.md](../CONTRIBUTING.md) asks you not to reformat code you are
-not changing, and the tree is not clean today — running it bare buries your
-three findings in a couple of hundred that were already there.
+not touching. Naming your own files, `python3 -m flake8 PiClock3/Check.py`,
+is the way to be sure you are only reading about them.
 
 Then gate the syntax against the Python floor:
 

@@ -67,7 +67,7 @@ plugins, which are named `PiClock3.Astral` rather than
 the class into it:
 
 ```python
-from .Tides import *
+from .Tides import *  # noqa: F401,F403
 ```
 
 The loader imports that name and finds your class inside by inspection, so
@@ -75,6 +75,30 @@ it can be called whatever suits.  It takes the class your module *defines*
 rather than the role class your module imports: both are `Plugin`
 subclasses, and only one of them is yours.  `plugins` itself needs no
 `__init__.py`.
+
+### Why that line carries a `noqa`
+
+flake8 complains twice about it, and both complaints are right about what
+they see and wrong about what it is for:
+
+* **F403**, that a star import hides which names a file defines.  True, and
+  the point: naming the class here would mean writing it twice, and the
+  loader is deliberately built so you never tell us what your class is
+  called.
+* **F401**, that nothing in `__init__.py` uses what the import brought in.
+  Also true.  The file exists to put a name where the loader will look for
+  it, not to use it.
+
+Both fall out of the same decision - that a plugin is a folder you drop in
+and a config names by folder.  `importlib.import_module` imports the
+package, and `pluginClass` reads that package with `inspect.getmembers`, so
+the class has to be an attribute of it.  One line does that, and it is the
+only line of glue a plugin needs.
+
+The `noqa` sits on the line rather than in a config of ours, because your
+repository is not ours: a setting in PiClock3's flake8 configuration would
+not reach a plugin you keep somewhere else.  On the line, the reason travels
+with the idiom, and anything else you add to that file is still checked.
 
 Nothing is registered anywhere.  The `config.yaml` next to your code is found
 from the imported module rather than from a path anybody writes down - which
@@ -130,7 +154,7 @@ locations exist rather than one.  See [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ### What a plugin repository holds
 
-    __init__.py         from .Tides import *
+    __init__.py         from .Tides import *  # noqa: F401,F403
     Tides.py            the module, holding your Widget or Provider subclass
     config.yaml         its defaults, and the list of what a theme may set
     schema.yaml         the shape of those settings

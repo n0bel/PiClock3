@@ -6,10 +6,9 @@ import logging
 import logging.handlers
 import os
 
-from PyQt5 import (QtNetwork)
-from PyQt5.QtCore import (Qt, QRect,
-                          QSize)
-from PyQt5.QtGui import (QImage)
+from PyQt5 import QtNetwork
+from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtGui import QImage
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
 from .ResolvedConfig import ResolvedConfig, noSuchPart
@@ -297,7 +296,8 @@ class PiClock3(QWidget):
                 "each one names its plugin rather than including its file:\n\n"
                 "  widgets:\n"
                 "    radar1: {plugin: PiClock3.MapLoop, region: maps.1}\n\n"
-                "Start again from examples/default.yaml rather than converting\n"
+                "Start again from examples/default.yaml rather than "
+                "converting\n"
                 "this one.  See\n"
                 "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n")
         for pageName in self.config.pages:
@@ -308,7 +308,8 @@ class PiClock3(QWidget):
                     "Pages used to include a tree of blocks mixing geometry\n"
                     "and styling.  They now name a layout and a theme:\n\n"
                     "  pages:\n"
-                    "    clock-page: {order: 0, layout: classic, theme: circuit}\n\n"
+                    "    clock-page: "
+                    "{order: 0, layout: classic, theme: circuit}\n\n"
                     "Start again from examples/default.yaml rather than\n"
                     "converting this one.  See\n"
                     "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n"
@@ -584,7 +585,8 @@ class PiClock3(QWidget):
         pull = self.borderPull(border, bw)
         area = QRect(bw, bw, rect.width() - bw * 2, rect.height() - bw * 2)
         self._makeRegion(container, name,
-                         area.adjusted(-pull, -pull, pull, pull), region, theme)
+                         area.adjusted(-pull, -pull, pull, pull),
+                         region, theme)
 
         qt = self.qtName(name) + '-frame'
         frame = QLabel(container)
@@ -717,8 +719,8 @@ class PiClock3(QWidget):
         cells = [k for k in self.regions
                  if k.startswith(head) and k[len(head):].isdigit()]
         if cells:
-            return [self.regions[k]
-                    for k in sorted(cells, key=lambda k: int(k.split('.')[-1]))]
+            return [self.regions[k] for k in
+                    sorted(cells, key=lambda k: int(k.split('.')[-1]))]
 
         raise SystemExit(
             "no region or repeat named '%s'.  the layout defines: %s\n"
@@ -835,7 +837,7 @@ class PiClock3(QWidget):
             page = self.pages[pageName]
             if page.pageNumber == current:
                 logging.debug("Setting page %s (%s) to visible"
-                             % (current, pageName))
+                              % (current, pageName))
                 page.setVisible(True)
         for show in self.slideshows:
             show.pageChange()
@@ -930,7 +932,8 @@ class PiClock3(QWidget):
         if names:
             logger.warning(
                 'none of these locales is installed: %s - day and month names'
-                ' will be the system default', ', '.join(str(n) for n in names))
+                ' will be the system default',
+                ', '.join(str(n) for n in names))
         return None
 
     def condition(self, notation):
