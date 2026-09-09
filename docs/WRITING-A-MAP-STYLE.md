@@ -25,25 +25,30 @@ reaches them - not `layers:`, not `palette:`, not `background:`.  A
 config that changes `base-provider:` and leaves `style:` alone is naming
 something the new provider has never heard of.
 
-**And the trimming is Liberty-shaped.**  `layers:` and `palette:` work by
-naming layers in the source style, and the names in `groups.yaml` are
-Liberty's.  Their other four are not built from it: their
-[styles repository](https://github.com/hyperknot/openfreemap-styles) says
-Liberty is forked from Maputnik while Bright, Positron, Dark and Fiord
-are forked from OpenMapTiles, whose upstream is abandoned.  Two lineages
-and two sets of layer ids, and counting says how far that goes.  Of the
-109 ids a group knows, `bright` carries 30 and `positron` 28 - the
-labels and boundaries, which are the areas their README says have been
-squared up with Liberty - while `dark` carries four and `fiord` seven.
-Not one road group matches on any of the four.
+**Trimming follows the schema, recoloring follows Liberty.**  The two
+halves of a block reach different distances, and it is worth knowing
+which is which before naming somebody else's style.
 
-So those four are best named and taken *whole* rather than trimmed or
-recolored.  A `layers:` list that keeps too little says so in the log
-rather than leaving you with an empty map.
+`layers:` is said in [OpenMapTiles](https://openmaptiles.org/schema/)
+terms - source layers and classes, the words the tiles themselves are
+written in.  A group is a probe rather than a list: `motorways` means
+"the `transportation` layers whose own filter accepts a feature of class
+`motorway`", and a style layer joins by answering yes.  So the twenty
+group names reach every style built on that schema, theirs and anybody
+else's, and go on reaching one that has been re-cut under new layer
+names.  All five of theirs answer: 20 groups fill on `bright`, 19 on
+`positron`, 18 on `dark` and `fiord`.
 
-That is a limit of the data rather than of the code: a style on the other
-lineage would need its own `groups.yaml`, which is exactly why that
-mapping is one file and not scattered through the source.
+`palette:` still names Liberty's layers outright, because the thing it
+sorts by is not in the schema.  A road and its casing are the same class
+on the same source layer, filtered identically - two layers differing
+only in width and color - so no amount of schema knowledge tells them
+apart.  Recoloring one of their other four is the one thing a block
+cannot do, and it says so in the log rather than quietly doing nothing.
+
+A `layers:` list that matches almost nothing also says so.  That is what
+a style on a *different schema* looks like - Shortbread, Protomaps - and
+the answer there is to drop `layers:` and take the style whole.
 
 ## The shipped names
 
@@ -58,9 +63,9 @@ Seven ship, and any of OpenFreeMap's own five may be named as well:
 | `daylight` | a bright green map in the shape of Mapbox Streets |
 | `midnight` | near-black ground and water, and nothing else |
 | `midnight-roads` | the other half of it: roads and names on nothing |
-| `bright` `positron` `dark` `fiord` | theirs, taken whole |
+| `bright` `positron` `dark` `fiord` | theirs, trimmable but not recolorable |
 
-All seven are cut from Liberty, so all seven can be trimmed and
+All seven are cut from Liberty, so all seven can be trimmed *and*
 recolored.  `liberty` is the one to look at first; `terrain` is the one
 to run.
 
@@ -123,9 +128,9 @@ your own; `liberty` unless you say.
 
 ### `layers:`
 
-Which groups to keep.  Groups rather than the source style's 111 layer
-ids, because `road_trunk_primary_casing` is not a thing a config should
-have to know:
+Which groups to keep.  Groups rather than the source style's layer ids -
+Liberty has 111 of them - because `road_trunk_primary_casing` is not a
+thing a config should have to know:
 
 | group | what it draws |
 |---|---|
@@ -145,7 +150,7 @@ have to know:
 | `street-names` | road names |
 | `places` | city, town and village names |
 | `regions` | state and country names - big, and a radar rarely wants them |
-| `localities` | islands, neighborhoods, the rest of `label_other` |
+| `localities` | islands, neighborhoods, suburbs and hamlets |
 | `places-of-interest` | shops, stations and the rest |
 | `buildings` | building footprints |
 | `airports` | runways, taxiways and aerodrome names |
@@ -160,11 +165,26 @@ what is on top.
 Left out, every group the source has.  A misspelling is a `--check`
 problem rather than a road class that quietly never appears.
 
-The mapping from group to layer ids is
-`PiClock3/OpenFreeMap/groups.yaml`, and it is the only file that has to
-change when a style is re-cut.  There is deliberately no escape hatch for
-one raw layer id: the escape hatch is a style file of your own, which is
-the honest place for that much detail.
+What each group means is `PiClock3/OpenFreeMap/groups.yaml`, and it is
+written in the schema's words rather than one style's, so re-cutting a
+style does not touch it.  A group is a list of **probes**, and a probe is
+a source layer and a feature:
+
+```yaml
+  motorways:
+    - {layer: transportation, type: line, shape: line,
+       class: motorway, ramp: [0, 1]}
+```
+
+A style layer joins the group when its own filter accepts that feature -
+which is the style answering the question rather than us guessing at its
+naming.  Any attribute may be a list and the probe stands for every
+combination, so `bridges` is one probe with two `brunnel` values and
+fifteen classes where the id list it replaced ran to forty names.
+
+There is deliberately no escape hatch for one raw layer id: the escape
+hatch is a style file of your own, which is the honest place for that
+much detail.
 
 ### `background:`
 
@@ -200,6 +220,13 @@ either:
 beside it overrides.  Which set a block starts from, when it does not
 say, comes from the background's own luminance - so `background: white`
 gets dark roads on a light ground without anyone writing that down.
+
+**A palette reaches Liberty and what is cut from it, and no further.**
+Unlike `layers:`, a role names layers outright, because the thing it
+sorts by is not in the schema: a road and its casing are the same class
+on the same source layer with the same filter, and only the id tells
+them apart.  So a `palette:` on one of their other four colors nothing,
+and says so in the log.
 
 **The default ground is a desaturated gray-green.**  Tested against light
 rain rather than against a storm, since drizzle is the weakest thing a
@@ -279,10 +306,10 @@ unknown key would be the wrong trade.
 ## What it costs, and the machine that decides
 
 Drawing a map is real work, and all of it is Python: through PyQt on an
-ARMv6 core a single `QPointF` costs about 110 microseconds, and a view
-has tens of thousands of vertices.  Measured at zoom 7 on the two radar
-sizes a 1080p clock actually has - the classic page's 370x352 and the
-bigmaps page's 754x850:
+ARMv6 core a single `QPointF` costs about 135 microseconds where a tuple
+costs 3, and a view has tens of thousands of vertices.  Measured at zoom
+7 on the two radar sizes a 1080p clock actually has - the classic page's
+370x352 and the bigmaps page's 754x850:
 
 | | `terrain` 370x352 | `liberty` 370x352 | `terrain` 754x850 |
 |---|---|---|---|
@@ -291,6 +318,12 @@ bigmaps page's 754x850:
 | Pi Zero W, ARMv6 | 7.7 s | 14.2 s | **22.7 s** |
 
 Decode and draw only, with the tiles already in hand.
+
+Cutting the style is separate and is paid **once per style for the run**,
+not per map: on a Zero, 0.5 seconds for a `layers:` list of seven groups
+and 0.7 for one naming all twenty, against 15 seconds to draw untrimmed
+Liberty at the smaller of those two sizes.  Two radars sharing a style
+pay it once between them.
 
 **So the drawing is done in slices**, forty milliseconds at a time, and
 the event loop is handed back between them.  Measured on a Zero, with a

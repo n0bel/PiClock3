@@ -28,10 +28,14 @@ types:
              highways, roads, streets, paths, rail, bridges, shields,
              street-names, places, regions, localities,
              places-of-interest, buildings, airports]
-    # groups rather than the source style's 111 layer ids, because
-    # road_trunk_primary_casing is not a thing a config should know.  A
-    # set and never an order: layers draw in the source style's own order
-    # whatever order they are named in, since that order is load bearing.
+    # groups rather than the source style's layer ids, because
+    # road_trunk_primary_casing is not a thing a config should know.
+    # Said in OpenMapTiles terms - a source layer and a feature the
+    # layer's own filter is asked about - so the words reach any style
+    # built on that schema rather than only the one they were cut from.
+    # A set and never an order: layers draw in the source style's own
+    # order whatever order they are named in, since that order is load
+    # bearing.
 
   map-palette:
     is: block
@@ -52,7 +56,10 @@ types:
       shield-text:   {is: color}
     # roles rather than layer ids, so a recolor does not have to know the
     # cartography either.  Which set it starts from comes from the
-    # background's own luminance unless from: says.
+    # background's own luminance unless from: says.  Unlike layers:, a
+    # role does name Liberty's layers underneath - a road and its casing
+    # are the same class on the same source layer and only the id tells
+    # them apart - so a palette reaches Liberty and what is cut from it.
 
 settings:
 

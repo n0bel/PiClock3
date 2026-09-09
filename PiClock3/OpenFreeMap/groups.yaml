@@ -1,9 +1,26 @@
-# Liberty's 111 layers, in words a config can use.
+# The words a config uses for parts of a map, and what they mean.
 #
 # Two mappings.  `groups:` is what a style's layers: list picks from - one
-# word for a set of layer ids, because road_trunk_primary_casing is not a
+# word for a part of the map, because road_trunk_primary_casing is not a
 # thing anybody should have to know.  `roles:` is what a palette: recolors
 # - one word for the layers that should end up the same color.
+#
+# A group is said in OpenMapTiles terms rather than in one style's layer
+# ids.  A probe is a source layer and a feature, and a style layer joins
+# the group when its own filter accepts that feature - so these words
+# reach any style built on that schema, theirs and anybody else's, and
+# they keep reaching it when a style is re-cut under new layer names.
+#
+#   layer:   the source layer, which is the schema's own word
+#   type:    fill, line or symbol, where one source layer holds several
+#   shape:   point, line or polygon, for a filter testing geometry-type.
+#            All three when it is not said.
+#   icon:    whether the layer draws an icon behind its text, which is
+#            what tells a route shield from a road name
+#   anything else is a feature attribute, and a list means every
+#   combination of them - `class: [rail, transit]` beside
+#   `brunnel: [bridge, tunnel]` is four features, and matching any one
+#   of them joins.
 #
 # A group is a set and never an order.  Layers draw in the source style's
 # own order whatever order they are named in, because that order is load
@@ -12,71 +29,117 @@
 # dark casings over light road surfaces.  Writing the list chooses what is
 # in, never what is on top.
 #
-# This is the one file that changes when a style is re-cut.  Every id here
-# is Liberty's; `background` and `natural_earth` are deliberately in no
-# group, being what background: turns on rather than something to ask for.
+# `background` and the relief raster are in no group at all, being what
+# background: turns on rather than something to ask for.
 
 groups:
 
-  motorways:  [road_motorway_link_casing, road_motorway_casing,
-               road_motorway_link, road_motorway]
-  highways:   [road_trunk_primary_casing, road_trunk_primary]
-  roads:      [road_secondary_tertiary_casing, road_secondary_tertiary]
-  streets:    [road_area_pattern, road_service_track_casing,
-               road_link_casing, road_minor_casing, road_service_track,
-               road_link, road_minor, road_one_way_arrow,
-               road_one_way_arrow_opposite]
-  paths:      [road_path_pedestrian]
-  rail:       [road_major_rail, road_major_rail_hatching,
-               road_transit_rail, road_transit_rail_hatching]
+  motorways:
+    - {layer: transportation, type: line, shape: line,
+       class: motorway, ramp: [0, 1]}
 
-  shields:      [highway-shield-non-us, highway-shield-us-interstate,
-                 road_shield_us]
-  street-names: [highway-name-path, highway-name-minor, highway-name-major]
+  highways:
+    - {layer: transportation, type: line, shape: line,
+       class: [trunk, primary], ramp: [0, 1]}
 
-  # settlements only.  A state name and a country name are their own
-  # group and a radar wants neither: MINNESOTA in capitals across the
-  # top of a map of Minnesota is not telling anybody anything, and
-  # label_other is islands and neighborhoods.
-  places:       [label_village, label_town, label_city, label_city_capital]
-  regions:      [label_state, label_country_3, label_country_2,
-                 label_country_1]
-  localities:   [label_other]
-  places-of-interest: [poi_r20, poi_r7, poi_r1, poi_transit]
+  roads:
+    - {layer: transportation, type: line, shape: line,
+       class: [secondary, tertiary], ramp: [0, 1]}
 
-  boundaries:  [boundary_3, boundary_2, boundary_disputed]
-  water:       [waterway_tunnel, waterway_river, waterway_other, water]
-  water-names: [waterway_line_label, water_name_point_label,
-                water_name_line_label]
-  parks:       [park, park_outline]
-  land:        [landuse_residential, landcover_wood, landcover_grass,
-                landcover_ice, landcover_wetland, landuse_pitch,
-                landuse_track, landuse_cemetery, landuse_hospital,
-                landuse_school, landcover_sand]
-  buildings:   [building, building-3d]
-  airports:    [aeroway_fill, aeroway_runway, aeroway_taxiway, airport]
+  # the road area fill and the one-way arrows come in here rather than
+  # having groups of their own: they are minor-street furniture, and
+  # neither is worth a word in a config.
+  streets:
+    - {layer: transportation, type: line, shape: line,
+       class: [minor, street, street_limited, service, track], ramp: [0, 1]}
+    - {layer: transportation, type: fill, shape: polygon}
+    - {layer: transportation, type: symbol, shape: line, oneway: [1, -1]}
+
+  paths:
+    - {layer: transportation, type: line, shape: line,
+       class: [path, pedestrian], ramp: [0, 1]}
+
+  rail:
+    - {layer: transportation, type: line, shape: line,
+       class: [rail, transit]}
 
   # the bridge and tunnel variants of whatever roads are drawn.  One word
   # rather than a variant of each road group, because nobody wants bridges
-  # for motorways and not for trunks.
-  bridges:    [tunnel_motorway_link_casing, tunnel_service_track_casing,
-               tunnel_link_casing, tunnel_street_casing,
-               tunnel_secondary_tertiary_casing, tunnel_trunk_primary_casing,
-               tunnel_motorway_casing, tunnel_path_pedestrian,
-               tunnel_motorway_link, tunnel_service_track, tunnel_link,
-               tunnel_minor, tunnel_secondary_tertiary, tunnel_trunk_primary,
-               tunnel_motorway, tunnel_major_rail, tunnel_major_rail_hatching,
-               tunnel_transit_rail, tunnel_transit_rail_hatching,
-               bridge_motorway_link_casing, bridge_service_track_casing,
-               bridge_link_casing, bridge_street_casing,
-               bridge_path_pedestrian_casing,
-               bridge_secondary_tertiary_casing, bridge_trunk_primary_casing,
-               bridge_motorway_casing, bridge_path_pedestrian,
-               bridge_motorway_link, bridge_service_track, bridge_link,
-               bridge_street, bridge_secondary_tertiary,
-               bridge_trunk_primary, bridge_motorway, bridge_major_rail,
-               bridge_major_rail_hatching, bridge_transit_rail,
-               bridge_transit_rail_hatching]
+  # for motorways and not for trunks.  A style separates them by the
+  # brunnel attribute, so this is that attribute and every road class.
+  bridges:
+    - {layer: transportation, type: line, shape: line,
+       brunnel: [bridge, tunnel], ramp: [0, 1],
+       class: [motorway, trunk, primary, secondary, tertiary, minor,
+               street, street_limited, service, track, path, pedestrian,
+               rail, transit, link]}
+
+  # a shield draws its number on a plate and a street name does not, and
+  # the plate is an icon behind the text - which is the only thing in the
+  # style that tells the two apart, both being symbol layers on the same
+  # source layer.
+  shields:
+    - {layer: transportation_name, type: symbol, shape: line, icon: true,
+       network: [us-interstate, us-highway, us-state, road], ref_length: 3}
+
+  street-names:
+    - {layer: transportation_name, type: symbol, shape: line, icon: false,
+       class: [motorway, trunk, primary, secondary, tertiary, minor,
+               street, service, track, path]}
+
+  # settlements only.  A state name and a country name are their own
+  # group and a radar wants neither: MINNESOTA in capitals across the
+  # top of a map of Minnesota is not telling anybody anything, and the
+  # rest - islands, neighborhoods - is a third group again.
+  places:
+    - {layer: place, type: symbol, shape: point,
+       class: [city, town, village], capital: [0, 2], rank: 1}
+
+  regions:
+    - {layer: place, type: symbol, shape: point,
+       class: [state, country], rank: [1, 2, 3], capital: 0}
+
+  localities:
+    - {layer: place, type: symbol, shape: point,
+       class: [suburb, neighbourhood, quarter, hamlet, island,
+               isolated_dwelling]}
+
+  places-of-interest:
+    - {layer: poi, type: symbol, shape: point, rank: [1, 7, 20],
+       class: [airport, bus, rail, shop]}
+
+  boundaries:
+    - {layer: boundary, type: line, shape: line,
+       admin_level: [2, 3], disputed: [0, 1]}
+
+  water:
+    - {layer: water, type: fill, shape: polygon}
+    - {layer: waterway, type: line, shape: line,
+       class: [river, stream, canal, ditch], brunnel: [none, tunnel]}
+
+  water-names:
+    - {layer: water_name, type: symbol}
+    - {layer: waterway, type: symbol}
+
+  parks:
+    - {layer: park}
+    - {layer: landuse, type: fill, shape: polygon, class: park}
+
+  land:
+    - {layer: landcover, type: fill, shape: polygon,
+       class: [wood, grass, ice, wetland, sand, farmland, rock]}
+    - {layer: landuse, type: fill, shape: polygon,
+       class: [residential, commercial, industrial, suburb, pitch, track,
+               cemetery, hospital, school, quarry, military]}
+
+  buildings:
+    - {layer: building}
+
+  airports:
+    - {layer: aeroway, type: fill, shape: polygon}
+    - {layer: aeroway, type: line, shape: line, class: [runway, taxiway]}
+    - {layer: aerodrome_label, type: symbol, shape: point, iata: MSP}
+
 
 # Which paint key a role sets is the layer's own kind: fill-color on a
 # fill, line-color on a line, text-color on a label - so a role names the

@@ -35,6 +35,7 @@ and that is the whole difference between the two.
 """
 import json
 import logging
+import itertools
 import math
 import os
 import time
@@ -46,7 +47,7 @@ from PyQt5.QtNetwork import QNetworkReply
 
 from ..BaseMap import BaseMap
 from ..Config import readYaml
-from ..MapStyle import MapStyle, color, placedTiles
+from ..MapStyle import MapStyle, color, compile, placedTiles
 from ..Projection import tileGrid
 from ..VectorTile import VectorTile
 from ..WebGet import WebGet
@@ -63,6 +64,14 @@ TILESIZE = 512
 TILEPX = 256
 
 WHITE, BLACK = QColor(255, 255, 255), QColor(0, 0, 0)
+
+# what a probe's shape: is worth, in the words geometry-type answers in
+SHAPES = {'point': 'Point', 'line': 'LineString', 'polygon': 'Polygon'}
+
+# the zoom a group's probes are asked at.  A filter may hold a zoom test
+# as well as an attribute one, and this is a zoom every road class is
+# drawn at - a group is which layers draw a thing, not at what scale.
+PROBE_ZOOM = 12
 
 # "asked for and not here yet", which a request has to be able to tell
 # from "there is no such thing" - one is worth waiting for and the other
@@ -111,6 +120,32 @@ LIGHT_GROUND = 0.5
 PRINCIPAL = {'fill': 'fill-color', 'line': 'line-color',
              'symbol': 'text-color', 'background': 'background-color',
              'fill-extrusion': 'fill-extrusion-color'}
+
+# what a probe says about itself rather than about a feature
+SAID = ('layer', 'type', 'shape', 'icon')
+
+
+def features(probe):
+    """the features one probe stands for.
+
+    Any attribute may be written as a list, and what the probe means is
+    every combination of them - `class: [rail, transit]` beside
+    `brunnel: [bridge, tunnel]` is four features, and a layer joining on
+    any one of them joins.  Writing the cross product out by hand is how
+    a road group ends up forty lines long, which is the thing this
+    replaces.
+
+    A probe naming no shape stands for all three, since a filter that
+    tests geometry-type would otherwise have to be guessed at.
+    """
+    shapes = ([SHAPES[probe['shape']]] if probe.get('shape')
+              else list(SHAPES.values()))
+    tags = {k: v for k, v in probe.items() if k not in SAID}
+    names = sorted(tags)
+    spread = [tags[n] if isinstance(tags[n], list) else [tags[n]]
+              for n in names]
+    for combination in (itertools.product(*spread) if names else [()]):
+        yield dict(zip(names, combination)), shapes
 
 
 class OpenFreeMap(BaseMap):
@@ -250,13 +285,19 @@ class OpenFreeMap(BaseMap):
         groups = spec.get('layers')
         if groups:
             keep = set()
+            asked = []
             for group in groups:
                 found = self.groups.get(group)
                 if found is None:
                     logger.warning('%s: no layer group called %r', self.name,
                                    group)
                     continue
-                keep.update(found)
+                asked.append(found)
+            probed = self.probed(style['layers'],
+                                 {probe.get('layer') for probes in asked
+                                  for probe in probes})
+            for probes in asked:
+                keep.update(self.matching(probes, probed))
             # what is under the layers is background:'s to decide, so a
             # group list never drops the background or the relief - those
             # two are in no group exactly so that this is possible
@@ -264,7 +305,7 @@ class OpenFreeMap(BaseMap):
                 layer for layer in style['layers']
                 if layer.get('id') in keep
                 or layer.get('type') in ('background', 'raster')]
-            self.shaped(spec, style, keep, source)
+            self.shaped(spec, keep, len(asked))
 
         ground = spec.get('background')
         palette = self.palette(spec.get('palette'), ground)
@@ -276,28 +317,86 @@ class OpenFreeMap(BaseMap):
         high = color(palette.get('land-high')) if ground == 'relief' else None
         return MapStyle(style, sheet), high
 
-    def shaped(self, spec, style, keep, source):
-        """say so when a layers: list is the wrong shape for its source.
+    def probed(self, layers, wanted=None):
+        """each style layer with its filter compiled, under its source
+        layer.
 
-        groups.yaml holds Liberty's layer ids, and their other four
-        styles do not use them - only four of dark's forty-seven have a
-        name a group knows.  So `layers:` against one of those keeps
-        almost nothing and draws an empty map, which looks like a broken
-        provider rather than a style asking for layers that are not
-        there.  Measured rather than keyed on the name, so a re-cut
-        Liberty or a style of somebody else's is judged the same way.
+        Compiled once for the whole style rather than once per probe: a
+        group asks with several features and there are twenty groups, so
+        the same filter would otherwise be put the same question many
+        times over.  Kept under the source layer because a probe names
+        one, and walking the sixty transportation layers to answer a
+        question about `place` is most of the work if it is not.
+
+        `wanted` is the source layers the groups being asked for name,
+        and compiling anything else is work for an answer nobody wants.
         """
-        found = len([layer for layer in style['layers']
-                     if layer.get('id') in keep])
-        if found >= max(2, len(keep) // 8):
+        out = {}
+        for spec in layers:
+            where = spec.get('source-layer')
+            if not where or (wanted is not None and where not in wanted):
+                continue
+            found = spec.get('filter')
+            out.setdefault(where, []).append(
+                (spec, compile(found) if found else None))
+        return out
+
+    def matching(self, probes, probed, zoom=PROBE_ZOOM):
+        """which of a style's layers a group's probes accept.
+
+        A probe is a source layer and a feature, and a style layer joins
+        the group when its own filter accepts that feature - so nothing
+        here reads a layer id and the same word works on any style built
+        on the schema.  A layer with no filter at all draws everything
+        its source layer holds, so its source layer alone decides.
+        """
+        out = set()
+        for probe in probes:
+            kind = probe.get('type')
+            icon = probe.get('icon')
+            asking = None
+            for spec, test in probed.get(probe.get('layer')) or ():
+                if spec.get('id') in out:
+                    continue
+                if kind is not None and spec.get('type') != kind:
+                    continue
+                if icon is not None:
+                    layout = spec.get('layout') or {}
+                    if bool(layout.get('icon-image')) != icon:
+                        continue
+                if test is None:
+                    # no filter at all, so the layer draws whatever its
+                    # source layer holds and the source layer is answer
+                    # enough
+                    out.add(spec['id'])
+                    continue
+                if asking is None:
+                    asking = list(features(probe))
+                for tags, shapes in asking:
+                    if any(test(zoom, tags, shape) for shape in shapes):
+                        out.add(spec['id'])
+                        break
+        return out
+
+    def shaped(self, spec, keep, asked):
+        """say so when a layers: list found almost nothing to keep.
+
+        The groups are OpenMapTiles schema terms, which every style on
+        that schema answers to - but a style on another one answers to
+        none of them, and would draw an empty map that looks like a
+        broken provider rather than a style asking for what is not
+        there.  Measured rather than keyed on a name, so a style of
+        somebody else's is judged the same way as one of theirs.
+        """
+        if not asked or len(keep) >= 2 * asked:
             return
         logger.warning(
-            '%s: layers: kept %d of the %d layer ids it named, so this'
-            ' map will be nearly empty.  The groups are %s\'s layer ids'
-            ' and this style is from %r, which does not use them - name'
-            ' a from: of liberty to trim, or drop layers: and take the'
-            ' style whole.', self.name, found, len(keep), 'liberty',
-            spec.get('from') or 'liberty')
+            '%s: layers: named %d groups and they matched %d of this'
+            ' style\'s layers, so the map will be nearly empty.  The'
+            ' groups are OpenMapTiles schema terms - source layers and'
+            ' classes - and %r does not appear to be built on that'
+            ' schema.  Drop layers: to take the style whole.',
+            self.name, asked, len(keep), spec.get('from') or 'liberty')
 
     def source(self, name):
         """one of their styles, fetched once and kept for the run"""
@@ -461,11 +560,31 @@ class OpenFreeMap(BaseMap):
                 if palette.get(role):
                     wanted.setdefault(layer, []).append(
                         (paint, palette[role]))
+        painted, drawn = set(), 0
         for layer in style['layers']:
+            if layer.get('type') in PRINCIPAL:
+                drawn += 1
             for paint, value in wanted.get(layer.get('id')) or ():
                 key = paint or PRINCIPAL.get(layer.get('type'))
                 if key:
                     layer.setdefault('paint', {})[key] = value
+                    painted.add(layer.get('id'))
+        # A role names Liberty's layers outright, because what it sorts
+        # by is not in the schema: a road and its casing are the same
+        # class on the same source layer, filtered identically, so
+        # nothing but the id tells them apart.  A style that uses other
+        # ids therefore recolors to almost nothing, which is worth a
+        # line - unlike layers:, this cannot be measured against the
+        # schema.  A share rather than none at all, since their other
+        # four do carry a handful of Liberty's names by coincidence.
+        if wanted and drawn and len(painted) * 4 < drawn:
+            logger.warning(
+                '%s: palette: reached %d of this style\'s %d drawn'
+                ' layers, so most of it keeps its own colors.  A palette'
+                ' names Liberty\'s layers, and a road casing is not'
+                ' something the schema can pick out - so only a style'
+                ' cut from liberty recolors.', self.name, len(painted),
+                drawn)
 
     # --------------------------------------------------------------- tiles
 
