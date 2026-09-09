@@ -49,7 +49,8 @@ class WebGet(QObject):
     # and how many are out altogether, against TOTAL
     outstanding = 0
 
-    def __init__(self, url, callback, params=None, manager=None):
+    def __init__(self, url, callback, params=None, manager=None,
+                 headers=None):
         super().__init__()
         WebGet.webGets.append(self)
         self.manager = manager
@@ -64,6 +65,13 @@ class WebGet(QObject):
         self.started = None
         self.reply = None
         self.request = QNetworkRequest(QUrl(self.url))
+        # a service that asks for a header of its own.  Qt sends no
+        # User-Agent at all, and a host behind Cloudflare answers 403 to
+        # a request without one - which is not something a provider can
+        # work around from its own side.
+        for name, value in (headers or {}).items():
+            self.request.setRawHeader(name.encode('ascii'),
+                                      str(value).encode('utf-8'))
         self.host = QUrl(self.url).host()
         self.timer = QTimer()
         self.timer.setSingleShot(True)
