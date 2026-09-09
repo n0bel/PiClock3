@@ -254,8 +254,14 @@ so if it declares a `center:` or a `zoom:` of its own, a map that says
 nothing takes it.  Say either on the widget and yours wins.
 
 **`style:` is the base map itself**, named in whatever vocabulary the
-provider uses: a Mapbox style id like `mapbox/satellite-streets-v10`, or one
-of Google's four maptypes - `roadmap`, `satellite`, `terrain` or `hybrid`.
+provider uses: a Mapbox style id like `mapbox/satellite-streets-v10`, one
+of Google's four maptypes - `roadmap`, `satellite`, `terrain` or `hybrid` -
+or, for `OpenFreeMap`, one of `terrain`, `liberty`, `roads`, `light`,
+`daylight`, `midnight` and `midnight-roads`, or a whole block describing
+one.  That last provider draws the map here rather than fetching a
+picture of it, so its styles are the only ones a config or a theme can
+recolor; the block is
+[WRITING-A-MAP-STYLE.md](WRITING-A-MAP-STYLE.md).
 The two do not translate, so a config that changes `base-provider:` and
 leaves `style:` alone is naming something the new provider has never heard
 of.  Mapbox has no such style and no map arrives - the plain gray described
@@ -736,8 +742,9 @@ config.**  That is why every example says `!include ApiKeys.yaml` and they
 all get the one file at the top of the checkout, wherever the example
 itself lives.  A file that is not there says so, and says where it looked.
 
-Only the base map under a radar needs a key.  Radar frames from RainViewer and
-LibreWXR are free, and so is the METAR.
+Only Mapbox and Google need a key.  Radar frames from RainViewer and
+LibreWXR are free, so is the METAR, and so is `OpenFreeMap` - which is
+why `examples/openfreemap.yaml` has no `apikeys:` line at all.
 
 ## Trying something before you write it down
 

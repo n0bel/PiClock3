@@ -428,6 +428,27 @@ not.  Send the mask through the callback rather than storing it on yourself -
 one provider instance serves every map on the clock, so anything kept on
 `self` belongs to whichever request finished last.
 
+**A provider that draws its own map knows more than a band.**
+`OpenFreeMap` gets vector tiles and paints the credit itself, so its mask
+is the `QPainterPath` the text came from, grown by the halo - the radar
+keeps the space between the letters instead of losing a strip.  Send
+`None` when there is nothing baked in and nothing to protect.
+
+### A service that wants a header
+
+Qt sends no `User-Agent` at all, and a host behind Cloudflare answers 403
+to a request without one.  `WebGet` takes them, which is the only way a
+provider can send one:
+
+```python
+WebGet(url, self.gotTile, params,
+       headers={'User-Agent': 'PiClock3 (+https://github.com/...)'})
+```
+
+Name your plugin and give a link.  A tile service with no key has no other
+way to tell one busy client from a hundred, and being identifiable is most
+of what keeps a free service free.
+
 ## Two rules worth reading before you publish
 
 Keys travel in URLs, so anything logging a URL logs the key - see

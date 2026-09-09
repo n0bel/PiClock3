@@ -266,6 +266,7 @@ widgets and occupies no region of its own.
 | `OpenMeteo` | conditions and forecast from a model.  No key |
 | `OpenWeatherMap`, `TomorrowIO` | the same three answers, for people who already have one of those keys.  Both free plans |
 | `Mapbox`, `GoogleMaps` | the base map under a radar - each needs a key |
+| `OpenFreeMap` | the base map, or the roads over one.  **No key**: it sends vector tiles and the cartography is drawn here, so the colors are the theme's - see [WRITING-A-MAP-STYLE.md](docs/WRITING-A-MAP-STYLE.md) |
 | `RainViewer`, `LibreWXR` | radar frames.  Neither needs a key |
 
 Units are core rather than a weather feature.  `units: metric` in a config
@@ -362,8 +363,10 @@ them yet.
 
 **Radar and base maps**
 
-Both base maps that ship need a key, and that is the only thing in the setup
-above that makes anyone stop and open an account.  These do not.
+`OpenFreeMap` answers this now - `examples/openfreemap.yaml` is a whole
+clock with no `apikeys:` line at all.  A satellite photograph under a radar
+is still the nicest thing on the screen, so these are still worth having
+for anyone who wants a different keyless map.
 
 * **CARTO** basemaps, `dark_all` and `light_all`.  No key, and dark enough
   to sit under a clock without fighting it.  Attribution required.

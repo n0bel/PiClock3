@@ -1,0 +1,14 @@
+description: >
+  The same trim as terrain with nothing under it, so it can be drawn over
+  a satellite base as an overlay-style.  Transparent where nothing is
+  drawn, which is the whole difference.
+
+from: liberty
+background: none
+layers: [water, boundaries, motorways, highways, bridges, shields,
+         places]
+
+weight: 0.6
+
+palette:
+  from: dark

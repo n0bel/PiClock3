@@ -1,0 +1,68 @@
+description: >
+  OpenFreeMap, as the picture under a radar or the roads over one.  No key
+  and no account, which is the whole point of it - the tiles are vector
+  rather than finished images, so the cartography is drawn here and its
+  colors are the theme's.  Attribution is required and is drawn into the
+  map, so no config can leave it off.
+
+provides: [map]
+
+types:
+
+  map-style:
+    is: block
+    of:
+      from:       {is: string}
+      layers:     {is: list, of: layer-group}
+      background: {is: string}
+      palette:    {is: map-palette}
+    # which cartography to take, which of its layers to keep, what sits
+    # under them, and what color they end up.  Nothing here writes a
+    # layer: every zoom-width curve and every filter stays the source
+    # style's, which is what makes this worth doing rather than drawing
+    # a map of our own.
+
+  layer-group:
+    is: scalar
+    one-of: [land, parks, water, water-names, boundaries, motorways,
+             highways, roads, streets, paths, rail, bridges, shields,
+             street-names, places, regions, localities,
+             places-of-interest, buildings, airports]
+    # groups rather than the source style's 111 layer ids, because
+    # road_trunk_primary_casing is not a thing a config should know.  A
+    # set and never an order: layers draw in the source style's own order
+    # whatever order they are named in, since that order is load bearing.
+
+  map-palette:
+    is: block
+    of:
+      from:          {is: string, one-of: [dark, light]}
+      land:          {is: color}
+      land-high:     {is: color}
+      water:         {is: color}
+      park:          {is: color}
+      boundary:      {is: color}
+      road:          {is: color}
+      road-casing:   {is: color}
+      street:        {is: color}
+      street-casing: {is: color}
+      label:         {is: color}
+      label-halo:    {is: color}
+      shield:        {is: color}
+      shield-text:   {is: color}
+    # roles rather than layer ids, so a recolor does not have to know the
+    # cartography either.  Which set it starts from comes from the
+    # background's own luminance unless from: says.
+
+settings:
+
+  style: {of: [string, map-style]}
+  # a shipped name - liberty, terrain, roads, light - one of theirs by
+  # name, or a block.  A block merges tier by tier where a string
+  # replaces, which is what lets a theme recolor without restating the
+  # layer list.
+
+  style-folders: {is: list, of: string}
+  credit-color:  {is: color}
+  credit-halo:   {is: color}
+  font-family:   {is: string, inherits: page}

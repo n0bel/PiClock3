@@ -1,0 +1,10 @@
+description: >
+  Their whole style, as a base map.  Every layer, their colors, their
+  cartography - the map openfreemap.org shows on its own front page.
+  Costs the most to draw, and is what most people will want under a radar
+  they can see through.
+
+from: liberty
+# no layers:, so every group there is; no background:, so the style's own;
+# no palette:, so their colors.  This file exists to give the name a home
+# and the description a place to be read.

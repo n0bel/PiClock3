@@ -1,0 +1,158 @@
+# Liberty's 111 layers, in words a config can use.
+#
+# Two mappings.  `groups:` is what a style's layers: list picks from - one
+# word for a set of layer ids, because road_trunk_primary_casing is not a
+# thing anybody should have to know.  `roles:` is what a palette: recolors
+# - one word for the layers that should end up the same color.
+#
+# A group is a set and never an order.  Layers draw in the source style's
+# own order whatever order they are named in, because that order is load
+# bearing: Liberty draws every road casing before any road inner, so a
+# layers: list that put motorways after roads and was obeyed would put
+# dark casings over light road surfaces.  Writing the list chooses what is
+# in, never what is on top.
+#
+# This is the one file that changes when a style is re-cut.  Every id here
+# is Liberty's; `background` and `natural_earth` are deliberately in no
+# group, being what background: turns on rather than something to ask for.
+
+groups:
+
+  motorways:  [road_motorway_link_casing, road_motorway_casing,
+               road_motorway_link, road_motorway]
+  highways:   [road_trunk_primary_casing, road_trunk_primary]
+  roads:      [road_secondary_tertiary_casing, road_secondary_tertiary]
+  streets:    [road_area_pattern, road_service_track_casing,
+               road_link_casing, road_minor_casing, road_service_track,
+               road_link, road_minor, road_one_way_arrow,
+               road_one_way_arrow_opposite]
+  paths:      [road_path_pedestrian]
+  rail:       [road_major_rail, road_major_rail_hatching,
+               road_transit_rail, road_transit_rail_hatching]
+
+  shields:      [highway-shield-non-us, highway-shield-us-interstate,
+                 road_shield_us]
+  street-names: [highway-name-path, highway-name-minor, highway-name-major]
+
+  # settlements only.  A state name and a country name are their own
+  # group and a radar wants neither: MINNESOTA in capitals across the
+  # top of a map of Minnesota is not telling anybody anything, and
+  # label_other is islands and neighborhoods.
+  places:       [label_village, label_town, label_city, label_city_capital]
+  regions:      [label_state, label_country_3, label_country_2,
+                 label_country_1]
+  localities:   [label_other]
+  places-of-interest: [poi_r20, poi_r7, poi_r1, poi_transit]
+
+  boundaries:  [boundary_3, boundary_2, boundary_disputed]
+  water:       [waterway_tunnel, waterway_river, waterway_other, water]
+  water-names: [waterway_line_label, water_name_point_label,
+                water_name_line_label]
+  parks:       [park, park_outline]
+  land:        [landuse_residential, landcover_wood, landcover_grass,
+                landcover_ice, landcover_wetland, landuse_pitch,
+                landuse_track, landuse_cemetery, landuse_hospital,
+                landuse_school, landcover_sand]
+  buildings:   [building, building-3d]
+  airports:    [aeroway_fill, aeroway_runway, aeroway_taxiway, airport]
+
+  # the bridge and tunnel variants of whatever roads are drawn.  One word
+  # rather than a variant of each road group, because nobody wants bridges
+  # for motorways and not for trunks.
+  bridges:    [tunnel_motorway_link_casing, tunnel_service_track_casing,
+               tunnel_link_casing, tunnel_street_casing,
+               tunnel_secondary_tertiary_casing, tunnel_trunk_primary_casing,
+               tunnel_motorway_casing, tunnel_path_pedestrian,
+               tunnel_motorway_link, tunnel_service_track, tunnel_link,
+               tunnel_minor, tunnel_secondary_tertiary, tunnel_trunk_primary,
+               tunnel_motorway, tunnel_major_rail, tunnel_major_rail_hatching,
+               tunnel_transit_rail, tunnel_transit_rail_hatching,
+               bridge_motorway_link_casing, bridge_service_track_casing,
+               bridge_link_casing, bridge_street_casing,
+               bridge_path_pedestrian_casing,
+               bridge_secondary_tertiary_casing, bridge_trunk_primary_casing,
+               bridge_motorway_casing, bridge_path_pedestrian,
+               bridge_motorway_link, bridge_service_track, bridge_link,
+               bridge_street, bridge_secondary_tertiary,
+               bridge_trunk_primary, bridge_motorway, bridge_major_rail,
+               bridge_major_rail_hatching, bridge_transit_rail,
+               bridge_transit_rail_hatching]
+
+# Which paint key a role sets is the layer's own kind: fill-color on a
+# fill, line-color on a line, text-color on a label - so a role names the
+# layers that should agree about color and not what a color is called.
+# The two -halo roles are the exception and say so.
+
+roles:
+
+  # motorway, trunk and primary only.  Secondary and tertiary are a tier
+  # down and take `street`, which is how every road map anybody has seen
+  # does it: one color for the roads you drive between towns on and
+  # another for the ones inside them.
+  road:
+    layers: [road_motorway, road_motorway_link, road_trunk_primary,
+             tunnel_motorway, tunnel_motorway_link, tunnel_trunk_primary,
+             bridge_motorway, bridge_motorway_link, bridge_trunk_primary]
+
+  road-casing:
+    layers: [road_motorway_casing, road_motorway_link_casing,
+             road_trunk_primary_casing, tunnel_motorway_casing,
+             tunnel_motorway_link_casing, tunnel_trunk_primary_casing,
+             bridge_motorway_casing, bridge_motorway_link_casing,
+             bridge_trunk_primary_casing]
+
+  street:
+    layers: [road_secondary_tertiary, road_minor, road_link,
+             road_service_track, road_path_pedestrian,
+             tunnel_secondary_tertiary, tunnel_minor, tunnel_link,
+             tunnel_service_track, tunnel_path_pedestrian,
+             bridge_secondary_tertiary, bridge_street, bridge_link,
+             bridge_service_track, bridge_path_pedestrian]
+
+  street-casing:
+    layers: [road_secondary_tertiary_casing, road_minor_casing,
+             road_link_casing, road_service_track_casing,
+             tunnel_secondary_tertiary_casing, tunnel_street_casing,
+             tunnel_link_casing, tunnel_service_track_casing,
+             bridge_secondary_tertiary_casing, bridge_street_casing,
+             bridge_link_casing, bridge_service_track_casing,
+             bridge_path_pedestrian_casing]
+
+  water:
+    layers: [water, waterway_river, waterway_other, waterway_tunnel]
+
+  park:
+    layers: [park, park_outline]
+
+  land:
+    layers: [landuse_residential, landcover_wood, landcover_grass,
+             landcover_ice, landcover_wetland, landuse_pitch, landuse_track,
+             landuse_cemetery, landuse_hospital, landuse_school,
+             landcover_sand]
+
+  boundary:
+    layers: [boundary_3, boundary_2, boundary_disputed]
+
+  label:
+    layers: &labels [label_other, label_village, label_town, label_state,
+                     label_city, label_city_capital, label_country_3,
+                     label_country_2, label_country_1, water_name_point_label,
+                     water_name_line_label, waterway_line_label,
+                     highway-name-path, highway-name-minor,
+                     highway-name-major, airport, poi_r20, poi_r7, poi_r1,
+                     poi_transit]
+
+  label-halo:
+    paint: text-halo-color
+    layers: *labels
+
+  # a shield is drawn as its number over a halo, the sprite plate being
+  # the one thing MapStyle does not draw - so the plate's color is the
+  # halo's and the number's is its own
+  shield-text:
+    layers: &shields [highway-shield-non-us, highway-shield-us-interstate,
+                      road_shield_us]
+
+  shield:
+    paint: text-halo-color
+    layers: *shields

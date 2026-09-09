@@ -1,0 +1,23 @@
+kind: basemap
+
+# the picture under a radar, or over one.  A radar names its own style:
+# and overrides this; liberty is their whole cartography and the trimmed
+# ones are several times quicker to draw.  A name, or a block - see
+# docs/WRITING-A-MAP-STYLE.md.
+style: terrain
+
+# where a style name is looked for, nearest first.  A folder of your own,
+# or one a plugin brought, adds names to the shipped ones and can shadow
+# them - the way languages and marker sets already work.  The plugin's own
+# styles/ is looked in last and needs no entry here.
+style-folders: []
+
+# the credit this draws into the map itself, since nothing is baked into
+# a vector tile.  Their terms require it and no config can remove it; what
+# these two set is only whether it reads against a light map or a dark one.
+credit-color: '#ffffff'
+credit-halo: '#000000'
+
+# the face the map's labels and its credit are drawn in.  Empty takes
+# Qt's default, which is the one the rest of the clock uses.
+font-family: ''

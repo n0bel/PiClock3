@@ -1,0 +1,36 @@
+description: >
+  The other half of midnight: roads, boundaries and place names on
+  nothing, to be drawn over the weather rather than under it.  Khaki
+  lines and light labels, both on a black halo, which is what reads over
+  green and yellow radar as well as over an empty map.
+
+  Shaped after the overlay examples/arctic.yaml uses, which is
+  SerBrynden's own Mapbox style.  Sampled from theirs over the same view:
+  83% of it is transparent, and what is left is khaki lines (#403820),
+  light gray labels (#a8a8a8) and black around both.
+
+from: liberty
+background: none
+layers: [boundaries, motorways, highways, roads, bridges, shields,
+         places]
+
+# thin, for the same reason as daylight and more so: this one sits on
+# top of the weather, so every pixel of it is a pixel of rain hidden
+weight: 0.45
+
+palette:
+  from: dark
+  # light on black rather than dark on white.  Theirs is drawn this way
+  # and it is the right way round for radar: a black halo separates a
+  # line from green and yellow, where a white one washes into them.
+  road:          '#8a7a45'
+  road-casing:   '#0b0b08'
+  street:        '#6a6040'
+  street-casing: '#0b0b08'
+  boundary:      '#7a7460'
+  label:         '#b4b4b0'
+  label-halo:    '#000000'
+  # dark on the plate, unlike the labels beside it - the plate is part of
+  # the sprite and is near white whatever the map under it is doing
+  shield-text:   '#1a1a18'
+  shield:        '#f0f0f0'

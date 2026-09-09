@@ -1,0 +1,48 @@
+# The two palettes a style starts from, by the role names groups.yaml
+# gives the layers.  A style's own palette: names one of these and then
+# says what it wants different.
+#
+# Which one a style starts from, when it does not say, comes from its
+# background's luminance - so background: white gets dark roads on a light
+# ground and background: relief gets the light-on-dark set, neither of
+# them written down anywhere.
+
+dark:
+  # a desaturated gray-green, and the color the relief lifts it to.
+  # Tested against light rain rather than against a storm: drizzle is the
+  # weakest thing a map under weather has to keep visible, and what
+  # separates it from the ground is the saturation rather than the hue.
+  # A saturated green would fail here where this one does not.
+  land:          '#16221a'
+  land-high:     '#242a20'
+  water:         '#16304a'
+  park:          '#1a2a1c'
+  boundary:      '#b9ad92'
+  road:          '#f2e9d2'
+  road-casing:   '#14100c'
+  street:        '#9c968a'
+  street-casing: '#14100c'
+  label:         '#ffffff'
+  label-halo:    '#000000'
+  # A shield's number is dark on every map, light or dark, because what
+  # it sits on is not the map: every plate in the sprite sheet is a near
+  # white #f0f0f0 with a dark border, so white text on one is invisible.
+  # The halo stays light so the number still reads if the sheet does not
+  # arrive and the number is drawn on the map itself.
+  shield-text:   '#1a1a18'
+  shield:        '#f0f0f0'
+
+light:
+  land:          '#f3efe2'
+  land-high:     '#fbf8ef'
+  water:         '#a9c8de'
+  park:          '#dfe8d2'
+  boundary:      '#9a917c'
+  road:          '#e8a45c'
+  road-casing:   '#c8813a'
+  street:        '#ffffff'
+  street-casing: '#d8d2c4'
+  label:         '#3b3a35'
+  label-halo:    '#f7f4ea'
+  shield-text:   '#3b3a35'
+  shield:        '#f7f4ea'

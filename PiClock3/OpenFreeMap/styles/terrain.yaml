@@ -1,0 +1,19 @@
+description: >
+  A base map with no key: the classes that still read under weather, on
+  Natural Earth shaded relief recolored to the palette.  A fifth of
+  liberty's drawing, and the ground is not flat.
+
+from: liberty
+background: relief
+# no `roads` - secondary and tertiary are a web at zoom 11 and are
+# not in the tiles at all at zoom 7, so they cost clutter and buy
+# nothing.  No `regions` either: see groups.yaml.
+layers: [water, boundaries, motorways, highways, bridges, shields,
+         places]
+
+# Liberty draws heavier than a radar wants; every pixel of road is a
+# pixel of weather nobody can see.
+weight: 0.6
+
+palette:
+  from: dark

@@ -1,0 +1,37 @@
+description: >
+  A bright green map in the shape of Mapbox Streets: pale gray-green
+  land, darker green parks, blue water, amber trunk roads over white
+  minor ones.  The most legible of the shipped styles in daylight, and
+  the one that wants frame-opacity around 0.6 so the weather is drawn
+  through it rather than over it.
+
+from: liberty
+background: '#dce9d4'
+# land and parks as well: a green ground with nothing growing on it is
+# just a green sheet, and the point of this one is that it reads as a map
+layers: [land, parks, water, boundaries, motorways, highways, roads,
+         bridges, shields, places]
+
+# Liberty draws roads a good deal heavier than Mapbox Streets does at the
+# same scale - put the two side by side at zoom 8 and theirs are
+# hairlines where these are bands.  Thinner is also what a radar wants,
+# since every pixel of road is a pixel of weather nobody can see.
+weight: 0.5
+
+palette:
+  from: light
+  # sampled from mapbox/streets-v12 over the same view: their land runs
+  # #d0e8c8 to #e0e8d8, which is paler and grayer than a green sounds
+  land:          '#dce9d4'
+  land-high:     '#eaf2e4'
+  park:          '#c6e3b6'
+  water:         '#a8d8f0'
+  boundary:      '#b0b4a6'
+  road:          '#f2a950'
+  road-casing:   '#dc9330'
+  street:        '#ffffff'
+  street-casing: '#d8dbd0'
+  label:         '#2c3329'
+  label-halo:    '#f6faf2'
+  shield-text:   '#2c3329'
+  shield:        '#f6faf2'

@@ -1,0 +1,158 @@
+# The same clock as default.yaml, drawn without a key anywhere - which
+# is what OpenFreeMap is for.  A fresh clone runs this with no
+# ApiKeys.yaml at all.
+#
+# The trade is honest: a satellite photograph under a radar is still the
+# nicest thing on the screen, and this is the option for people who do
+# not want to sign up for one.
+
+pages:
+  clock-page: {order: 0, layout: classic, theme: circuit}
+  maps-page:  {order: 1, layout: bigmaps, theme: circuit}
+
+# the words the clock speaks - one of the codes a language file
+# answers to.  Files ship in PiClock3/languages; a languages/ folder
+# of your own, or a plugin's, adds to them.
+language: en
+
+location:
+  latitude: 45
+  longitude: -93
+  # Blank means the machine's own zone, which is right when the clock
+  # sits where it is pointed.  Name a zone when it does not.
+  timezone:
+
+# Providers supply data and occupy no region.
+providers:
+
+  # the daily forecast.  No key: Open-Meteo asks for none.
+  openmeteo: {plugin: PiClock3.OpenMeteo}
+
+  # an actual observation from a nearby field
+  metar: {plugin: PiClock3.Metar, METAR: KMSP}
+
+  # the base map under the radar, and the roads over it.  No key
+  # and no account: they serve vector tiles and the cartography is
+  # drawn here, which is why its colors are the theme's rather than
+  # a photograph's.
+  openfreemap: {plugin: PiClock3.OpenFreeMap}
+
+  # radar tiles - one plugin per service, neither needs a key.  Point a
+  # radar's frame-provider: at whichever you prefer.
+  rainviewer: {plugin: PiClock3.RainViewer}
+  librewxr:   {plugin: PiClock3.LibreWXR}
+
+# Widgets occupy a region named by the page's layout, and draw in it.
+widgets:
+  clock:  {plugin: PiClock3.AnalogClock, region: clock}
+# clock:  {plugin: PiClock3.DigitalClock, region: clock}
+  date:   {plugin: PiClock3.Date,   region: date}
+  astral: {plugin: PiClock3.Astral, region: bottom}
+
+  # one day in each cell of the layout's forecast column
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+
+  # the strip along the bottom of the maps page
+  maps-caption:
+    plugin: PiClock3.DigitalClock
+    region: caption
+    format: "{plugin-data.now:%a %b} {plugin-data.now.day} {plugin-data.now.year}   {plugin-data.now:%H:%M:%S}"
+    lowercase: false
+    font-size: 0.75
+
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    conditions-provider: metar  # or openmeteo
+
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
+    base-provider: openfreemap
+    frame-provider: librewxr     # or rainviewer
+    style: terrain               # or liberty, roads, light
+    zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          latitude: '{location.latitude}'
+          longitude: '{location.longitude}'
+        color: red
+        image: teardrop-home
+
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    base-provider: openfreemap
+    frame-provider: librewxr     # or rainviewer
+    style: terrain               # or liberty, roads, light
+    zoom: 11
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          latitude: '{location.latitude}'
+          longitude: '{location.longitude}'
+        color: green
+        size: mid
+        image: teardrop-home
+
+  radar3:
+    plugin: PiClock3.MapLoop
+    region: radars.1
+    base-provider: openfreemap
+    frame-provider: librewxr     # or rainviewer
+    style: terrain               # or liberty, roads, light
+    zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+  radar4:
+    plugin: PiClock3.MapLoop
+    region: radars.2
+    base-provider: openfreemap
+    frame-provider: librewxr     # or rainviewer
+    style: terrain               # or liberty, roads, light
+    zoom: 11
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+logging-level: debug
+
+# These three are the defaults, written out so they are easy to find.
+#
+# When PyQtPiClock3.log is rolled, and how many older ones are kept.
+#
+#   'per-run'  rolled at every start, so PyQtPiClock3.log.1 is the run
+#              before this one and .2 the one before that - and rolled
+#              again whenever it reaches logging-max-size
+#   'daily'    rolled at midnight and not on a restart, so every run of
+#              one day shares a file, named PyQtPiClock3.log.2026-09-07
+#
+logging-rotate: per-run
+logging-max-size: 10      # MB before it rolls; 0 for no limit
+logging-keep: 7           # how many older logs to keep
+
+# No apikeys: line at all, which is the whole point of this file.
+# Open-Meteo, METAR, LibreWXR and OpenFreeMap each ask for none, so
+# this clock draws everything it draws without an account anywhere.

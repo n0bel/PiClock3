@@ -149,7 +149,18 @@ kind-settings:               # what the plugins should use
   forecast:           {icons-folder: icons-darkblue}
   radar:              {marker-images-folder: markers,
                        marker-images-base-folder: '{this-folder}'}
+  basemap:            {style: {palette: {road: '#8fb4d8',
+                                         label: '#dfe9f4'}}}
 ```
+
+That last one is new in kind: the base map under a radar used to be a
+picture somebody else drew, and a theme could pick which one but never
+what color it was.  `OpenFreeMap` sends the data instead, so its colors
+are a theme's to set - and because `Config._merge` recurses into blocks,
+a theme writing only a `palette:` keeps whatever layer list the config
+chose.  A theme writing `style:` as a *string* replaces all of it, which is
+the merge behaving as it does everywhere else.  The roles are in
+[WRITING-A-MAP-STYLE.md](WRITING-A-MAP-STYLE.md).
 
 Those four lines are every picture a theme chooses: the clock's face and
 hands, the weather icons the two widgets share, and the pins a radar draws.

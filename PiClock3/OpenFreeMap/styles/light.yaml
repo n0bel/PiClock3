@@ -1,0 +1,14 @@
+description: >
+  A printed-map ground, the way radar.weather.gov draws one.  Wants
+  frame-opacity around 0.6 on the radar: a pale ground is only worth
+  having if the weather is drawn through it rather than over it.
+
+from: liberty
+background: '#f3efe2'
+# land and parks as well, because a cream ground with nothing on it is a
+# blank sheet.  It costs - roughly twice the fills of the trimmed pair.
+layers: [land, parks, water, boundaries, motorways, highways, roads,
+         bridges, shields, places]
+
+palette:
+  from: light

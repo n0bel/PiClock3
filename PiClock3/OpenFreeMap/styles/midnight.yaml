@@ -1,0 +1,22 @@
+description: >
+  A base map that gets out of the way: near-black ground, dark water, and
+  the built-up areas showing as a shade lighter.  No roads at all - those
+  belong on top of the weather rather than under it, which is what
+  midnight-roads is for.
+
+  Shaped after the pair examples/arctic.yaml uses, which are SerBrynden's
+  own Mapbox styles.  Sampled from theirs over the same view: 87% of
+  their base is black, and the only other thing in it is water.
+
+from: liberty
+background: '#04060a'
+layers: [land, water]
+
+palette:
+  from: dark
+  land:      '#0d1016'
+  land-high: '#161b23'
+  # theirs reads clearly against the black - lakes and rivers are the
+  # only thing in the picture, so they carry all of the geography
+  water:     '#22394f'
+  park:      '#0b1410'
