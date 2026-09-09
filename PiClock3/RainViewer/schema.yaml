@@ -7,6 +7,12 @@ provides: [frames]
 
 settings:
 
+  # MapLoop owns zoom: and hands a view to whoever it names.  Saying it
+  # here narrows that rather than adding a zoom of our own: the service
+  # stopped serving tiles above 7 and answers a "Zoom Level Not
+  # Supported" card, which is a 200 and draws as a gray box.
+  zoom: {is: number, range: [0, 7]}
+
   palette: {is: number}
   smooth:  {is: number}
   snow:    {is: number}

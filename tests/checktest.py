@@ -102,6 +102,15 @@ def themed():
     return do
 
 
+def narrowing():
+    """the radar's frames from the fixture that serves less than MapLoop
+    offers, in place of LibreWXR which narrows nothing"""
+    def do(cfg):
+        cfg['providers']['narrows'] = {'plugin': 'plugins._selftest'}
+        cfg['widgets']['radar1']['frame-provider'] = 'narrows'
+    return do
+
+
 def google():
     """GoogleMaps as a second base map, with a key so the cases about
     style: are not read past an apikey complaint"""
@@ -676,6 +685,66 @@ CASES = [
                 'PiClock3.GoogleMaps', 'PiClock3.Mapbox'],
          forbids=[], once='suits nothing'),
 
+    # A provider declaring a setting the widget's own plugin already owns
+    # is narrowing it rather than offering another word for it, so every
+    # spec has to take the value where any of them will do above.  What
+    # tells the two apart is only whether the entry's own plugin declares
+    # the name: MapLoop owns zoom: and never declares style:.
+    dict(name='a provider narrows a setting the widget owns',
+         config=config(a=narrowing(),
+                       b=put('widgets', 'radar1', 'zoom', 11)),
+         wants=['widgets.radar1.zoom', 'not in the allowed range of 0 to 7'],
+         forbids=['suits nothing'], needs='Narrows'),
+    dict(name='the same value inside what the provider serves',
+         config=config(a=narrowing(),
+                       b=put('widgets', 'radar1', 'zoom', 7)),
+         wants=[], forbids=['zoom'], needs='Narrows'),
+    # MapLoop's own range still applies where nobody narrowed it
+    dict(name='past the widget plugin\'s own range, nothing narrowing',
+         config=config(a=put('widgets', 'radar1', 'zoom', 44)),
+         wants=['widgets.radar1.zoom', 'not in the allowed range of 0 to 20'],
+         forbids=[]),
+    dict(name='a zoom the frame provider does not narrow',
+         config=config(a=put('widgets', 'radar1', 'zoom', 11)),
+         wants=[], forbids=['zoom']),
+    # not zoom-specific: any setting the widget owns and a provider
+    # declares is asked the same question
+    dict(name='a second setting narrowed the same way',
+         config=config(a=narrowing(),
+                       b=put('widgets', 'radar1', 'interval', 2)),
+         wants=['widgets.radar1.interval',
+                'not in the allowed range of 5 to 60'],
+         forbids=[], needs='Narrows'),
+
+    # A narrowing has to be asked of what the plugin will be handed, not
+    # of what its entry says: zoom: reaches a radar from a kind block or
+    # from a theme as readily as from the widget.  The block itself
+    # cannot answer it, since it reaches whatever a widget happens to
+    # name and is right for a clock whose radars all use something else.
+    dict(name='a narrowed setting arriving from kind-settings',
+         config=config(a=narrowing(),
+                       b=put('kind-settings', 'radar', 'zoom', 11)),
+         wants=['widgets.radar1.zoom', 'not in the allowed range of 0 to 7'],
+         forbids=[], needs='Narrows'),
+    dict(name='a narrowed setting arriving from a theme',
+         config=config(a=narrowing(), b=themed()),
+         wants=['widgets.radar1.zoom', 'not in the allowed range of 0 to 7'],
+         forbids=[], needs=('Narrows', 'NarrowTheme')),
+    dict(name='a kind block past a range nothing named narrows',
+         config=config(a=put('kind-settings', 'radar', 'zoom', 11)),
+         wants=[], forbids=['zoom']),
+
+    # the shipped one this exists for, so removing its declaration is a
+    # failing test rather than a silent gray box on every close radar
+    dict(name='RainViewer says it stops at zoom 7',
+         config=config(a=put('providers', 'rainviewer',
+                             {'plugin': 'PiClock3.RainViewer'}),
+                       b=put('widgets', 'radar1', 'frame-provider',
+                             'rainviewer'),
+                       c=put('widgets', 'radar1', 'zoom', 11)),
+         wants=['widgets.radar1.zoom', 'not in the allowed range of 0 to 7'],
+         forbids=[]),
+
     # a kind block reaches whatever a widget happens to name, so every
     # installed basemap is a candidate and one of them is enough
     dict(name='a kind-settings value only one of the kind takes',
@@ -843,6 +912,21 @@ FIXTURES = {
     'ShadowingLayout': {os.path.join('layouts', 'classic.yaml'):
                         LAYOUT % 'Not The Real Classic',
                         'layout.yaml': LAYOUT % 'Selftest'},
+    # A frame service that serves less than MapLoop offers.  It declares
+    # settings MapLoop already owns, which is a narrowing rather than a
+    # vocabulary of its own - the real one is RainViewer, which stopped
+    # serving tiles above zoom 7.
+    'Narrows': {'config.yaml': 'kind: frames\n',
+                'schema.yaml': 'description: >\n  Serves less than it is'
+                               ' offered.\n\nprovides: [frames]\n\n'
+                               'settings:\n'
+                               '  zoom:     {is: number, range: [0, 7]}\n'
+                               '  interval: {is: number, range: [5, 60]}\n'},
+    # a theme that sets a radar's zoom, which reaches the widget as tier
+    # three of the merge and so is only visible in what it will be handed
+    'NarrowTheme': {'theme.yaml': 'name: Selftest\ndescription: sets a'
+                                  ' zoom\nkind-settings:\n  radar:\n'
+                                  '    zoom: 11\n'},
     # and one inventing a name core already uses
     'TwinCore': {'config.yaml': 'kind: basemap\nstyle: streets\n',
                  'schema.yaml': 'description: >\n  Redefines a core'
@@ -859,6 +943,7 @@ FIXTURES = {
 TWIN = os.path.join('plugins', '_selftest')
 WHERE = {'Nested': os.path.join('plugins', '_selftest_vendor', 'Thing'),
          'PinSet': os.path.join('themes', '_selftest'),
+         'NarrowTheme': os.path.join('themes', '_selftest'),
          'BundledLayout': os.path.join('plugins', '_selftest'),
          'RivalLayout': os.path.join('themes', '_selftest'),
          'ShadowingLayout': os.path.join('layouts', '_selftest')}

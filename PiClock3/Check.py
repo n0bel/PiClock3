@@ -720,7 +720,7 @@ class Check():
                                         for v in (None, '', [], {}))
 
     def checkEntry(self, where, entry, settings, declared, merged=None,
-                   quiet=False, required=True, module=None):
+                   quiet=False, required=True, module=None, owns=False):
         """one block of settings against what declares them.
 
         Two questions, two subjects.  `required` is asked of `merged`,
@@ -751,13 +751,44 @@ class Check():
                                               self.declaring[0],
                                               self.declaring[1]))
             if candidates:
-                self.checkDeclared('%s.%s' % (where, name), value, candidates)
+                self.checkDeclared('%s.%s' % (where, name), value, candidates,
+                                   owns and name in (settings or {}))
             elif not quiet:
                 self.warning('%s.%s' % (where, name),
                              'nothing declares this setting, so it is'
                              ' dropped')
+        self.checkNarrowed(where, entry, settings, declared, merged, owns)
 
-    def checkDeclared(self, where, value, candidates):
+    def checkNarrowed(self, where, entry, settings, declared, merged, owns):
+        """a narrowed setting the entry does not write for itself.
+
+        The loop above asks about what an entry says, which is where a
+        misspelling can be.  A narrowing has to be asked of what the
+        plugin will actually get instead, because `zoom: 11` reaches a
+        radar from kind-settings: as readily as from the widget and a
+        frame service that stops at 7 minds either way.
+
+        The block cannot answer it - a kind block reaches every radar and
+        which frame provider each names is not knowable there, so a block
+        saying 11 is right for a clock whose radars all use LibreWXR.
+        Here is where both halves are known.
+
+        Only names the entry's own plugin declares and a named provider
+        also declares, so a setting nobody narrowed is asked nothing new.
+        """
+        if not owns or not merged:
+            return
+        for name, candidates in (declared or {}).items():
+            if name in entry or name not in (settings or {}):
+                continue
+            if self.blank(merged, name):
+                continue
+            for candidate in candidates:
+                with self.readingAs(candidate):
+                    self.checkValue('%s.%s' % (where, name),
+                                    merged[name], candidate.spec)
+
+    def checkDeclared(self, where, value, candidates, owned=False):
         """one value against every spec that declares its name.
 
         Usually there is one.  Several is a widget naming two providers
@@ -767,7 +798,22 @@ class Check():
         other.  So a value any of them takes is taken here: the config
         names which plugin actually reads it, and that one is entitled to
         its own vocabulary.
+
+        `owned` is the case that is not that.  When the entry's own
+        plugin declares the name, the setting is the widget's and a
+        provider declaring it too is *narrowing* it rather than offering
+        another word for it - MapLoop owns `zoom:` and hands a view to
+        whoever it names, so a frame service that stops at zoom 7 is
+        saying so about MapLoop's zoom rather than about one of its own.
+        Every spec has to take the value there, where any of them will do
+        above.  Nothing else tells the two apart: `style:` is only ever
+        declared by the providers, never by MapLoop.
         """
+        if owned:
+            for candidate in candidates:
+                with self.readingAs(candidate):
+                    self.checkValue(where, value, candidate.spec)
+            return
         if len(candidates) == 1:
             with self.readingAs(candidates[0]):
                 self.checkValue(where, value, candidates[0].spec)
@@ -1143,4 +1189,4 @@ class Check():
                                                    entry, isWidget)
             with self.settingsOf(merged, folder):
                 self.checkEntry(where, entry, settings, passed, merged,
-                                quiet=unresolved, module=module)
+                                quiet=unresolved, module=module, owns=True)
