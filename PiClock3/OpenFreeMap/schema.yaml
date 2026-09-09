@@ -14,13 +14,23 @@ types:
     of:
       from:       {is: string}
       layers:     {is: list, of: layer-group}
-      background: {is: string}
+      background: {of: [map-ground, color]}
       palette:    {is: map-palette}
     # which cartography to take, which of its layers to keep, what sits
     # under them, and what color they end up.  Nothing here writes a
     # layer: every zoom-width curve and every filter stays the source
     # style's, which is what makes this worth doing rather than drawing
     # a map of our own.
+
+  map-ground:
+    is: scalar
+    one-of: [none, relief, blue-marble]
+    # what a background: may name instead of a color.  A ground is a
+    # raster source and naming one substitutes it for the style's own,
+    # so `relief` is Natural Earth used as the shape of the land and
+    # `blue-marble` is NASA's photograph of it drawn as it arrives.
+    # grounds.yaml is the list; adding one is an edit there and a name
+    # here, and nothing else.
 
   layer-group:
     is: scalar

@@ -29,6 +29,12 @@ MapTiler, GitHub Pages and a key, and rehosting that is much of what
 OpenFreeMap is.  The dated path in the TileJSON is not guessable - it
 read 20260830_080001_pt one week and 20260906_080001_pt the next.
 
+What sits under the layers is a `background:`, and a name there is a
+**ground** - a raster source substituted for the style's own, listed in
+grounds.yaml.  Two ship: their Natural Earth relief, used as the shape
+of the land, and NASA's Blue Marble, drawn as the picture it is.  A
+ground brings its own credit, which is drawn beside ours.
+
 One provider serves both of MapLoop's roles.  An overlay style has no
 background layer, so its pixmap is transparent where nothing is drawn,
 and that is the whole difference between the two.
@@ -162,10 +168,11 @@ class OpenFreeMap(BaseMap):
         self.parts = {}            # sprite url -> the halves, as they land
         self.tiles = {}            # tile key -> VectorTile or QImage
         self.inflight = {}         # tile key -> the jobs waiting on it
-        self.reliefs = {}          # id(MapStyle) -> what its hills lift to
+        self.reliefs = {}          # id(MapStyle) -> the ground it draws
         self.groups = {}
         self.roles = {}
         self.palettes = {}
+        self.grounds = {}
 
     def start(self):
         here = os.path.dirname(os.path.abspath(__file__))
@@ -173,8 +180,11 @@ class OpenFreeMap(BaseMap):
         self.groups = found.get('groups') or {}
         self.roles = found.get('roles') or {}
         self.palettes = readYaml(os.path.join(here, 'palettes.yaml')) or {}
-        logger.debug('%s %d groups, %d roles, %d palettes', self.name,
-                     len(self.groups), len(self.roles), len(self.palettes))
+        found = readYaml(os.path.join(here, 'grounds.yaml')) or {}
+        self.grounds = found.get('grounds') or {}
+        logger.debug('%s %d groups, %d roles, %d palettes, %d grounds',
+                     self.name, len(self.groups), len(self.roles),
+                     len(self.palettes), len(self.grounds))
 
     def pageChange(self):
         return
@@ -314,7 +324,10 @@ class OpenFreeMap(BaseMap):
         self.weigh(style, spec.get('weight'))
         logger.debug('%s style from %r: %d layers', self.name,
                      spec.get('from'), len(style['layers']))
-        high = color(palette.get('land-high')) if ground == 'relief' else None
+        # what a raster tile becomes as it lands: a ground used as shape
+        # says the color its hills lift to, one drawn raw says nothing
+        found = self.grounds.get(ground) or {}
+        high = (found, color(palette.get('land-high'))) if found else None
         return MapStyle(style, sheet), high
 
     def probed(self, layers, wanted=None):
@@ -490,39 +503,84 @@ class OpenFreeMap(BaseMap):
         return found is not None and found.lightnessF() > LIGHT_GROUND
 
     def ground(self, style, wanted, palette):
-        """what sits under the layers: their background, or ours.
+        """what sits under the layers: a named ground, a color, or
+        nothing.
 
-        `relief` keeps their Natural Earth raster layer and puts the
-        palette's land color under it; every other answer replaces the
-        background layer outright, and `none` removes it, which is what
-        makes a style an overlay.
+        A ground is a raster source and naming one substitutes it for
+        the style's own, so everything below here - which tiles cover
+        the view, fetching them, drawing them - reads the style's
+        sources: block exactly as it did and needs to know nothing about
+        where a ground comes from.  grounds.yaml is the whole list.
+
+        A color replaces the background layer outright and drops the
+        raster, and `none` removes both, which is what makes a style an
+        overlay.
         """
         if wanted is None:
             return
+        ground = self.grounds.get(wanted) or {}
         style['layers'] = [layer for layer in style['layers']
                            if layer.get('type') != 'background'
-                           and (wanted == 'relief'
-                                or layer.get('type') != 'raster')]
+                           and (ground or layer.get('type') != 'raster')]
         if wanted == 'none':
             return
-        paint = palette.get('land') if wanted == 'relief' else wanted
+        # --check cannot catch this: background: takes a color as well as
+        # a ground, and a color is any string Qt will read, so a union of
+        # the two rejects nothing.  Here is where a typo is found.
+        if not ground and color(wanted) is None:
+            logger.warning(
+                '%s: background: %r is neither a color nor a ground, so'
+                ' this map has nothing under it.  A ground is one of %s,'
+                ' and a color is anything Qt reads - white, #f3efe2.',
+                self.name, wanted, ', '.join(sorted(self.grounds)))
+            return
+        # under a picture the ground color only shows where the tiles
+        # have not arrived; under the relief it is half of what is drawn
         style['layers'].insert(0, {
             'id': 'piclock-background', 'type': 'background',
-            'paint': {'background-color': paint}})
-        if wanted != 'relief':
+            'paint': {'background-color':
+                      palette.get('land') if ground else wanted}})
+        if not ground:
             return
-        # Their relief layer is written for world zooms - it stops at 7
+        # Their raster layer is written for world zooms - it stops at 7
         # and has faded to a tenth by 6 - because under their own
         # cartography that is all it is for.  As the ground it draws at
-        # every zoom, and it is used as shape rather than as color: the
-        # tile is turned into the palette's land-high showing through
-        # its own brightness, so what lands on the map is the land color
-        # lifted where there are hills.  Their pale green never appears.
+        # every zoom, at full strength when it is a picture and blended
+        # when it is being used as the shape of the land.
+        raw = ground.get('color') == 'raw'
         for layer in style['layers']:
             if layer.get('type') == 'raster':
                 layer.pop('maxzoom', None)
                 layer.pop('minzoom', None)
-                layer['paint'] = {'raster-opacity': RELIEF_OPACITY}
+                layer['paint'] = {
+                    'raster-opacity': 1.0 if raw else RELIEF_OPACITY,
+                    'raster-resampling':
+                        'nearest' if ground.get('magnify') == 'nearest'
+                        else 'linear'}
+                self.sourced(style, layer.get('source'), ground)
+
+    @staticmethod
+    def sourced(style, name, ground):
+        """point a style's raster source at the ground's own tiles.
+
+        `from: style` means the ground is the one the style already
+        declares - Natural Earth, which Liberty carries as its second
+        source - so there is nothing to substitute.  Anything else
+        replaces the tiles, the zoom it stops at and the size of one,
+        which is all `tilesFor` reads.
+        """
+        if not name or ground.get('from') == 'style':
+            return
+        tiles = ground.get('tiles')
+        if not tiles:
+            return
+        spec = (style.get('sources') or {}).get(name)
+        if spec is None:
+            return
+        spec.pop('url', None)              # a TileJSON would win over these
+        spec['tiles'] = list(tiles)
+        spec['maxzoom'] = ground.get('maxzoom', 8)
+        spec['tileSize'] = ground.get('tilesize', TILEPX)
 
     @staticmethod
     def weigh(style, weight):
@@ -618,15 +676,20 @@ class OpenFreeMap(BaseMap):
                     wanted.append((kind, source, found))
 
         job = {'view': view, 'style': style, 'callback': callback,
-               'placed': {}, 'pending': 0, 'urls': {}}
+               'placed': {}, 'pending': 0, 'urls': {},
+               # a ground from another service is named in the credit
+               # beside ours, since drawing somebody's picture without
+               # saying whose is the one thing none of these allow
+               'also': (high[0].get('credit') if high else '') or ''}
         for kind, source, (template, size, maxzoom) in wanted:
             make, tag = self.asTile, ''
             if kind == 'raster':
                 make = self.asImage
-                if high is not None:
-                    tag = high.name()
+                if high is not None and high[0].get('color') != 'raw':
+                    tint = high[1]
+                    tag = tint.name()
 
-                    def make(data, scale, tint=high):     # noqa: F811
+                    def make(data, scale, tint=tint):     # noqa: F811
                         return self.asRelief(data, tint)
             self.want(job, source, template, size, maxzoom, make, tag)
         if not job['pending']:
@@ -855,7 +918,7 @@ class OpenFreeMap(BaseMap):
                 return
 
         painter, size = job['painter'], job['size']
-        mask = self.credit(painter, size)
+        mask = self.credit(painter, size, job.get('also') or '')
         painter.end()
         logger.debug('%s drew a %dx%d map in %d slices, %.0f ms', self.name,
                      size.width(), size.height(), job['slices'],
@@ -864,7 +927,7 @@ class OpenFreeMap(BaseMap):
 
     # --------------------------------------------------------------- credit
 
-    def credit(self, painter, size):
+    def credit(self, painter, size, also=''):
         """their credit, drawn in, and a mask that is the letters.
 
         Every other base map arrives with a mark baked into it and can say
@@ -881,7 +944,7 @@ class OpenFreeMap(BaseMap):
                                max(CREDIT_FLOOR,
                                    size.height() * CREDIT_SIZE))))
         style = self._creditStyle(height)
-        text, path = self._creditPath(style, size, height)
+        text, path = self._creditPath(style, size, height, also)
         if path is None:
             return None
 
@@ -919,11 +982,23 @@ class OpenFreeMap(BaseMap):
                 'halo': color(self.config.get('credit-halo')) or BLACK}
 
     @staticmethod
-    def _creditPath(style, size, height):
-        """the long credit, or the short one where the long will not fit"""
+    def _creditPath(style, size, height, also=''):
+        """the long credit, or the short one where the long will not fit.
+
+        A ground brought in from somewhere else is named alongside, and
+        ours is shortened before theirs is dropped: a 200 pixel radar
+        fits neither long form, and naming nobody for the picture the
+        map is drawn on would be worse than abbreviating the credit for
+        the roads.  Theirs goes last, when even the short pair will not
+        fit, because OpenMapTiles requires its credit where NASA asks
+        for one.
+        """
         metrics = QFontMetricsF(style['font'])
         margin = max(2.0, height * 0.4)
-        for text in (CREDIT, SHORT_CREDIT):
+        lines = [CREDIT, SHORT_CREDIT]
+        if also:
+            lines = [CREDIT + '  ' + also, SHORT_CREDIT + '  ' + also] + lines
+        for text in lines:
             wide = metrics.horizontalAdvance(text)
             if wide <= size.width() - 2 * margin or text is SHORT_CREDIT:
                 if wide > size.width() - 2 * margin:

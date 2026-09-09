@@ -256,8 +256,8 @@ nothing takes it.  Say either on the widget and yours wins.
 **`style:` is the base map itself**, named in whatever vocabulary the
 provider uses: a Mapbox style id like `mapbox/satellite-streets-v10`, one
 of Google's four maptypes - `roadmap`, `satellite`, `terrain` or `hybrid` -
-or, for `OpenFreeMap`, one of `terrain`, `liberty`, `roads`, `light`,
-`daylight`, `midnight` and `midnight-roads`, or a whole block describing
+or, for `OpenFreeMap`, one of `terrain`, `satellite`, `liberty`, `roads`,
+`light`, `daylight`, `midnight` and `midnight-roads`, or a block describing
 one.  That last provider draws the map here rather than fetching a
 picture of it, so its styles are the only ones a config or a theme can
 recolor; the block is

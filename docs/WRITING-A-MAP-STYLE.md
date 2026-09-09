@@ -52,12 +52,13 @@ the answer there is to drop `layers:` and take the style whole.
 
 ## The shipped names
 
-Seven ship, and any of OpenFreeMap's own five may be named as well:
+Eight ship, and any of OpenFreeMap's own five may be named as well:
 
 | | |
 |---|---|
 | `liberty` | their whole cartography, their colors.  The most to draw |
 | `terrain` | the classes that still read under weather, on shaded relief |
+| `satellite` | the same trim over NASA's photograph of the ground |
 | `roads` | the same trim with nothing under it, to lay over a satellite |
 | `light` | a printed-map ground, the way radar.weather.gov draws one |
 | `daylight` | a bright green map in the shape of Mapbox Streets |
@@ -65,9 +66,10 @@ Seven ship, and any of OpenFreeMap's own five may be named as well:
 | `midnight-roads` | the other half of it: roads and names on nothing |
 | `bright` `positron` `dark` `fiord` | theirs, trimmable but not recolorable |
 
-All seven are cut from Liberty, so all seven can be trimmed *and*
+All eight are cut from Liberty, so all eight can be trimmed *and*
 recolored.  `liberty` is the one to look at first; `terrain` is the one
-to run.
+to run; `satellite` is the one that does not need a palette at all,
+since the ground under it is a photograph rather than a color.
 
 **Two of them are a pair.**  `midnight` under the weather and
 `midnight-roads` over it, which puts the roads and the place names above
@@ -192,12 +194,38 @@ much detail.
 |---|---|
 | `none` | transparent, which is what makes a style an overlay |
 | `relief` | Natural Earth shaded relief, recolored to the palette |
+| `blue-marble` | NASA's photograph of the ground, drawn as it arrives |
 | any color | flat - `black`, `white`, `'#f3efe2'` |
 
-`relief` is one more fetch from the same service under the same
+The two names are **grounds**, and a ground is a raster source: naming
+one substitutes it for the style's own, so everything below - which
+tiles cover the view, fetching them, drawing them - is the ordinary
+path and knows nothing about where a ground came from.
+`PiClock3/OpenFreeMap/grounds.yaml` is the whole list, and adding one is
+an edit there.
+
+A ground says where its tiles are and how deep they go, whether it is a
+picture or the shape of the land, how to magnify it past its own last
+zoom, and what its service asks to be called.  That last one is drawn
+into the credit beside ours - `© OpenMapTiles  OpenStreetMap  NASA
+GIBS` - because drawing somebody's picture without saying whose is the
+one thing none of these licenses allow.
+
+**`relief` is one more fetch from the same service** under the same
 attribution.  Their own styles carry it as a second source beside the
 vector one, so using it follows the style spec rather than bolting on a
 second service.
+
+**`blue-marble` is NASA's**, through
+[GIBS](https://nasa-gibs.github.io/gibs-api-docs/), keyless and CC0.
+Nothing is recolored, because there is nothing to recolor: Minnesota is
+green in it because Minnesota is green, and Nevada is brown for the same
+reason - which is the one thing a palette cannot do, however the colors
+are chosen.  It reaches zoom 8, so a zoom-7 radar gets real imagery and
+a zoom-11 one gets the same tiles magnified eight times.  Magnified with
+`nearest` rather than smoothly, deliberately: blurring averages a
+photograph toward one flat color, which is the thing a photograph was
+worth having instead of.
 
 It is used as **shape rather than color**.  Their tile is pale green,
 which is the worst possible hue under a radar whose palette runs green to

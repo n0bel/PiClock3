@@ -1,0 +1,21 @@
+description: >
+  The same trim as terrain over NASA's Blue Marble, so the ground is a
+  photograph rather than a color: Minnesota is green because Minnesota
+  is green, and Nevada is brown for the same reason.
+
+from: liberty
+background: blue-marble
+
+# no roads: secondary and tertiary are a web at zoom 11 and are not in
+# the tiles at all at zoom 7.  No land or parks either - a photograph
+# already knows where the woods are, and drawing our own over it would
+# be covering the picture with a guess at it.
+layers: [water, boundaries, motorways, highways, bridges, shields,
+         places]
+
+# Liberty draws heavier than a radar wants, and heavier still over a
+# photograph, which has no flat ground for a thin line to sit on.
+weight: 0.6
+
+palette:
+  from: dark

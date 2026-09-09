@@ -1,0 +1,53 @@
+# What a style's background: may name, besides a color and `none`.
+#
+# A ground is a raster source, and naming one substitutes it for the
+# style's own: everything below reads the style's sources: block, so a
+# ground needs no code of its own.  Adding one is an edit here.
+#
+#   from: style   the raster source the style already declares, rather
+#                 than tiles of our own.  Only Natural Earth does this.
+#   tiles:        the template, in whatever order the service uses -
+#                 GIBS is {z}/{y}/{x} where nearly everything else is
+#                 {z}/{x}/{y}, and that is data rather than a special
+#                 case in the code
+#   maxzoom:      as deep as the service goes.  Past it the tiles are
+#                 magnified, which is how a zoom 11 radar gets a ground
+#                 at all - the relief has been doing that since it
+#                 shipped, from six.
+#   tilesize:     the pixels a tile covers, 256 unless it says
+#   color:        `palette` for a tile used as shape - its brightness
+#                 becomes how far the ground lifts from land to
+#                 land-high - or `raw` for one drawn as it arrives
+#   magnify:      `smooth` or `nearest`, past the maxzoom.  Blurring
+#                 averages a photograph toward one flat color, which is
+#                 the thing a photograph is worth having instead of.
+#   credit:       what the service asks to be called, added to the line
+#                 the map already draws.  Empty when the style's own
+#                 attribution already covers it.
+
+grounds:
+
+  # Natural Earth II shaded relief, which is what Liberty carries as its
+  # second source.  The tile is pale green - the worst possible hue
+  # under a radar running green to red - so it is used as shape rather
+  # than as color and their green never appears.
+  relief:
+    from: style
+    color: palette
+    magnify: smooth
+    credit: ''
+
+  # NASA's Blue Marble, drawn as it arrives.  There is nothing to
+  # recolor: it is a photograph, and Minnesota is green in it because
+  # Minnesota is green, where Nevada is brown for the same reason.
+  #
+  # CC0 and keyless.  NASA asks to be acknowledged rather than requiring
+  # it, and asks only that nothing suggest they endorse anything; a
+  # credit naming them as the source of the picture is exactly that.
+  blue-marble:
+    tiles: ['https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg']
+    maxzoom: 8
+    tilesize: 256
+    color: raw
+    magnify: nearest
+    credit: 'NASA GIBS'
