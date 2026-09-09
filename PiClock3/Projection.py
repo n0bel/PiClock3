@@ -133,3 +133,33 @@ def getTileXY(latLng, zoom):
         'X': xtile,
         'Y': ytile
     }
+
+
+def tileGrid(center, zoom, width, height, tilesize=MERCATOR_RANGE):
+    """which tiles cover a view, and where the first one starts.
+
+    The grid every tiled layer stands on: a raster tiler blits images into
+    it and a vector one draws features at the same offsets, so they cannot
+    disagree about which square of the world is on screen.
+
+    `origin` is the fractional tile coordinate of the view's top-left
+    corner - its whole part names the first tile and its fraction is how
+    far into that tile the view begins.  `x` and `y` are the ranges that
+    cover it, and a range can run past the world's edge: the caller wraps
+    x and leaves y empty, which is what a view over the pole does.
+
+    A grid of larger tiles is the same ground one zoom shallower - the
+    world is `tilesize * 2**zoom` pixels wide either way - so the corners
+    are worked out at whatever zoom a 256 pixel tile would need, and the
+    tile numbers at the zoom actually being fetched.
+    """
+    scaled = zoom + math.log(float(tilesize) / MERCATOR_RANGE, 2)
+    corners = getCorners(center, scaled, width, height)
+    nw = getTileXY(LatLng(corners['N'], corners['W']), zoom)
+    ne = getTileXY(LatLng(corners['N'], corners['E']), zoom)
+    sw = getTileXY(LatLng(corners['S'], corners['W']), zoom)
+    return {
+        'origin': nw,
+        'x': range(int(nw['X']), int(ne['X']) + 1),
+        'y': range(int(nw['Y']), int(sw['Y']) + 1),
+    }

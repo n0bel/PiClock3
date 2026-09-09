@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPainter, QPixmap
 from PyQt5.QtNetwork import QNetworkReply
 
-from .Projection import getCorners, getTileXY, LatLng
+from .Projection import tileGrid
 from .WebGet import WebGet
 
 logger = logging.getLogger(__name__)
@@ -26,16 +26,13 @@ class TileFetcher():
 
         TileFetcher.fetchers.append(self)
 
-        corners = getCorners(center, zoom, width, height)
-        nw = getTileXY(LatLng(corners['N'], corners['W']), zoom)
-        ne = getTileXY(LatLng(corners['N'], corners['E']), zoom)
-        sw = getTileXY(LatLng(corners['S'], corners['W']), zoom)
-        self.origin = nw
+        grid = tileGrid(center, zoom, width, height, tilesize)
+        self.origin = grid['origin']
 
         self.tiles = dict()
-        for y in range(int(nw['Y']), int(sw['Y']) + 1):
+        for y in grid['y']:
             self.tiles[y] = dict()
-            for x in range(int(nw['X']), int(ne['X']) + 1):
+            for x in grid['x']:
                 self.tiles[y][x] = dict()
 
         self.yTiles = len(self.tiles)
