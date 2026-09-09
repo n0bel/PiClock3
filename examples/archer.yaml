@@ -34,8 +34,10 @@ providers:
   mapbox:     {plugin: PiClock3.Mapbox}
   googlemaps: {plugin: PiClock3.GoogleMaps}
 
-  # radar tiles - one plugin per service, neither needs a key.  Point a
-  # radar's frame-provider: at whichever you prefer.
+  # radar tiles - one plugin per service, neither needs a key.  RainViewer
+  # stopped serving tiles above zoom 7 and returns a "Zoom Level Not
+  # Supported" card instead; LibreWXR still serves every zoom, so the
+  # close-in radars below point at it.
   rainviewer: {plugin: PiClock3.RainViewer}
   librewxr:   {plugin: PiClock3.LibreWXR}
 

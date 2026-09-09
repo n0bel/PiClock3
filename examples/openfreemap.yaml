@@ -37,8 +37,10 @@ providers:
   # a photograph's.
   openfreemap: {plugin: PiClock3.OpenFreeMap}
 
-  # radar tiles - one plugin per service, neither needs a key.  Point a
-  # radar's frame-provider: at whichever you prefer.
+  # radar tiles - one plugin per service, neither needs a key.  RainViewer
+  # stopped serving tiles above zoom 7 and returns a "Zoom Level Not
+  # Supported" card instead; LibreWXR still serves every zoom, so the
+  # close-in radars below point at it.
   rainviewer: {plugin: PiClock3.RainViewer}
   librewxr:   {plugin: PiClock3.LibreWXR}
 
@@ -73,7 +75,7 @@ widgets:
     region: maps.1
     base-provider: openfreemap
     frame-provider: librewxr     # or rainviewer
-    style: terrain               # or liberty, roads, light
+    style: terrain               # or satellite, liberty, roads, light
     zoom: 7
     palette: 6
     smooth: 1
@@ -93,7 +95,7 @@ widgets:
     region: maps.2
     base-provider: openfreemap
     frame-provider: librewxr     # or rainviewer
-    style: terrain               # or liberty, roads, light
+    style: terrain               # or satellite, liberty, roads, light
     zoom: 11
     palette: 6
     smooth: 1
@@ -114,7 +116,7 @@ widgets:
     region: radars.1
     base-provider: openfreemap
     frame-provider: librewxr     # or rainviewer
-    style: terrain               # or liberty, roads, light
+    style: terrain               # or satellite, liberty, roads, light
     zoom: 7
     palette: 6
     smooth: 1
@@ -128,7 +130,7 @@ widgets:
     region: radars.2
     base-provider: openfreemap
     frame-provider: librewxr     # or rainviewer
-    style: terrain               # or liberty, roads, light
+    style: terrain               # or satellite, liberty, roads, light
     zoom: 11
     palette: 6
     smooth: 1
