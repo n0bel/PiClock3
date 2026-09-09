@@ -15,7 +15,13 @@ types:
       from:       {is: string}
       layers:     {is: list, of: layer-group}
       background: {of: [map-ground, color]}
+      weight:     {is: number, range: [0.1, 4]}
       palette:    {is: map-palette}
+    # weight: scales every line width rather than replacing it, so a
+    # road still thickens as it is zoomed into, just less of it.  Every
+    # shipped style sets it below 1: Liberty draws heavier than a radar
+    # wants, and under weather the thinner cartography is easier to see
+    # through.
     # which cartography to take, which of its layers to keep, what sits
     # under them, and what color they end up.  Nothing here writes a
     # layer: every zoom-width curve and every filter stays the source

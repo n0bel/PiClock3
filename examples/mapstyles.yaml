@@ -1,0 +1,162 @@
+# PiClock3 - Map styles.
+#
+# The same clock as openfreemap.yaml, with its four radars showing four
+# ways of writing a style instead of all naming the same one.  A feature
+# example rather than a place, the way gallery.yaml is.
+#
+#   radar1  satellite         a photograph under the weather
+#   radar2  terrain           the shipped default, for comparison
+#   radar3  midnight + midnight-roads
+#                             a pair: roads and names drawn OVER the
+#                             rain rather than under it
+#   radar4  a written block   layers:, palette: and background: instead
+#                             of a name
+#
+# Everything here is keyless.  WRITING-A-MAP-STYLE.md is the long form.
+
+pages:
+  clock-page: {order: 0, layout: classic, theme: circuit}
+  maps-page:  {order: 1, layout: bigmaps, theme: circuit}
+
+language: en
+
+location:
+  latitude: 45
+  longitude: -93
+  timezone:
+
+providers:
+
+  openmeteo: {plugin: PiClock3.OpenMeteo}
+  metar: {plugin: PiClock3.Metar, METAR: KMSP}
+  openfreemap: {plugin: PiClock3.OpenFreeMap}
+  # radar tiles - one plugin per service, neither needs a key.  RainViewer
+  # stopped serving tiles above zoom 7 and returns a "Zoom Level Not
+  # Supported" card instead; LibreWXR still serves every zoom, and every
+  # radar here points at it.
+  rainviewer: {plugin: PiClock3.RainViewer}
+  librewxr:   {plugin: PiClock3.LibreWXR}
+
+widgets:
+  clock:  {plugin: PiClock3.AnalogClock, region: clock}
+  date:   {plugin: PiClock3.Date,   region: date}
+  astral: {plugin: PiClock3.Astral, region: bottom}
+
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+
+  maps-caption:
+    plugin: PiClock3.DigitalClock
+    region: caption
+    format: "{plugin-data.now:%a %b} {plugin-data.now.day} {plugin-data.now.year}   {plugin-data.now:%H:%M:%S}"
+    lowercase: false
+    font-size: 0.75
+
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    conditions-provider: metar
+
+  # 1. a photograph.  Nothing is recolored, because there is nothing to
+  # recolor - what is under the rain is the ground itself.
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
+    base-provider: openfreemap
+    frame-provider: librewxr
+    style: satellite
+    zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          latitude: '{location.latitude}'
+          longitude: '{location.longitude}'
+        color: red
+        image: teardrop-home
+
+  # 2. the shipped default, in the same place at the same zoom, so the
+  # two sit one above the other on the classic page
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    base-provider: openfreemap
+    frame-provider: librewxr
+    style: terrain
+    zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          latitude: '{location.latitude}'
+          longitude: '{location.longitude}'
+        color: green
+        size: mid
+        image: teardrop-home
+
+  # 3. a pair.  The base is near-black ground and water and nothing
+  # else; the overlay is the roads and the names on nothing, drawn after
+  # the radar - so a road crossing a storm stays readable instead of
+  # disappearing under it.
+  radar3:
+    plugin: PiClock3.MapLoop
+    region: radars.1
+    base-provider: openfreemap
+    overlay-provider: openfreemap
+    frame-provider: librewxr
+    style: midnight
+    overlay-style: midnight-roads
+    zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+  # 4. a block instead of a name.  Nothing here writes a layer: it says
+  # which of the source style's layers to keep and what color they end
+  # up, so every zoom-width curve and every filter stays theirs.  A
+  # theme can lay a palette: over this and keep the layer list, because
+  # a block merges where a string replaces.
+  radar4:
+    plugin: PiClock3.MapLoop
+    region: radars.2
+    base-provider: openfreemap
+    frame-provider: librewxr
+    zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
+    style:
+      from: liberty
+      background: relief
+      layers: [water, boundaries, motorways, highways, places]
+      weight: 0.6
+      palette:
+        from: dark
+        land: '#1b2430'
+        land-high: '#2b3a4a'
+        water: '#101c2c'
+        road: '#f2e9d2'
+        label: '#ffffff'
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+logging-level: info
+logging-rotate: per-run
+logging-max-size: 10
+logging-keep: 7
+
+# No apikeys: line here either.

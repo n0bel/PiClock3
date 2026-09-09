@@ -95,16 +95,18 @@ in the rest.  The difference is that these two need no key.
       from: liberty
       background: relief
       layers: [water, boundaries, motorways, highways, places]
+      weight: 0.6
       palette:
         from: dark
         road: '#f2e9d2'
         label: '#ffffff'
 ```
 
-Four keys, and every one of them is optional.  Nothing here writes a
+Five keys, and every one of them is optional.  Nothing here writes a
 layer: a block says which of the source style's layers to keep and what
 color they end up, so every zoom-width curve, every filter and all of the
 shield logic stays theirs to maintain rather than ours to copy.
+`examples/mapstyles.yaml` runs one of these beside three named styles.
 
 **A block merges and a string replaces.**  `Config._merge` recurses into
 dicts and assigns anything else outright, so a theme can recolor a map
@@ -234,6 +236,16 @@ own brightness and is drawn over `land`: the hills are theirs and the hue
 is yours.  Their maxzoom is 6, so it is real terrain under a zoom-7 radar
 and a soft wash under a zoom-11 one - and the wash is worth having,
 because a ground that is not flat reads as land.
+
+### `weight:`
+
+Every line width, scaled.  A style's widths are zoom curves that took
+somebody real work, so this multiplies them rather than replacing them -
+a road still thickens as it is zoomed into, just less of it.
+
+Every shipped style sets it below 1, between 0.45 and 0.6.  Liberty
+draws heavier than a radar wants at the same scale, and every pixel of
+road is a pixel of weather nobody can see.
 
 ### `palette:`
 

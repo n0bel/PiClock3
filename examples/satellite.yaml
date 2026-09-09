@@ -1,0 +1,153 @@
+# PiClock3 - Satellite.
+#
+# The same clock as openfreemap.yaml, with a photograph under the radar
+# instead of a color.  Still no key anywhere: the ground is NASA's Blue
+# Marble through GIBS, which asks for no account and no registration.
+#
+# It is pointed at Flagstaff because that is where the point shows.
+# Ponderosa forest sits on the San Francisco volcanic field, and desert
+# starts a few miles out in every direction, so one radar holds dark
+# green, red rock and pale sand at once - none of which a palette can
+# produce, however its colors are chosen.  A clock in Minnesota gets
+# green and a clock in Nevada gets brown from the same style file,
+# because the ground under them is different ground.
+#
+# The trade is resolution.  Blue Marble reaches zoom 8, so radar1 here
+# is real imagery and radar2, at zoom 11, is those tiles magnified eight
+# times - blocky rather than blurred, deliberately, since blurring
+# averages a photograph toward the one flat color it was worth having
+# instead of.  Where that is too coarse, `terrain` is the style to name.
+
+pages:
+  clock-page: {order: 0, layout: classic, theme: circuit}
+  maps-page:  {order: 1, layout: bigmaps, theme: circuit}
+
+language: en
+
+location:
+  latitude: 35.198
+  longitude: -111.651
+  timezone: America/Phoenix   # Arizona keeps standard time all year
+
+providers:
+
+  openmeteo: {plugin: PiClock3.OpenMeteo}
+
+  # Flagstaff Pulliam, at 7000 feet
+  metar: {plugin: PiClock3.Metar, METAR: KFLG}
+
+  openfreemap: {plugin: PiClock3.OpenFreeMap}
+
+  # radar tiles - one plugin per service, neither needs a key.  RainViewer
+  # stopped serving tiles above zoom 7 and returns a "Zoom Level Not
+  # Supported" card instead; LibreWXR still serves every zoom, so the
+  # close-in radars below point at it.
+  rainviewer: {plugin: PiClock3.RainViewer}
+  librewxr:   {plugin: PiClock3.LibreWXR}
+
+widgets:
+  clock:  {plugin: PiClock3.AnalogClock, region: clock}
+  date:   {plugin: PiClock3.Date,   region: date}
+  astral: {plugin: PiClock3.Astral, region: bottom}
+
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+
+  maps-caption:
+    plugin: PiClock3.DigitalClock
+    region: caption
+    format: "{plugin-data.now:%a %b} {plugin-data.now.day} {plugin-data.now.year}   {plugin-data.now:%H:%M:%S}"
+    lowercase: false
+    font-size: 0.75
+
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    conditions-provider: metar
+
+  # zoom 7, where Blue Marble is real imagery rather than magnified
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
+    base-provider: openfreemap
+    frame-provider: librewxr
+    style: satellite
+    zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          latitude: '{location.latitude}'
+          longitude: '{location.longitude}'
+        color: red
+        image: teardrop-home
+
+  # zoom 11, three past the deepest tile there is.  This is what the
+  # magnification looks like, and whether it is worth it is a matter of
+  # taste rather than of correctness - the ground is in the right place
+  # either way.
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    base-provider: openfreemap
+    frame-provider: librewxr
+    style: satellite
+    zoom: 11
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+    markers:
+      - location:
+          latitude: '{location.latitude}'
+          longitude: '{location.longitude}'
+        color: green
+        size: mid
+        image: teardrop-home
+
+  # the same ground on the big page, beside the drawn map, which is the
+  # comparison worth having: one is a photograph and the other is the
+  # same roads over a color
+  radar3:
+    plugin: PiClock3.MapLoop
+    region: radars.1
+    base-provider: openfreemap
+    frame-provider: librewxr
+    style: satellite
+    zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+  radar4:
+    plugin: PiClock3.MapLoop
+    region: radars.2
+    base-provider: openfreemap
+    frame-provider: librewxr
+    style: terrain
+    zoom: 7
+    palette: 6
+    smooth: 1
+    snow: 1
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+logging-level: info
+logging-rotate: per-run
+logging-max-size: 10
+logging-keep: 7
+
+# No apikeys: line, the same as openfreemap.yaml.  Open-Meteo, METAR,
+# LibreWXR, OpenFreeMap and NASA GIBS each ask for none.
