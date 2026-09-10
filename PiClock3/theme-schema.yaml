@@ -40,8 +40,11 @@ types:
       background-color: {is: color}
       font-family:      {is: string}
       font-style:       {is: string}
-      font-weight:      {is: string}
+      font-weight:      {of: [string, number]}
       font-size:        {is: font-size}
+      # font-weight takes 100 to 900 as well as normal and bold, and Qt
+      # reads either - 300 arrives as a number and reaches the stylesheet
+      # as one, where it is the weight between light and regular.
 
 settings:
 

@@ -12,7 +12,7 @@ settings:
   background-color: {is: color}
   font-family:      {is: string}
   font-style:       {is: string}
-  font-weight:      {is: string}
+  font-weight:      {of: [string, number]}   # 100 to 900, normal, bold
   # the five names Qt owns.  A theme's default: cascades them onto the
   # region and Qt carries them into whatever a widget draws there, so
   # saying one here is overruling the page for this widget alone.
