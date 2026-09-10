@@ -344,42 +344,6 @@ one to rename what the clock already draws.
 [CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository
 rather than building on it.
 
-### Investigating
-
-Not promised.  These are all still up and serving; no code exists for any of
-them yet.
-
-**Weather**
-
-* **Met.no**, the Norwegian Meteorological Institute.  No key, global, and
-  CC-BY 4.0 - it asks only that requests name the application in a
-  `User-Agent`.  The closest in spirit to Open-Meteo and METAR, both of
-  which need no account either.
-* **Pirate Weather.**  Dark Sky's JSON shape served from NOAA data, which
-  makes it the natural landing spot for anyone carrying a config from when
-  PiClock used Dark Sky.  Needs a key; there is a free tier.
-* **NWS `api.weather.gov`.**  No key and official, but United States only,
-  so it would leave the London and Berlin examples unserved.
-
-**Radar and base maps**
-
-`OpenFreeMap` answers this now - `examples/openfreemap.yaml` is a whole
-clock with no `apikeys:` line at all.  A satellite photograph under a radar
-is still the nicest thing on the screen, so these are still worth having
-for anyone who wants a different keyless map.
-
-* **CARTO** basemaps, `dark_all` and `light_all`.  No key, and dark enough
-  to sit under a clock without fighting it.  Attribution required.
-* **Iowa State NEXRAD.**  No key, and already plain XYZ tiles, which is what
-  `MapLoop` consumes.  United States only, so it would sit beside RainViewer
-  and LibreWXR rather than replace them.
-* **Esri World Imagery.**  No key, satellite rather than a drawn map.  Its
-  tiles are addressed `{z}/{y}/{x}` rather than the usual `{z}/{x}/{y}`.
-* **OpenStreetMap's own tiles.**  No key.  A clock is the case the OSMF tile
-  policy allows for - one small viewport, served from cache, never
-  pre-fetched - but it would have to send a `User-Agent` naming PiClock3,
-  honor the cache headers, and carry the attribution.
-
 I'll welcome any contributions.
 
 
