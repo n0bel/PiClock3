@@ -30,12 +30,8 @@ class DigitalClock(Widget):
         props = self.scaleFont({
             'font-size': self.config['font-size'],
         }, self.clockrect.height())
-        extra = str(self.config['extra-font-attributes']
-                    or '').strip().lstrip(';')
-        self.clockface.setStyleSheet(
-            "#clockface {%s%s }"
-            % (self.piclock._buildStyleString(props),
-               ' ' + extra.rstrip(';') + ';' if extra else ''))
+        self.clockface.setStyleSheet(self.styleRule(
+            'clockface', props, self.config['extra-font-attributes']))
         logging.info(self.clockface.styleSheet())
         self.clockface.setAlignment(Qt.AlignCenter)
         self.clockface.setGeometry(self.clockrect)

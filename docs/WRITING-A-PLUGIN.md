@@ -250,16 +250,26 @@ Four of the five — all but `background-color`, which CSS does not inherit —
 are put on your region by core, as a `QWidget` rule, from whatever resolved
 for your instance.  Qt carries them to everything you draw there.  **So a
 widget that only draws text needs none of them in its `config.yaml` and none
-of them in the stylesheet it builds.**  `DigitalClock` declares none and its
-stylesheet is one line:
+of them in the stylesheet it builds.**  `DigitalClock` declares none, and
+the whole of its styling is:
 
 ```python
 props = self.scaleFont({'font-size': self.config['font-size']},
                        self.clockrect.height())
+self.clockface.setStyleSheet(self.styleRule(
+    'clockface', props, self.config['extra-font-attributes']))
 ```
 
-Set one on your own widget only when you want it to differ from what the
-region says — an id selector outranks the region's rule, so yours wins.
+`styleRule(name, props, extra)` builds the rule for one label you drew, by
+the object name you gave it.  The third argument is an
+`extra-font-attributes` setting if your plugin offers one — a user writes
+that line by hand, so whatever it says about semicolons is settled there
+rather than in every plugin separately.  Leave it off if you have no such
+setting.
+
+Set one of the five on your own widget only when you want it to differ from
+what the region says — an id selector outranks the region's rule, so yours
+wins.
 
 `font-size` is not among the five: it is a fraction of whatever it sits in,
 and your region is not the same height as a label inside it.

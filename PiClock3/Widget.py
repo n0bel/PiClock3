@@ -24,6 +24,21 @@ class Widget(Plugin):
         return self.piclock.scaleFont(props, height,
                                       getattr(self, 'region', None))
 
+    def styleRule(self, name, props, extra=None):
+        """a stylesheet rule for one label this widget drew, by its
+        object name.
+
+        `props` is what scaleFont returned; `extra` is a config's
+        extra-font-attributes in whatever state of semicolons it arrives
+        in, since a user writes that line by hand.
+
+        An id selector outranks the QWidget rule core put on the region,
+        so what is named here wins and everything else is inherited.
+        """
+        extra = str(extra or '').strip().strip(';').strip()
+        return '#%s {%s%s }' % (name, self.piclock._buildStyleString(props),
+                                ' ' + extra + ';' if extra else '')
+
     def now(self):
         """the time this widget shows.
 

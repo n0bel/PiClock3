@@ -55,12 +55,11 @@ class Text(Widget):
         # theme wrote
         props = self.scaleFont({'font-size': self.config['font-size']},
                                rect.height())
-        extra = str(self.config['extra-font-attributes'] or '').strip()
-        extra = extra.strip(';')
-        style = ('#text {%s%s }'
-                 % (self.piclock._buildStyleString(props),
-                    ' ' + extra + ';' if extra else ''))
-        self.label.setStyleSheet(style)
+        # kept, because FitLabel appends a smaller font-size to it rather
+        # than building a sheet of its own
+        rule = self.styleRule('text', props,
+                              self.config['extra-font-attributes'])
+        self.label.setStyleSheet(rule)
 
         if self.overflow == 'marquee':
             self.label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
@@ -69,7 +68,7 @@ class Text(Widget):
             self.timer.start(TICK)
         else:
             self.label.setAlignment(Qt.AlignCenter)
-            self.label.baseStyle = style
+            self.label.baseStyle = rule
             if self.overflow == 'fit':
                 # FitLabel comes down from a ceiling and never goes up, so
                 # the size asked for is the largest it will ever draw
