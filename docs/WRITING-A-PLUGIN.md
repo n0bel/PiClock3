@@ -274,6 +274,49 @@ wins.
 `font-size` is not among the five: it is a fraction of whatever it sits in,
 and your region is not the same height as a label inside it.
 
+### Several boxes in one region
+
+A widget drawing more than one thing — a picture with figures under it, say
+— should not work out where they go in code.  Declare a `layout:` block of
+your own, one entry per box, and say `{is: part}` against each in your
+schema:
+
+```yaml
+# config.yaml
+layout:
+  icon:   {left: 0.0, top: 0.0, width: 0.32, height: 1.0}
+  wx:     {left: 0.32, top: 0.02, width: 0.68, height: 0.74,
+           font-size: 0.20, align: left-top, wrap: true}
+  day:    {left: 0.32, bottom: 0.02, width: 0.68, height: 0.26,
+           font-size: 0.17, align: right-bottom}
+```
+
+```yaml
+# schema.yaml
+settings:
+  layout:
+    is: block
+    of:
+      icon: {is: part}
+      wx:   {is: part}
+      day:  {is: part}
+```
+
+`part` is a core type: you do not declare it, and you may not redefine it.
+It takes the geometry keys **a page layout uses for a region**, read as
+fractions of your region rather than of the page, plus `font-size`,
+`align` — `left-top`, `center-top`, `right-bottom`, `center` — and `wrap`.
+
+`self.part('wx')` then builds it: a `QLabel`, named, transparent, sized,
+aligned, and placed.  Where a layout repeated your region, name the cell:
+`self.part('wx', region)`.  A part that says no `align` keeps Qt's own,
+left and centered down the height; pass `align=` for a plugin-wide default
+that a part's own `align:` still beats.
+
+**The names are the only part of this the code fixes.**  A theme or a
+config can move any of them without touching your plugin, the same way it
+moves a region.
+
 ### Graphics effects happen without you
 
 A glow or a drop shadow is not a stylesheet property, so none of the above

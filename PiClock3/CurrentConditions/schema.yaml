@@ -4,17 +4,6 @@ description: >
   ending in the time of the observation and whatever the source calls
   itself.
 
-types:
-
-  part:
-    is: block
-    with: geometry
-    # a fraction of this widget's region rather than of the page.  Color
-    # and family arrive on the region and Qt inherits them, so only the
-    # size is said here.
-    of:
-      font-size: {is: font-size}
-
 settings:
 
   conditions-provider: {is: provider, provides: [conditions], required: true}

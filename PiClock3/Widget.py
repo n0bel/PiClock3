@@ -1,8 +1,9 @@
 import logging
 import os
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QGraphicsDropShadowEffect
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QLabel
 
 from .Config import zoneFor
 from .Plugin import Plugin
@@ -23,6 +24,43 @@ class Widget(Plugin):
         sits in rather than whichever page happened to be built last"""
         return self.piclock.scaleFont(props, height,
                                       getattr(self, 'region', None))
+
+    # what a part's align: means; the names are core-types.yaml's
+    # alignments
+    ALIGN = {
+        'left-top': Qt.AlignLeft | Qt.AlignTop,
+        'center-top': Qt.AlignHCenter | Qt.AlignTop,
+        'right-bottom': Qt.AlignRight | Qt.AlignBottom,
+        'center': Qt.AlignCenter,
+    }
+
+    def part(self, name, region=None, align=None):
+        """one labeled part of a region, placed by this plugin's layout.
+
+        `region` names one cell where a layout repeated the region.
+        `align` is what a part that does not say gets; with neither, the
+        label keeps Qt's own - left, centered down the height.
+        """
+        spec = self.config['layout'][name]
+        region = self.region if region is None else region
+        rect = region.frameRect()
+        label = QLabel(region)
+        label.setObjectName(name)
+        # not color or family: they arrive on the region and Qt inherits
+        # them, so a part says only its background and its size
+        props = {'background-color': 'transparent'}
+        if 'font-size' in spec:
+            props.update(self.scaleFont({'font-size': spec['font-size']},
+                                        rect.height()))
+        label.setStyleSheet(self.styleRule(name, props))
+        align = self.ALIGN.get(spec.get('align'), align)
+        if align is not None:
+            label.setAlignment(align)
+        if spec.get('wrap'):
+            label.setWordWrap(True)
+        label.setGeometry(self.piclock._regionRect(
+            rect.width(), rect.height(), spec))
+        return label
 
     def styleRule(self, name, props, extra=None):
         """a stylesheet rule for one label this widget drew, by its

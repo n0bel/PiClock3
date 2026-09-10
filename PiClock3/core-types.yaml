@@ -181,3 +181,24 @@ types:
       width:  {is: number}
       height: {is: number}
       aspect: {is: number}
+
+  alignments:
+    # where the words sit in a part once the part itself has been placed.
+    # Left out, a part keeps Qt's own - left, centered down the height.
+    is: scalar
+    one-of: [left-top, center-top, right-bottom, center]
+
+  part:
+    # one labeled box a widget draws inside its region, placed the way a
+    # layout places a region but as a fraction of the region rather than
+    # of the page.  A plugin names its own parts in a layout: block and
+    # says {is: part} against each; Widget.part() builds them.
+    #
+    # Only the size: color and family arrive on the region and Qt inherits
+    # them into whatever is drawn there.
+    is: block
+    with: geometry
+    of:
+      font-size: {is: font-size}
+      align:     {is: alignments}
+      wrap:      {is: boolean}

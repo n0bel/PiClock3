@@ -14,17 +14,10 @@ import logging
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QLabel
 
 from ..Widget import Widget
 
 logger = logging.getLogger(__name__)
-
-ALIGN = {
-    'left-top': Qt.AlignLeft | Qt.AlignTop,
-    'right-bottom': Qt.AlignRight | Qt.AlignBottom,
-    'center': Qt.AlignCenter,
-}
 
 
 class Forecast(Widget):
@@ -50,47 +43,21 @@ class Forecast(Widget):
 
         for region in self.regions:
             self.cells.append({
-                'icon': self.part(region, 'icon'),
-                'wx': self.part(region, 'wx'),
-                'day': self.part(region, 'day'),
+                'icon': self.part('icon', region),
+                'wx': self.part('wx', region),
+                'day': self.part('day', region),
             })
 
         # Open-Meteo's data is CC-BY and the credit is required
         credit = self.provider.attribution
         if credit and 'attribution' in self.config['layout']:
-            self.part(self.regions[-1], 'attribution').setText(credit)
+            self.part('attribution', self.regions[-1]).setText(credit)
 
         # drawn the moment a forecast lands, and again on every refresh
         self.provider.subscribe(self.draw)
 
     def pageChange(self):
         return
-
-    def part(self, region, name):
-        """one labeled part of one cell, placed by this plugin's layout.
-
-        The geometry keys are the ones a page layout uses, resolved against
-        the cell rather than against a page, so nothing about where these sit
-        is written in the code.
-        """
-        spec = self.config['layout'][name]
-        rr = region.frameRect()
-        label = QLabel(region)
-        label.setObjectName(name)
-        style = 'background-color: transparent;'
-        if 'font-size' in spec:
-            props = self.scaleFont({'font-size': spec['font-size']},
-                                   rr.height())
-            # not color: it arrives on the region and Qt inherits it
-            style += ' font-size: %s;' % props['font-size']
-        label.setStyleSheet('#%s { %s }' % (name, style))
-        if 'align' in spec:
-            label.setAlignment(ALIGN.get(spec['align'], Qt.AlignCenter))
-        if spec.get('wrap'):
-            label.setWordWrap(True)
-        label.setGeometry(self.piclock._regionRect(rr.width(), rr.height(),
-                                                   spec))
-        return label
 
     # ------------------------------------------------------------ drawing
 

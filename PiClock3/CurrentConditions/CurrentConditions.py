@@ -13,7 +13,6 @@ import logging
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QLabel
 
 from ..Widget import Widget
 
@@ -33,29 +32,13 @@ class CurrentConditions(Widget):
             self.config['observed-format'])
         for name in ('wxicon', 'wxdesc', 'temper', 'pressure', 'humidity',
                      'wind', 'feelslike', 'wdate'):
-            self.parts[name] = self.part(name)
+            # the block is a stack of centered lines
+            self.parts[name] = self.part(name,
+                                         align=self.ALIGN['center-top'])
         self.provider.subscribe(self.draw)
 
     def pageChange(self):
         return
-
-    def part(self, name):
-        """one labeled part of this region, placed by this plugin's layout"""
-        spec = self.config['layout'][name]
-        rr = self.region.frameRect()
-        label = QLabel(self.region)
-        label.setObjectName(name)
-        style = 'background-color: transparent;'
-        if 'font-size' in spec:
-            props = self.scaleFont({'font-size': spec['font-size']},
-                                   rr.height())
-            # not color: it arrives on the region and Qt inherits it
-            style += ' font-size: %s;' % props['font-size']
-        label.setStyleSheet('#%s { %s }' % (name, style))
-        label.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        label.setGeometry(self.piclock._regionRect(rr.width(), rr.height(),
-                                                   spec))
-        return label
 
     def draw(self):
         c = self.provider.conditions()

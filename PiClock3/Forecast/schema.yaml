@@ -3,23 +3,6 @@ description: >
   hours come first, because what the weather does this afternoon matters
   more than what Thursday looks like.
 
-types:
-
-  alignments:
-    is: scalar
-    one-of: [left-top, right-bottom, center]
-
-  part:
-    is: block
-    with: geometry
-    # a fraction of one cell rather than of the page.  Color and family
-    # arrive on the region and Qt inherits them, so only the size is said
-    # here.
-    of:
-      font-size: {is: font-size}
-      align:     {is: alignments}
-      wrap:      {is: boolean}
-
 settings:
 
   forecast-provider: {is: provider, provides: [hourly, daily], required: true}
