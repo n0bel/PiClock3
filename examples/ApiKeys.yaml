@@ -9,5 +9,6 @@ googleapi: 'YOUR API KEY FOR GOOGLE'  # https://console.cloud.google.com  (Stati
 
 # Weather needs no key at all unless you want one of these: Open-Meteo and
 # METAR are free and unauthenticated, and are what the shipped examples use.
-owmapi:    'YOUR APPID FOR OPENWEATHER'   # https://openweathermap.org/api  (free plan)
+owmapi:    'YOUR API KEY FOR OPENWEATHER' # OpenWeather calls it an appid
+                                          # https://openweathermap.org/api  (free plan)
 tmapi:     'YOUR API KEY FOR TOMORROW.IO' # https://app.tomorrow.io  (free plan)

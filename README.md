@@ -132,9 +132,9 @@ warm and draws everything.
 
 Everything under `examples/` is there to be read and copied, never loaded
 by itself.  `examples/default.yaml` is the one to start from; most of the
-rest are the same clock wearing a different theme, so you can see what a
-theme changes without editing anything - run one directly rather than
-copying it:
+rest are the same clock wearing a different theme, or showing one feature,
+so you can see what changes without editing anything - run one directly
+rather than copying it:
 
 ```
 python3 PyQtPiClock3.py examples/meadow.yaml
@@ -156,6 +156,11 @@ python3 PyQtPiClock3.py examples/meadow.yaml
 | `examples/arctic.yaml` | Tromso, above the Arctic Circle: months with no sunrise to print |
 | `examples/mcmurdo.yaml` | McMurdo, as far the other way, under a theme whose art is generated rather than photographed |
 | `examples/clockwall.yaml` | six faces and six city names, the wall behind a hotel desk |
+| `examples/openfreemap.yaml` | the same clock with no `apikeys:` line at all - the base map is drawn here rather than fetched as a picture |
+| `examples/satellite.yaml` | NASA's Blue Marble under the radar, at Flagstaff where forest meets desert |
+| `examples/mapstyles.yaml` | four radars, four ways of writing a map style |
+| `examples/captions.yaml` | four radars, four ways of captioning one |
+| `examples/minimal.yaml` | the smallest clock that works, and a place to start from |
 | `examples/ApiKeys.yaml` | the keys file to copy, with links to where to get one |
 
 A theme is one line of a page: `maps-page: {order: 1, layout: bigmaps, theme:
@@ -259,6 +264,7 @@ widgets and occupies no region of its own.
 | `CurrentConditions` | what the weather is doing now |
 | `Forecast` | the next few hours, then the next few days |
 | `MapLoop` | an animated radar over a base map |
+| `Text` | words in a region - a city name over a clock face, a note under a map |
 
 | provider | |
 |---|---|
@@ -266,7 +272,7 @@ widgets and occupies no region of its own.
 | `OpenMeteo` | conditions and forecast from a model.  No key |
 | `OpenWeatherMap`, `TomorrowIO` | the same three answers, for people who already have one of those keys.  Both free plans |
 | `Mapbox`, `GoogleMaps` | the base map under a radar - each needs a key |
-| `OpenFreeMap` | the base map, or the roads over one.  **No key**: it sends vector tiles and the cartography is drawn here, so the colors are the theme's - see [WRITING-A-MAP-STYLE.md](docs/WRITING-A-MAP-STYLE.md) |
+| `OpenFreeMap` | the base map, or the roads over one.  **No key**: it sends vector tiles and the cartography is drawn here, so the colors are the theme's - and what sits under them can be NASA's Blue Marble, also keyless.  See [WRITING-A-MAP-STYLE.md](docs/WRITING-A-MAP-STYLE.md) |
 | `RainViewer`, `LibreWXR` | radar frames.  Neither needs a key |
 
 Units are core rather than a weather feature.  `units: metric` in a config
@@ -274,11 +280,11 @@ picks a set - `default`, `metric`, `SI` or `nautical` ship - and the table
 behind it lives in `PiClock3/units/`, found the way themes and layouts are
 found, so a `units/` folder of your own or a plugin's merges over it.
 
-Languages are core in the same way.  `language: de` picks one - `en` and `de`
-ship - and a language is one file in `PiClock3/languages/`, found on the same
-search path, so a `languages/` folder of your own or a plugin's merges over
-it.  A file holds the codes it answers to (`code: [de, deu, ger]`), the words,
-and a table of weather conditions.
+Languages are core in the same way.  `language: de` picks one - `en`, `de`
+and `nl` ship - and a language is one file in `PiClock3/languages/`, found on
+the same search path, so a `languages/` folder of your own or a plugin's
+merges over it.  A file holds the codes it answers to (`code: [de, deu,
+ger]`), the words, and a table of weather conditions.
 
 Day and month names come from the system rather than from that table, and the
 language file lists the locales that mean it, so a config needs nothing
