@@ -693,10 +693,9 @@ class MapStyle():
         """
         painter.setRenderHint(QPainter.Antialiasing, True)
         started = time.monotonic()
-        # Labels are placed before anything is drawn, from the last layer
-        # back.  A style ends on what matters most - Liberty on its country
-        # names - and MapLibre lets those claim space first.  Drawing stays
-        # in the style's order; only who wins a patch of screen changes.
+        # Labels are placed before anything is drawn, last layer first: a
+        # style ends on what matters most - Liberty on its country names -
+        # and MapLibre lets those claim space first.
         labels = []
         chosen = {}
         for layer in reversed(self.layers):
