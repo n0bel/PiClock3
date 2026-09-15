@@ -72,7 +72,8 @@ types:
       shield-text:   {is: color}
     # roles rather than layer ids, so a recolor does not have to know the
     # cartography either.  Which set it starts from comes from the
-    # background's own luminance unless from: says.  Unlike layers:, a
+    # background's own luminance unless from: says, and with no background
+    # either it starts from none.  Unlike layers:, a
     # role does name Liberty's layers underneath - a road and its casing
     # are the same class on the same source layer and only the id tells
     # them apart - so a palette reaches Liberty and what is cut from it.

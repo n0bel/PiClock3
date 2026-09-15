@@ -491,15 +491,19 @@ class OpenFreeMap(BaseMap):
 
         Which set to start from is the background's own luminance when
         nobody says, so background: white gets dark roads on a light
-        ground without anyone having written that down.
+        ground without anyone having written that down.  With no
+        background either there is no set, and only the roles named here
+        change - the style keeps its own colors.
         """
         spec = dict(spec or {})
         named = spec.pop('from', None)
-        if named is None:
+        if named is None and ground is not None:
             named = 'light' if self.pale(ground) else 'dark'
-        out = dict(self.palettes.get(named) or {})
-        if named not in self.palettes:
-            logger.warning('%s: no palette called %r', self.name, named)
+        out = {}
+        if named is not None:
+            out.update(self.palettes.get(named) or {})
+            if named not in self.palettes:
+                logger.warning('%s: no palette called %r', self.name, named)
         out.update(spec)
         return out
 

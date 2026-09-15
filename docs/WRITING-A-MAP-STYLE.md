@@ -261,7 +261,10 @@ either:
 `from:` names one of two shipped sets, `dark` or `light`, and anything
 beside it overrides.  Which set a block starts from, when it does not
 say, comes from the background's own luminance - so `background: white`
-gets dark roads on a light ground without anyone writing that down.
+gets dark roads on a light ground without anyone writing that down.  With
+no background either, a block starts from neither: only the roles it
+names change, and the rest keep the source style's colors.  That is what
+`liberty` is - their style, their colors.
 
 **A palette reaches Liberty and what is cut from it, and no further.**
 Unlike `layers:`, a role names layers outright, because the thing it

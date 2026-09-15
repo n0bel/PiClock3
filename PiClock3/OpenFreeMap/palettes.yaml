@@ -5,7 +5,8 @@
 # Which one a style starts from, when it does not say, comes from its
 # background's luminance - so background: white gets dark roads on a light
 # ground and background: relief gets the light-on-dark set, neither of
-# them written down anywhere.
+# them written down anywhere.  A style with no background either starts
+# from neither, and keeps its own colors but for the roles it names.
 
 dark:
   # a desaturated gray-green, and the color the relief lifts it to.
