@@ -14,9 +14,8 @@
 #
 # The trade is resolution.  Blue Marble reaches zoom 8, so radar1 here
 # is real imagery and radar2, at zoom 11, is those tiles magnified eight
-# times - blocky rather than blurred, deliberately, since blurring
-# averages a photograph toward the one flat color it was worth having
-# instead of.  Where that is too coarse, `terrain` is the style to name.
+# times and smoothed, so its ground is soft rather than sharp.  Where that
+# is too coarse, `terrain` is the style to name.
 
 pages:
   clock-page: {order: 0, layout: classic, theme: circuit}

@@ -18,9 +18,8 @@
 #   color:        `palette` for a tile used as shape - its brightness
 #                 becomes how far the ground lifts from land to
 #                 land-high - or `raw` for one drawn as it arrives
-#   magnify:      `smooth` or `nearest`, past the maxzoom.  Blurring
-#                 averages a photograph toward one flat color, which is
-#                 the thing a photograph is worth having instead of.
+#   magnify:      `smooth` or `nearest`, past the maxzoom.  Nearest keeps
+#                 each enlarged pixel a hard square.
 #   credit:       what the service asks to be called, added to the line
 #                 the map already draws.  Empty when the style's own
 #                 attribution already covers it.
@@ -49,5 +48,5 @@ grounds:
     maxzoom: 8
     tilesize: 256
     color: raw
-    magnify: nearest
+    magnify: smooth
     credit: 'NASA GIBS'

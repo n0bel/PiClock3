@@ -228,10 +228,8 @@ Nothing is recolored, because there is nothing to recolor: Minnesota is
 green in it because Minnesota is green, and Nevada is brown for the same
 reason - which is the one thing a palette cannot do, however the colors
 are chosen.  It reaches zoom 8, so a zoom-7 radar gets real imagery and
-a zoom-11 one gets the same tiles magnified eight times.  Magnified with
-`nearest` rather than smoothly, deliberately: blurring averages a
-photograph toward one flat color, which is the thing a photograph was
-worth having instead of.
+a zoom-11 one gets the same tiles magnified eight times - smoothly, so
+the ground is soft rather than a grid of squares.
 
 It is used as **shape rather than color**.  Their tile is pale green,
 which is the worst possible hue under a radar whose palette runs green to
