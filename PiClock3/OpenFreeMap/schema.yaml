@@ -40,10 +40,10 @@ types:
 
   layer-group:
     is: scalar
-    one-of: [land, parks, water, water-names, boundaries, motorways,
-             highways, roads, streets, paths, rail, bridges, shields,
-             street-names, places, regions, localities,
-             places-of-interest, buildings, airports]
+    one-of: [land, parks, water, water-body-names, river-names, water-names,
+             boundaries, motorways, highways, roads, streets, paths, rail,
+             bridges, shields, street-names, places, countries, states,
+             regions, localities, places-of-interest, buildings, airports]
     # groups rather than the source style's layer ids, because
     # road_trunk_primary_casing is not a thing a config should know.
     # Said in OpenMapTiles terms - a source layer and a feature the

@@ -7,9 +7,10 @@ from: liberty
 background: relief
 # no `roads` - secondary and tertiary are a web at zoom 11 and are
 # not in the tiles at all at zoom 7, so they cost clutter and buy
-# nothing.  No `regions` either: see groups.yaml.
-layers: [water, boundaries, motorways, highways, bridges, shields,
-         places]
+# nothing.  No `river-names` either: a name is never laid along its line,
+# so one river is labeled again on every tile it crosses.
+layers: [water, water-body-names, boundaries, motorways, highways,
+         bridges, shields, places, countries, states]
 
 # Liberty draws heavier than a radar wants; every pixel of road is a
 # pixel of weather nobody can see.

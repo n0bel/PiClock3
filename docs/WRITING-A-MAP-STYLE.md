@@ -141,7 +141,9 @@ thing a config should have to know:
 | `land` | landcover and landuse fills |
 | `parks` | park and reserve fills |
 | `water` | lakes, rivers and the coastline |
-| `water-names` | lake and river names |
+| `water-body-names` | sea, bay and lake names |
+| `river-names` | river and stream names |
+| `water-names` | both of those |
 | `boundaries` | country and state lines |
 | `motorways` | motorway, with its casing |
 | `highways` | trunk and primary |
@@ -153,7 +155,9 @@ thing a config should have to know:
 | `shields` | route numbers |
 | `street-names` | road names |
 | `places` | city, town and village names |
-| `regions` | state and country names - big, and a radar rarely wants them |
+| `countries` | country names |
+| `states` | state and province names |
+| `regions` | both of those |
 | `localities` | islands, neighborhoods, suburbs and hamlets |
 | `places-of-interest` | shops, stations and the rest |
 | `buildings` | building footprints |

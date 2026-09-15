@@ -87,14 +87,20 @@ groups:
        class: [motorway, trunk, primary, secondary, tertiary, minor,
                street, service, track, path]}
 
-  # settlements only.  A state name and a country name are their own
-  # group and a radar wants neither: MINNESOTA in capitals across the
-  # top of a map of Minnesota is not telling anybody anything, and the
-  # rest - islands, neighborhoods - is a third group again.
+  # settlements only.  Countries, states, and islands and neighborhoods
+  # are groups of their own.
   places:
     - {layer: place, type: symbol, shape: point,
        class: [city, town, village], capital: [0, 2], rank: 1}
 
+  countries:
+    - {layer: place, type: symbol, shape: point,
+       class: country, rank: [1, 2, 3]}
+
+  states:
+    - {layer: place, type: symbol, shape: point, class: state}
+
+  # countries and states together
   regions:
     - {layer: place, type: symbol, shape: point,
        class: [state, country], rank: [1, 2, 3], capital: 0}
@@ -117,6 +123,13 @@ groups:
     - {layer: waterway, type: line, shape: line,
        class: [river, stream, canal, ditch], brunnel: [none, tunnel]}
 
+  water-body-names:
+    - {layer: water_name, type: symbol}
+
+  river-names:
+    - {layer: waterway, type: symbol}
+
+  # water-body-names and river-names together
   water-names:
     - {layer: water_name, type: symbol}
     - {layer: waterway, type: symbol}
