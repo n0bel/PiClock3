@@ -693,7 +693,19 @@ class MapStyle():
         """
         painter.setRenderHint(QPainter.Antialiasing, True)
         started = time.monotonic()
+        # Labels are placed before anything is drawn, from the last layer
+        # back.  A style ends on what matters most - Liberty on its country
+        # names - and MapLibre lets those claim space first.  Drawing stays
+        # in the style's order; only who wins a patch of screen changes.
         labels = []
+        chosen = {}
+        for layer in reversed(self.layers):
+            if layer.kind == 'symbol' and layer.drawn(zoom):
+                for _ in self._features(painter, layer, zoom,
+                                        placed.get(layer.source) or (),
+                                        labels, family, rect,
+                                        chosen.setdefault(id(layer), [])):
+                    yield
         drawn = 0
         for layer in self.layers:
             if not layer.drawn(zoom):
@@ -703,7 +715,10 @@ class MapStyle():
             elif layer.kind == 'raster':
                 self._raster(painter, layer, zoom,
                              placed.get(layer.source) or ())
-            elif layer.kind in ('fill', 'line', 'symbol'):
+            elif layer.kind == 'symbol':
+                for _ in self._placed(painter, chosen.get(id(layer), ())):
+                    yield
+            elif layer.kind in ('fill', 'line'):
                 for _ in self._features(painter, layer, zoom,
                                         placed.get(layer.source) or (),
                                         labels, family, rect):
@@ -753,8 +768,12 @@ class MapStyle():
             painter.drawImage(QRectF(x, y, size, size), image)
         painter.restore()
 
-    def _features(self, painter, layer, zoom, tiles, labels, family, rect):
-        """one vector layer, over every tile that carries it"""
+    def _features(self, painter, layer, zoom, tiles, labels, family, rect,
+                  chosen=None):
+        """one vector layer, over every tile that carries it.
+
+        A symbol layer is placed rather than drawn, onto `chosen`.
+        """
         if not layer.sourceLayer:
             return
         style = self._prepare(layer, zoom, family)
@@ -773,9 +792,8 @@ class MapStyle():
             if not features:
                 continue
             if layer.kind == 'symbol':
-                for _ in self._symbols(painter, layer, zoom, features, x, y,
-                                       style, labels, test, constantly,
-                                       rect):
+                for _ in self._symbols(zoom, features, x, y, style, labels,
+                                       test, constantly, rect, chosen):
                     yield
                 continue
             painter.save()
@@ -947,14 +965,14 @@ class MapStyle():
                 painter.drawPolyline(ring)
             yield
 
-    def _symbols(self, painter, layer, zoom, features, ox, oy, style,
-                 labels, test, constantly, rect):
+    def _symbols(self, zoom, features, ox, oy, style, labels, test,
+                 constantly, rect, chosen):
         """point-placed text, with the collision test that makes it read.
 
-        Style layers are drawn in the order the style wrote them, which
-        is roughly most important first, so the first label to claim a
-        patch of screen keeps it.  Without this a city, its suburb and
-        three roads all write over each other and none of them reads.
+        Places without drawing: a label that wins its space goes on
+        `chosen`, and steps() draws it later in the style's own order.
+        Without the test a city, its suburb and three roads all write
+        over each other and none of them reads.
         """
         metrics = style['metrics']
         pad = float(style['padding'])
@@ -1004,10 +1022,16 @@ class MapStyle():
                                             for other in labels):
                 continue
             labels.append(grown)
+            chosen.append((lines, box, plate, style))
+            yield
+
+    def _placed(self, painter, chosen):
+        """the labels one layer won, drawn where they were placed"""
+        for lines, box, plate, style in chosen:
             if plate is not None:
                 painter.setOpacity(style['opacity'])
                 painter.drawImage(plate[0], self.atlas, plate[1])
-            self._label(painter, lines, box, metrics, style)
+            self._label(painter, lines, box, style['metrics'], style)
             yield
 
     def _icon(self, style, zoom, tags, shape, at):
