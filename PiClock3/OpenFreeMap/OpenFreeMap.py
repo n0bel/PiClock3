@@ -108,10 +108,7 @@ RELIEF_OPACITY = 1.0
 
 # the gray levels of Natural Earth's shaded relief taken as deepest shadow
 # and brightest ground.  The tile uses little of its range - over Colorado
-# the Rockies run 140 to 230 and the plains 210 to 220 - so taken as it
-# arrives the hills move the land a few levels and the map reads flat.
-# Stretched, they span the palette's land to land-high; a gray past either
-# end is held at it.
+# 140 to 230 - so it is stretched to span land to land-high.
 RELIEF_SHADOW, RELIEF_LIGHT = 140, 230
 RELIEF_STRETCH = bytes(
     max(0, min(255, round((gray - RELIEF_SHADOW) * 255.0
@@ -849,8 +846,8 @@ class OpenFreeMap(BaseMap):
         radar whose own palette runs green to red.  What is wanted from
         it is the hills, so it comes out as the palette's land-high
         showing through the tile's own brightness - drawn over the land
-        color, that is land lifted where the ground rises, and their
-        green never appears at all.
+        color, flat and sunlit ground reaches land-high while shaded
+        slopes stay near land, and their green never appears at all.
 
         Grayscale8 and Alpha8 are both one byte a pixel with the same
         layout, so the brightness becomes the transparency by reading the
@@ -858,8 +855,7 @@ class OpenFreeMap(BaseMap):
         and a composite, once as the tile lands rather than on every
         draw.  convertToFormat cannot do this: asked for Alpha8 it
         answers fully opaque, having no idea the gray was meant as cover.
-        The gray is stretched on the way, RELIEF_STRETCH through
-        bytes.translate, which is still no pixel loop.
+        The gray is stretched on the way by RELIEF_STRETCH.
 
         The bytes are copied rather than pointed at.  A QImage built on
         constBits() borrows the buffer and does not own it, and the

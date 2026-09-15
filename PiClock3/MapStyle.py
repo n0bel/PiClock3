@@ -752,9 +752,8 @@ class MapStyle():
         # raster-resampling is the spec's own word for this, and it earns
         # its keep on a tile magnified past the zoom its service reaches:
         # smoothing averages a photograph toward one flat color, which is
-        # the thing a photograph was worth having instead of.  Linear is
-        # the spec's default and Qt's is the opposite - a painter smooths
-        # nothing unless told to - so both ways are said outright.
+        # the thing a photograph was worth having instead of.  The spec
+        # defaults to linear; Qt's painter smooths nothing unless told to.
         painter.setRenderHint(
             QPainter.SmoothPixmapTransform,
             layer.value('paint', 'raster-resampling', zoom) != 'nearest')
