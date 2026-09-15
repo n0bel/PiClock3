@@ -14,7 +14,7 @@ dark:
   # separates it from the ground is the saturation rather than the hue.
   # A saturated green would fail here where this one does not.
   land:          '#16221a'
-  land-high:     '#242a20'
+  land-high:     '#89a576'
   water:         '#16304a'
   park:          '#1a2a1c'
   boundary:      '#b9ad92'

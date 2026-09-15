@@ -102,9 +102,21 @@ SHORT_CREDIT = '© OpenMapTiles  OpenStreetMap'
 CREDIT_SIZE, CREDIT_FLOOR, CREDIT_CEILING = 0.035, 7, 14
 
 # how much of the relief shows through, where a style asks for it as the
-# ground.  Soft light over the land color, so this is how hilly it looks
-# rather than how gray.
-RELIEF_OPACITY = 0.55
+# ground.  All of it: the stretch below already spans land to land-high,
+# and anything less would stop short of the color the palette names.
+RELIEF_OPACITY = 1.0
+
+# the gray levels of Natural Earth's shaded relief taken as deepest shadow
+# and brightest ground.  The tile uses little of its range - over Colorado
+# the Rockies run 140 to 230 and the plains 210 to 220 - so taken as it
+# arrives the hills move the land a few levels and the map reads flat.
+# Stretched, they span the palette's land to land-high; a gray past either
+# end is held at it.
+RELIEF_SHADOW, RELIEF_LIGHT = 140, 230
+RELIEF_STRETCH = bytes(
+    max(0, min(255, round((gray - RELIEF_SHADOW) * 255.0
+                          / (RELIEF_LIGHT - RELIEF_SHADOW))))
+    for gray in range(256))
 
 # how long the drawing may hold the event loop before giving it back.
 # A radar animates five times a second, so a slice has to be a good deal
@@ -846,6 +858,8 @@ class OpenFreeMap(BaseMap):
         and a composite, once as the tile lands rather than on every
         draw.  convertToFormat cannot do this: asked for Alpha8 it
         answers fully opaque, having no idea the gray was meant as cover.
+        The gray is stretched on the way, RELIEF_STRETCH through
+        bytes.translate, which is still no pixel loop.
 
         The bytes are copied rather than pointed at.  A QImage built on
         constBits() borrows the buffer and does not own it, and the
@@ -856,7 +870,8 @@ class OpenFreeMap(BaseMap):
         if image.isNull():
             return image
         gray = image.convertToFormat(QImage.Format_Grayscale8)
-        raw = gray.constBits().asstring(gray.sizeInBytes())
+        raw = gray.constBits().asstring(gray.sizeInBytes()).translate(
+            RELIEF_STRETCH)
         shape = QImage(raw, gray.width(), gray.height(),
                        gray.bytesPerLine(), QImage.Format_Alpha8)
         out = QImage(gray.size(), QImage.Format_ARGB32_Premultiplied)
