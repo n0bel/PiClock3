@@ -26,7 +26,7 @@ the whole render rather than an arithmetic tree walked per road.
   shield is, so the numbers come out on their plates.
 - `fill-extrusion`.  Liberty's one 3D layer does not draw.
 - `line-blur`, `text-halo-blur`.  Edges are hard rather than soft.
-- `fill-pattern`, `fill-translate`, `text-translate`.
+- `fill-translate`, `text-translate`.
 
 Anything else in a style is read and obeyed, and a paint property this
 does not know is ignored rather than fatal - a style is data from
@@ -39,7 +39,7 @@ import time
 
 from PyQt5.QtCore import QPointF, QRectF, Qt
 from PyQt5.QtGui import (QBrush, QColor, QFont, QFontMetricsF, QPainter,
-                         QPainterPath, QPen)
+                         QPainterPath, QPen, QTransform)
 
 from .VectorTile import LINESTRING, POINT, POLYGON
 
@@ -621,6 +621,7 @@ class MapStyle():
         self.layers = [Layer(spec)
                        for spec in (self.style.get('layers') or [])]
         self.fonts = {}
+        self.patterns = {}
         self.keys = self._keys()
 
     def _keys(self):
@@ -830,12 +831,23 @@ class MapStyle():
     def _prepare(self, layer, zoom, family):
         """everything about a layer that does not vary per feature"""
         if layer.kind == 'fill':
-            fill = color(layer.value('paint', 'fill-color', zoom, '#000'))
-            if fill is None:
-                return None
+            pattern = layer.value('paint', 'fill-pattern', zoom)
+            if pattern:
+                # a pattern replaces the color, and one the sheet lacks
+                # draws nothing rather than fill-color's default black
+                image = self._pattern(str(pattern))
+                if image is None:
+                    return None
+                brush = QBrush(image)
+            else:
+                fill = color(layer.value('paint', 'fill-color', zoom, '#000'))
+                if fill is None:
+                    return None
+                brush = QBrush(fill)
             opacity = layer.value('paint', 'fill-opacity', zoom, 1.0)
             outline = color(layer.value('paint', 'fill-outline-color', zoom))
-            return {'brush': QBrush(fill), 'opacity': opacity,
+            return {'brush': brush, 'pattern': bool(pattern),
+                    'opacity': opacity,
                     'outline': None if outline is None
                     else QPen(outline, 0),
                     'antialias': layer.value('paint', 'fill-antialias',
@@ -925,7 +937,13 @@ class MapStyle():
         painter.setRenderHint(QPainter.Antialiasing,
                               bool(style['antialias']))
         painter.setOpacity(style['opacity'])
-        painter.setBrush(style['brush'])
+        brush = style['brush']
+        if style['pattern']:
+            # tiled from the view's corner rather than this tile's, or the
+            # pattern would start over at every tile edge
+            brush = QBrush(brush)
+            brush.setTransform(QTransform.fromTranslate(-ox, -oy))
+        painter.setBrush(brush)
         painter.setPen(style['outline'] or Qt.NoPen)
         for feature in features:
             if feature.type != POLYGON:
@@ -1029,6 +1047,23 @@ class MapStyle():
                 painter.drawImage(plate[0], self.atlas, plate[1])
             self._label(painter, lines, box, style['metrics'], style)
             yield
+
+    def _pattern(self, name):
+        """a fill-pattern's image, cut from the sprite sheet once"""
+        if name not in self.patterns:
+            found = self.sprite.get(name) if self.sprite else None
+            image = None
+            if found:
+                image = self.atlas.copy(found['x'], found['y'],
+                                        found['width'], found['height'])
+                ratio = float(found.get('pixelRatio') or 1)
+                if ratio != 1:
+                    image = image.scaled(
+                        round(found['width'] / ratio),
+                        round(found['height'] / ratio),
+                        Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+            self.patterns[name] = image
+        return self.patterns[name]
 
     def _icon(self, style, zoom, tags, shape, at):
         """where a sprite goes and what part of the sheet it is.
