@@ -783,7 +783,7 @@ class MapStyle():
             if not constantly:
                 return
 
-        for x, y, tile, _ in tiles:
+        for x, y, tile, size in tiles:
             features = tile.layer(layer.sourceLayer,
                                   self.keys.get(layer.sourceLayer))
             if not features:
@@ -795,6 +795,14 @@ class MapStyle():
                 continue
             painter.save()
             painter.translate(x, y)
+            # A tile carries a margin of its neighbors' ground, so a clip
+            # keeps a see-through fill from being painted twice along every
+            # tile edge.  Whole pixels, so two neighbors share one boundary
+            # exactly.
+            left, top = round(x), round(y)
+            painter.setClipRect(QRectF(left - x, top - y,
+                                       round(x + size) - left,
+                                       round(y + size) - top))
             shapes = self._fills if layer.kind == 'fill' else self._lines
             # the painter keeps whatever the loop set on it across a
             # slice boundary, which is why the pen is not set per feature
