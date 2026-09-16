@@ -16,7 +16,8 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 
-SUITES = ('importtest.py', 'checktest.py', 'logtest.py', 'linetest.py')
+SUITES = ('importtest.py', 'checktest.py', 'logtest.py', 'linetest.py',
+          'tiletest.py')
 
 
 def run(name):

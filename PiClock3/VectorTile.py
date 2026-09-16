@@ -110,7 +110,7 @@ class VectorTile():
         self.data = bytes(data)
         self.size = float(size)
         self.spans = {}          # layer name -> (start, end) in self.data
-        self.decoded = {}        # layer name -> [Feature, ...]
+        self.decoded = {}        # (layer name, keys) -> [Feature, ...]
         self._index()
 
     def names(self):
@@ -123,16 +123,21 @@ class VectorTile():
         `keys` is the attributes anything is going to read, or None for
         all of them.  A place in OpenMapTiles carries its name in about
         eighty languages and a style asks for four, so building the other
-        seventy-six into a dict is most of what a label costs.  The
-        answer is cached under the name, so every caller has to ask for
-        the same set - which MapStyle does, by taking the union across
-        the style before it draws anything.
+        seventy-six into a dict is most of what a label costs.
+
+        Cached under the layer name and the set asked for, because two
+        styles drawing one clock can want different attributes of the
+        same tile - two maps labeled in different languages - and the
+        tile is shared between them.  Asking twice for one set is free;
+        asking for a different set decodes that layer again.
         """
-        if name not in self.decoded:
+        wanted = (name, None if keys is None else frozenset(keys))
+        if wanted not in self.decoded:
             span = self.spans.get(name)
-            self.decoded[name] = ([] if span is None
-                                  else self._features(span[0], span[1], keys))
-        return self.decoded[name]
+            self.decoded[wanted] = ([] if span is None
+                                    else self._features(span[0], span[1],
+                                                        keys))
+        return self.decoded[wanted]
 
     # -------------------------------------------------------- wire format
 
