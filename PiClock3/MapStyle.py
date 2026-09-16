@@ -783,6 +783,8 @@ class MapStyle():
             if not constantly:
                 return
 
+        # what this layer has already named, across every tile it carries
+        named = set()
         for x, y, tile, size in tiles:
             features = tile.layer(layer.sourceLayer,
                                   self.keys.get(layer.sourceLayer))
@@ -790,7 +792,7 @@ class MapStyle():
                 continue
             if layer.kind == 'symbol':
                 for _ in self._symbols(zoom, features, x, y, style, labels,
-                                       test, constantly, rect, chosen):
+                                       test, constantly, rect, chosen, named):
                     yield
                 continue
             painter.save()
@@ -988,7 +990,7 @@ class MapStyle():
             yield
 
     def _symbols(self, zoom, features, ox, oy, style, labels, test,
-                 constantly, rect, chosen):
+                 constantly, rect, chosen, named):
         """point-placed text, with the collision test that makes it read.
 
         Places without drawing: a label that wins its space goes on
@@ -1025,6 +1027,13 @@ class MapStyle():
                 # for one.  The first is the one the sign shows.
                 text = text.split(';')[0].strip() or text
 
+            # a bay can arrive as hundreds of separate points, far enough
+            # apart that each wins its own space: #31 drew Hudson Bay five
+            # times.  A shield is exempt, since a route number belongs at
+            # every junction it marks.
+            if plate is None and text in named:
+                continue
+
             lines = self._wrap(text, metrics,
                                float(style['max-width']) * style['size'])
             box = self._box(at, lines, metrics, style)
@@ -1045,6 +1054,8 @@ class MapStyle():
                 continue
             labels.append(grown)
             chosen.append((lines, box, plate, style))
+            if plate is None:
+                named.add(text)
             yield
 
     def _placed(self, painter, chosen):
