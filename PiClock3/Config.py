@@ -167,7 +167,7 @@ class Lines():
     compose() builds the node tree and stops - no constructors, no
     DottedDict, no merge - and every node carries the line it came from.
     So nothing has to be carried while a config loads: the file still
-    knows, and can be asked afterwards.
+    knows, and can be asked afterward.
     """
 
     def __init__(self):
@@ -244,7 +244,7 @@ def merge(source, destination, tiers=None, tier=None, path=''):
         where = path + key
         if isinstance(value, dict):
             # a block replaces whatever is not one, the way a list does.
-            # effect: is written either way round, so a tier writing the
+            # effect: can be a block or a short string, so a tier writing the
             # long form lands on a shorthand string below it
             node = destination.get(key)
             if not isinstance(node, dict):

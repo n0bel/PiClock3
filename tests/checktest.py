@@ -857,7 +857,7 @@ LAYOUT = ('name: %s\ndescription: brought along by something else\n'
           'regions:\n  clock: {left: 0, top: 0, width: 1, height: 1}\n')
 
 # a case needing a plugin the repo does not ship gets one made under
-# plugins/, which is git-ignored, and taken away again afterwards
+# plugins/, which is git-ignored, and taken away again afterward
 FIXTURES = {
     'Twin': {'config.yaml': 'kind: basemap\nstyle: streets\n',
              'schema.yaml': 'description: >\n  A widget wearing a'

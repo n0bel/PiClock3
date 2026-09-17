@@ -20,7 +20,7 @@ is `Config.yaml`, which is not a scratch file.  It is gitignored because it
 is **your actual clock**, the one on the wall with your location and your
 keys in it.  Trying a theme by editing that file means breaking the working
 clock to find out whether the theme is any good, and remembering to put it
-back afterwards.
+back afterward.
 
 `--set` is that loop without the editing, `--at` reaches the states you
 cannot reach by waiting, and `--geometry` reaches the screens you do not
@@ -234,7 +234,7 @@ a theme is a fraction of the screen, and a layout is corrected for the shape
 it finds against the shape it says it was `designed-for`, so the clock lays
 itself out for the size given and what comes out is what that screen would
 show.  Text is sized and fitted against the regions that result, not shrunk
-afterwards.
+afterward.
 
 Which makes it the way to see whether a layout survives a shape it was not
 drawn for - `classic` says `16:9`, so `--geometry 1024x768` shows what the

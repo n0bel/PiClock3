@@ -58,7 +58,7 @@ caption-color: '#fff'
 font-family: ''           # empty takes the page's
 
 # the time on the built-in caption line.  Written the glibc way - %-I for a
-# leading zero dropped - and turned round for Windows here.  A list of your
+# leading zero dropped - and converted for Windows here.  A list of your
 # own carries its own formats inside its braces and ignores this.
 caption-time-format: '%H:%M'
 

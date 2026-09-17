@@ -322,7 +322,7 @@ moves a region.
 A glow or a drop shadow is not a stylesheet property, so none of the above
 would carry it.  Core applies `effect:` to your regions before `start()`
 runs, and a Qt effect covers a widget's whole subtree and picks up children
-made afterwards — so it reaches everything you draw, and **there is nothing
+made afterward — so it reaches everything you draw, and **there is nothing
 for your plugin to do**.
 
 ```yaml
@@ -371,7 +371,7 @@ Two reasons, and only one of them is portability.
 
 `%-d` drops a leading zero on glibc and raises on Windows; `%#d` does it on
 Windows and silently pads on glibc.  A config travels between the two, so it
-is written the glibc way and turned round for you.  Any `%-x` is handled,
+is written the glibc way and converted for you.  Any `%-x` is handled,
 not only the day.
 
 And a widget that draws a time redraws every second, so resolving in the
@@ -381,7 +381,7 @@ That is the whole contract - use the saved string however you were going to,
 whether that is `when.strftime(self.hourFormat)` or handing it to `expand()`
 for a `{plugin-data.now:%-I}` template.
 
-Do not strip the zero yourself afterwards.  Both shipped plugins used to,
+Do not strip the zero yourself afterward.  Both shipped plugins used to,
 and both got it wrong: one tested the first character of the whole rendered
 string, so `'%S %I'` ate the seconds' zero and `'%A %I:%M'` missed the
 hour's; the other could not fire at all for either format it shipped.

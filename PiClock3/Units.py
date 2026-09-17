@@ -147,7 +147,7 @@ class Units():
     def measure(self, quantity, value, default=None):
         """what a config wrote, as a number in `quantity`'s base unit.
 
-        The other way round from format(): that takes a number a provider
+        The reverse of format(): that takes a number a provider
         gave us and shows it the way the set asks, this takes what somebody
         typed and gets a number out of it.  A bare one is already the base,
         so altitude: 1600 is 1600 meters; '5280ft' names a unit the

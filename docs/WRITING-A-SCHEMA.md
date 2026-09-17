@@ -148,7 +148,7 @@ at the same level - not `width:` inside a `placement:` block:
 | `names: <what>` | must name something that exists.  See below |
 | `pattern: <what>` | a string the clock reads with an expression rather than takes as it stands - `geometry`.  Named rather than written out, so both read it with the same one |
 | `provides: [<what>, ...]` | beside `names: providers`, the questions the provider named here has to answer - any one of them will do |
-| `portable: true` | a `strftime` format written the glibc way and turned round for Windows |
+| `portable: true` | a `strftime` format written the glibc way and converted for Windows |
 
 **Silence means optional, and blank means none.**  Those three states -
 required, optional, inherited - are what a blank default cannot tell you by

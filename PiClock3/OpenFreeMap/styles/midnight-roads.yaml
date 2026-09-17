@@ -21,9 +21,10 @@ weight: 0.45
 
 palette:
   from: dark
-  # light on black rather than dark on white.  Theirs is drawn this way
-  # and it is the right way round for radar: a black halo separates a
-  # line from green and yellow, where a white one washes into them.
+  # light lines and labels with a black outline, not dark ones with a
+  # white outline.  SerBrynden's style does the same, and it reads better
+  # over radar: black separates a line from green and yellow rain, where
+  # white blends into it.
   road:          '#8a7a45'
   road-casing:   '#0b0b08'
   street:        '#6a6040'

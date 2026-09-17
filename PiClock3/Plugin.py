@@ -41,7 +41,7 @@ class Plugin(QObject):
 
         glibc drops a leading zero with %-d, the Windows CRT with %#d, and
         Windows raises on %-d rather than ignoring it.  A config travels
-        between them, so it is written the glibc way and turned round here.
+        between them, so it is written the glibc way and converted here.
 
         Call it in start() and keep what it returns: the answer cannot
         change while the clock runs, and the widgets that draw a time

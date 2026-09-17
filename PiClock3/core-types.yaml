@@ -104,8 +104,8 @@ types:
     is: scalar
     of: [string]
     portable: true
-    # written the glibc way - %-d drops a leading zero - and turned round
-    # for Windows by strftimePortableFormat
+    # written the glibc way - %-d drops a leading zero - and converted for
+    # Windows by strftimePortableFormat
 
   apikey:
     is: scalar

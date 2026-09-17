@@ -424,7 +424,7 @@ own logo and credit already drawn into it.
 
 **`caption-time-format:` is the time on that line**, `'%H:%M'` unless you
 say otherwise, and `'%-I:%M %p'` for a twelve-hour clock.  Write it the
-glibc way and it is turned round for Windows.  It reaches only the built-in
+glibc way and it is converted for Windows.  It reaches only the built-in
 line; a `captions:` list of your own carries its formats inside its braces.
 
 **`label:` is a name for the map**, for a clock showing more than one and no

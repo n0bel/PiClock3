@@ -159,8 +159,8 @@ class Metar(Weather):
 
         A report lists present weather in decreasing significance, so the
         first group is the one to show - -RA BR is rain seen through mist,
-        not mist.  Cloud is the other way round and the last layer is the
-        highest.
+        not mist.  Cloud layers are listed in the opposite order: the last
+        is the highest.
         """
         cover = ''
         for group in f.sky:

@@ -631,7 +631,7 @@ class OpenFreeMap(BaseMap):
 
         A radar's own map-language: outranks the provider's language:.
         What a style file says for itself, and the clock's own language,
-        are settled afterwards by codesFor().
+        are settled afterward by codesFor().
         """
         return self.asCodes(layerConfig.get('map-language')
                             or self.config.get('language'))
