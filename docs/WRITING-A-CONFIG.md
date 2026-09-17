@@ -209,7 +209,7 @@ its own `config.yaml`:
 | `radar` | `MapLoop` |
 | `analog-clock`, `digital-clock` | the two clock faces |
 | `current-conditions`, `forecast`, `date`, `almanac`, `text` | the rest of the widgets |
-| `basemap`, `radar-frames`, `weather-source`, `forecast-source` | the providers |
+| `basemap`, `radar-frames`, `satellite-frames`, `weather-source`, `forecast-source` | the providers |
 
 So a kind is what a thing *is*, and several plugins can share one - Mapbox and
 GoogleMaps are both `basemap`, so a setting under that reaches whichever you
@@ -312,6 +312,31 @@ some of the weather: below about 0.45 the light returns start to disappear.
 
 Both composite once as the picture arrives rather than on every repaint, so
 neither costs anything while the loop runs.
+
+**`frame-provider:` can be clouds instead of radar.**  `LibreWXRSatellite`
+supplies infrared satellite frames: clouds in gray, see-through where the
+sky is clear.  LibreWXR publishes them hourly, so give the map an hourly
+`interval:` and enough `frames:` to cover the hours you want to see:
+
+```yaml
+providers:
+  satellite: {plugin: PiClock3.LibreWXRSatellite}
+
+widgets:
+  clouds:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    base-provider: mapbox
+    frame-provider: satellite
+    interval: 60
+    frames: 12
+    zoom: 5
+```
+
+Satellite goes on a map of its own rather than under the radar, because
+the two do not line up: radar frames are ten minutes apart and satellite
+frames an hour.  The imagery is coarse, and blocky on a map zoomed in
+close.
 
 **A base map's own logo and credit are lifted back over the radar**, because
 the radar would otherwise cover them and both Mapbox and Google say in as
@@ -767,8 +792,9 @@ all get the one file at the top of the checkout, wherever the example
 itself lives.  A file that is not there says so, and says where it looked.
 
 Only Mapbox and Google need a key.  Radar frames from RainViewer and
-LibreWXR are free, so is the METAR, and so is `OpenFreeMap` - which is
-why `examples/openfreemap.yaml` has no `apikeys:` line at all.
+LibreWXR are free, so are LibreWXR's satellite frames and the METAR, and so
+is `OpenFreeMap` - which is why `examples/openfreemap.yaml` has no
+`apikeys:` line at all.
 
 ## Trying something before you write it down
 

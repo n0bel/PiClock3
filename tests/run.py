@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 
 SUITES = ('importtest.py', 'checktest.py', 'logtest.py', 'linetest.py',
-          'tiletest.py')
+          'tiletest.py', 'satellitetest.py')
 
 
 def run(name):
@@ -36,7 +36,7 @@ def main():
     worst = 0
     for name in SUITES:
         how, said = run(name)
-        print('  %-5s %-14s %s' % (how, name, said))
+        print('  %-5s %-16s %s' % (how, name, said))
         if how == 'FAIL':
             worst = 1
     return worst

@@ -158,6 +158,7 @@ python3 PyQtPiClock3.py examples/meadow.yaml
 | `examples/clockwall.yaml` | six faces and six city names, the wall behind a hotel desk |
 | `examples/openfreemap.yaml` | the same clock with no `apikeys:` line at all - the base map is drawn here rather than fetched as a picture |
 | `examples/bluemarble.yaml` | NASA's Blue Marble under the radar, at Flagstaff where forest meets desert |
+| `examples/clouds.yaml` | radar beside the clouds - LibreWXR's satellite frames, on maps of their own |
 | `examples/mapstyles.yaml` | four radars, four ways of writing a map style |
 | `examples/captions.yaml` | four radars, four ways of captioning one |
 | `examples/minimal.yaml` | the smallest clock that works, and a place to start from |
@@ -274,6 +275,7 @@ widgets and occupies no region of its own.
 | `Mapbox`, `GoogleMaps` | the base map under a radar - each needs a key |
 | `OpenFreeMap` | the base map, or the roads over one.  **No key**: it sends vector tiles and the cartography is drawn here, so the colors are the theme's - and what sits under them can be NASA's Blue Marble, also keyless.  See [WRITING-A-MAP-STYLE.md](docs/WRITING-A-MAP-STYLE.md) |
 | `RainViewer`, `LibreWXR` | radar frames.  Neither needs a key |
+| `LibreWXRSatellite` | infrared satellite frames - the clouds.  No key |
 
 Units are core rather than a weather feature.  `units: metric` in a config
 picks a set - `default`, `metric`, `SI` or `nautical` ship - and the table

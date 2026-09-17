@@ -1,0 +1,111 @@
+# PiClock3 - Clouds.
+#
+# Radar beside the clouds: each page has a map of what is falling and a
+# map of the infrared satellite picture, from LibreWXR.  No key anywhere,
+# the same as openfreemap.yaml.
+#
+# The clouds are on maps of their own rather than under the radar, because
+# the two do not line up - LibreWXR publishes radar every ten minutes and
+# satellite every hour.  The cloud maps are zoomed out, since the imagery is
+# coarse and turns to blocks up close.
+
+pages:
+  clock-page: {order: 0, layout: classic, theme: circuit}
+  maps-page:  {order: 1, layout: bigmaps, theme: circuit}
+
+language: en
+
+location:
+  latitude: 45
+  longitude: -93
+  timezone:
+
+providers:
+
+  openmeteo: {plugin: PiClock3.OpenMeteo}
+  metar: {plugin: PiClock3.Metar, METAR: KMSP}
+  openfreemap: {plugin: PiClock3.OpenFreeMap}
+
+  librewxr:  {plugin: PiClock3.LibreWXR}
+  satellite: {plugin: PiClock3.LibreWXRSatellite}
+
+widgets:
+  clock:  {plugin: PiClock3.AnalogClock, region: clock}
+  date:   {plugin: PiClock3.Date,   region: date}
+  astral: {plugin: PiClock3.Astral, region: bottom}
+
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+
+  maps-caption:
+    plugin: PiClock3.DigitalClock
+    region: caption
+    format: "{plugin-data.now:%a %b} {plugin-data.now.day} {plugin-data.now.year}   {plugin-data.now:%H:%M:%S}"
+    lowercase: false
+    font-size: 0.75
+
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    conditions-provider: metar
+
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
+    base-provider: openfreemap
+    frame-provider: librewxr
+    style: terrain
+    zoom: 7
+    markers:
+      - location:
+          latitude: '{location.latitude}'
+          longitude: '{location.longitude}'
+        color: red
+        image: teardrop-home
+
+  # hourly frames, so an hourly interval, and twelve of them for half a day
+  clouds1:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    base-provider: openfreemap
+    frame-provider: satellite
+    style: terrain
+    zoom: 5
+    interval: 60
+    frames: 12
+    markers:
+      - location:
+          latitude: '{location.latitude}'
+          longitude: '{location.longitude}'
+        color: green
+        size: mid
+        image: teardrop-home
+
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: radars.1
+    base-provider: openfreemap
+    frame-provider: librewxr
+    style: terrain
+    zoom: 6
+
+  # most of the continent, where a weather system shows whole
+  clouds2:
+    plugin: PiClock3.MapLoop
+    region: radars.2
+    base-provider: openfreemap
+    frame-provider: satellite
+    style: terrain
+    zoom: 3
+    interval: 60
+    frames: 12
+
+logging-level: info
+logging-rotate: per-run
+logging-max-size: 10
+logging-keep: 7
+
+# No apikeys: line.  Open-Meteo, METAR, LibreWXR and OpenFreeMap each ask
+# for none.

@@ -1,0 +1,6 @@
+description: >
+  Infrared satellite frames from LibreWXR, as timestamped tiles: clouds in
+  gray, see-through where the sky is clear.  Hourly, from an index it
+  fetches.
+
+provides: [frames]
