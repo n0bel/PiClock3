@@ -523,7 +523,7 @@ OPERATORS = {
 }
 
 
-def _reads(node, found):
+def reads(node, found):
     """every attribute name a ["get"] or ["has"] in this tree asks for.
 
     None where one of them is computed rather than written down, which
@@ -531,7 +531,7 @@ def _reads(node, found):
     """
     if isinstance(node, dict):
         for value in node.values():
-            if _reads(value, found) is None:
+            if reads(value, found) is None:
                 return None
         return found
     if not isinstance(node, list):
@@ -546,7 +546,7 @@ def _reads(node, found):
         if len(node) > 1 and isinstance(node[1], str):
             found.add(node[1])
     for item in node:
-        if _reads(item, found) is None:
+        if reads(item, found) is None:
             return None
     return found
 
@@ -643,7 +643,7 @@ class MapStyle():
                 continue
             for node in (spec.get('filter'), spec.get('paint'),
                          spec.get('layout')):
-                if _reads(node, found) is None:
+                if reads(node, found) is None:
                     out[name] = None
                     break
         return out
@@ -694,7 +694,7 @@ class MapStyle():
         """
         painter.setRenderHint(QPainter.Antialiasing, True)
         started = time.monotonic()
-        # Labels are placed before anything is drawn, last layer first: a
+        # labels are placed before anything is drawn, last layer first: a
         # style ends on what matters most - Liberty on its country names -
         # and MapLibre lets those claim space first.
         labels = []
@@ -797,7 +797,7 @@ class MapStyle():
                 continue
             painter.save()
             painter.translate(x, y)
-            # A tile carries a margin of its neighbors' ground, so a clip
+            # a tile carries a margin of its neighbors' ground, so a clip
             # keeps a see-through fill from being painted twice along every
             # tile edge.  Whole pixels, so two neighbors share one boundary
             # exactly.

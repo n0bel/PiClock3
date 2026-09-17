@@ -173,10 +173,13 @@ class Languages():
             part = readYaml(path)
             key = self.key(part, path)
             entry = self.languages.setdefault(
-                key, {'codes': set(), 'name': key, 'strings': {},
+                key, {'codes': [], 'name': key, 'strings': {},
                       'conditions': {}, 'locale': []})
-            entry['codes'].update(c.lower() for c in self.codes(part))
-            entry['codes'].add(key)
+            # in the order the file wrote them, its everyday code first
+            for code in list(self.codes(part)) + [key]:
+                code = code.lower()
+                if code not in entry['codes']:
+                    entry['codes'].append(code)
             if part.get('name'):
                 entry['name'] = part['name']
             if part.get('locale'):

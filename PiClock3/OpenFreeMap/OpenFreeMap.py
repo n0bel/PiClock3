@@ -53,7 +53,7 @@ from PyQt5.QtNetwork import QNetworkReply
 
 from ..BaseMap import BaseMap
 from ..Config import readYaml
-from ..MapStyle import MapStyle, color, compile, placedTiles
+from ..MapStyle import MapStyle, color, compile, placedTiles, reads
 from ..Projection import tileGrid
 from ..VectorTile import VectorTile
 from ..WebGet import WebGet
@@ -227,24 +227,33 @@ class OpenFreeMap(BaseMap):
             found = self.config.get('style')
         return found or 'liberty'
 
-    def styleFor(self, wanted):
+    def styleFor(self, wanted, codes=()):
         """a MapStyle for a name or a block, built at most once.
 
         Keyed on what was asked for rather than on a name, because two
         radars may write two different blocks and a block has no name.
+        The label language is part of that key: two maps asking for the
+        same cartography in two languages are two styles, and sharing
+        one would hand the second whatever the first was labeled in.
 
         Three answers, and telling the last two apart is what keeps a
         request from waiting for a style that is never coming: a
         MapStyle, WAITING while the source style is still in flight, or
         None for one that does not exist.
         """
-        key = json.dumps(wanted, sort_keys=True, default=str)
+        key = json.dumps([wanted, list(codes)], sort_keys=True, default=str)
         if key in self.styles:
             return self.styles[key]
         spec = wanted if isinstance(wanted, dict) else self.read(wanted)
         if spec is None:
             self.styles[key] = None
             return None
+        # after read(), so a style file of ours resolves by name first.
+        # Only what was asked for outright lands here: a file that names
+        # its own language keeps it, and assemble() settles the rest.
+        if codes:
+            spec = dict(spec)
+            spec['language'] = list(codes)
         built, high = self.assemble(spec)
         if built is WAITING or built is None:
             return built
@@ -331,6 +340,7 @@ class OpenFreeMap(BaseMap):
         self.ground(style, ground, palette)
         self.recolor(style, palette)
         self.weigh(style, spec.get('weight'))
+        self.relabel(style, self.codesFor(spec.get('language')))
         logger.debug('%s style from %r: %d layers', self.name,
                      spec.get('from'), len(style['layers']))
         # what a raster tile becomes as it lands: a ground used as shape
@@ -616,6 +626,69 @@ class OpenFreeMap(BaseMap):
                 if key in paint:
                     paint[key] = ['*', paint[key], float(weight)]
 
+    def labelCodes(self, layerConfig):
+        """the label language this request asks for outright, or none.
+
+        A radar's own map-language: outranks the provider's language:.
+        What a style file says for itself, and the clock's own language,
+        are settled afterwards by codesFor().
+        """
+        return self.asCodes(layerConfig.get('map-language')
+                            or self.config.get('language'))
+
+    def codesFor(self, asked):
+        """which languages labels end up in, best first.
+
+        Whatever was asked for, else what the style file says for itself,
+        else the language the clock is already speaking - whose file
+        lists every spelling it answers to under codes:, in the order it
+        wrote them, which is the order to ask for a name in.
+        """
+        return (self.asCodes(asked)
+                or self.asCodes(self.piclock.languages.setting('codes')))
+
+    @staticmethod
+    def asCodes(found):
+        """a list of codes from a list, or from one written bare"""
+        if not found:
+            return []
+        if isinstance(found, str):
+            found = [found]
+        return [str(code) for code in found if code]
+
+    @staticmethod
+    def relabel(style, codes):
+        """every label written in the languages asked for, where the data
+        has them.
+
+        Liberty asks for `name:latin` and, where the feature has one, a
+        second line of `name:nonlatin`, else English.  This asks for each
+        code in turn, then Latin script, then the local name - so a German
+        clock reads Hudson-Bucht and a French one Baie d'Hudson.
+
+        Only a field that reads a name is rewritten: a shield draws `ref`,
+        and a route number is not translated.
+        """
+        if not codes:
+            return
+        field = ['coalesce']
+        for code in codes:
+            field.append(['get', 'name:%s' % code])
+        field += [['get', 'name:latin'], ['get', 'name']]
+        for layer in style['layers']:
+            if layer.get('type') != 'symbol':
+                continue
+            layout = layer.get('layout') or {}
+            if 'text-field' not in layout:
+                continue
+            asked = reads(layout['text-field'], set())
+            if asked is None or not any(name == 'name'
+                                        or name.startswith('name:')
+                                        or name.startswith('name_')
+                                        for name in asked):
+                continue
+            layout['text-field'] = json.loads(json.dumps(field))
+
     def recolor(self, style, palette):
         """a palette's roles onto the layers that should agree about color.
 
@@ -661,7 +734,8 @@ class OpenFreeMap(BaseMap):
 
     def build(self, view, layerConfig, callback):
         """everything one map needs, then draw it when it has arrived"""
-        style = self.styleFor(self.wanted(layerConfig))
+        style = self.styleFor(self.wanted(layerConfig),
+                              self.labelCodes(layerConfig))
         if style is WAITING:
             # the source style is still on its way, and build() runs
             # again from drain() when it lands
@@ -945,15 +1019,10 @@ class OpenFreeMap(BaseMap):
     def credit(self, painter, size, also=''):
         """their credit, drawn in, and a mask that is the letters.
 
-        Every other base map arrives with a mark baked into it and can say
-        no more than "somewhere along the bottom", so its mask is a band
-        and the band hides weather.  This one draws the mark, so the mask
-        can be the same path the text came from, grown by the halo: the
-        radar keeps the space between the letters.
-
-        Grown rather than eroded, for the reason a band is: covering a
-        little extra hides a little weather, covering too little hides
-        attribution.
+        The mask is the path the text came from, grown by the halo, so
+        the radar keeps the space between the letters.  Grown rather than
+        eroded: covering a little extra hides a little weather, covering
+        too little hides attribution.
         """
         height = int(round(min(CREDIT_CEILING,
                                max(CREDIT_FLOOR,

@@ -249,6 +249,39 @@ Every shipped style sets it below 1, between 0.45 and 0.6.  Liberty
 draws heavier than a radar wants at the same scale, and every pixel of
 road is a pixel of weather nobody can see.
 
+### `language:`
+
+Which language the labels are written in, best first:
+
+    style: {from: liberty, language: fr}
+    style: {from: liberty, language: [pnb, pa]}
+
+Say nothing and the clock's own `language:` is used, whose file lists the
+codes it answers to - so a German clock reads *Hudson-Bucht* without
+anyone writing that down.  A radar says `map-language:` for one map, and
+the provider's `language:` sets it for every map on the clock.
+
+Each code is tried as `name:<code>` on the feature, then `name:latin`,
+then whatever local name the data carries.  The fallback is not
+decoration: measured over 1,197 named features, `name:<code>` answered
+99% of them in English and French but only 70% in German, and the rest
+arrive as Latin script rather than as nothing.
+
+**It replaces Liberty's own label field.**  Liberty asks for `name:latin`
+and, where the feature has one, a second line of `name:nonlatin` - so
+Hudson Bay carries ᑲᖏᖅᓱᐊᓗᒃ ᐃᓗᐊ under it and a trail of punctuation after
+that, since OpenMapTiles builds `name:nonlatin` by stripping the Latin
+letters out of a name holding three languages at once.  Asking for a
+language replaces that field, so a French clock reads *Baie d'Hudson* on
+a single line.
+
+**Route numbers are not translated.**  A shield draws `ref`, so it is
+left alone; a road's *name* is rewritten like any other label.
+
+**OpenFreeMap only.**  We decode the tiles here, so the chain is ours to
+choose.  Mapbox renders static images on its own servers and offers no
+public language parameter, and the Google provider does not pass one on.
+
 ### `palette:`
 
 Roles rather than layer ids, so a recolor need not know the cartography

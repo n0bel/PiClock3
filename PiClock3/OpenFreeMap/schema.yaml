@@ -17,6 +17,7 @@ types:
       background: {of: [map-ground, color]}
       weight:     {is: number, range: [0.1, 4]}
       palette:    {is: map-palette}
+      language:   {of: [string, language-codes]}
     # weight: scales every line width rather than replacing it, so a
     # road still thickens as it is zoomed into, just less of it.  Every
     # shipped style sets it below 1: Liberty draws heavier than a radar
@@ -27,6 +28,15 @@ types:
     # layer: every zoom-width curve and every filter stays the source
     # style's, which is what makes this worth doing rather than drawing
     # a map of our own.
+
+  language-codes:
+    is: list
+    of: string
+    # the language codes to try, in order: `name:<code>` is asked of each
+    # feature in turn, then `name:latin`, then whatever local name the
+    # data carries.  A language file's own code: list is where these come
+    # from when nothing names them, and the order it wrote them in is the
+    # order they are asked in - its first code being its everyday one.
 
   map-ground:
     is: scalar
@@ -90,3 +100,11 @@ settings:
   credit-color:  {is: color}
   credit-halo:   {is: color}
   font-family:   {is: string, inherits: page}
+
+  language:     {of: [string, language-codes]}
+  map-language: {of: [string, language-codes]}
+  # which language the map's labels are written in, best first.  Empty
+  # takes the clock's own language:, whose file lists the codes it
+  # answers to, so most clocks never set this.  It is language: on this
+  # provider and in a style block, and map-language: on a widget, which
+  # is what lets one clock show the same cartography in two languages.

@@ -283,6 +283,29 @@ and labels.  Name none and no such layer is built at all.
 `overlay-provider:` takes it from a different provider than the base map;
 unset, it uses the same one.
 
+**`map-language:` is which language the map's labels are written in.**  Say
+nothing and they follow the clock's own `language:`, so a German clock reads
+*Hudson-Bucht* without anyone writing that down.  Say it on a widget and
+that map alone changes; say `language:` on the provider and every map on the
+clock does:
+
+```yaml
+providers:
+  openfreemap: {plugin: PiClock3.OpenFreeMap, language: de}
+
+widgets:
+  radar2: {plugin: PiClock3.MapLoop, region: maps.2, map-language: fr}
+```
+
+Two maps on one clock can be labeled differently, which is the whole reason
+it sits on the widget as well as on the provider.  A style block may also
+say `language:` - see [WRITING-A-MAP-STYLE.md](WRITING-A-MAP-STYLE.md) for
+the fallback chain.
+
+**`OpenFreeMap` only**: we decode the tiles here, so the choice is ours to
+make.  Mapbox offers no public language parameter for a static image, and
+the Google provider does not pass one on.
+
 **`frame-opacity:` fades the radar instead**, for a base map worth seeing
 through.  It is the other way to solve the same problem, and it costs you
 some of the weather: below about 0.45 the light returns start to disappear.
@@ -373,7 +396,8 @@ glibc way and it is turned round for Windows.  It reaches only the built-in
 line; a `captions:` list of your own carries its formats inside its braces.
 
 **`label:` is a name for the map**, for a clock showing more than one and no
-other reason - unset, nothing is drawn.  Three settings dress it:
+other reason - unset, nothing is drawn.  It has nothing to do with the map's
+own labels: those are `map-language:`, above.  Three settings dress it:
 
 ```yaml
 widgets:
