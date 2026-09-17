@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtGui import QImage, QPainter, QPixmap
 from PyQt5.QtNetwork import QNetworkReply
 
@@ -11,6 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 class TileFetcher():
+    """one frame's tiles, fetched at once and flattened into a pixmap.
+
+    Answers callback(pixmap, params, failed=..., tiles=...): `failed` is
+    the squares of the pixmap whose tile did not arrive, and `tiles` how
+    many were asked for, so an empty square can be told from clear sky.
+    """
     fetchers = []
 
     def __init__(self, center, zoom, width, height, tileurl, callback,
@@ -50,6 +56,7 @@ class TileFetcher():
         wanted = [(y, x) for y in self.tiles for x in self.tiles[y]
                   if 0 <= y < n]
         self.pending = len(wanted)
+        self.asked = len(wanted)
         if not self.pending:
             self.finish()
             return
@@ -65,21 +72,29 @@ class TileFetcher():
         else:
             logger.debug("tile %d,%d failed: %s",
                          params['x'], params['y'], error)
-        self.tiles[params['y']][params['x']]['image'] = i
+        entry = self.tiles[params['y']][params['x']]
+        entry['image'] = i
+        # an answer that is not a picture is as missing as no answer
+        entry['failed'] = i.isNull()
         self.pending -= 1
         if self.pending < 1:
             self.finish()
 
     def finish(self):
-        pixmap = self.combineTiles()
+        pixmap, failed = self.combineTiles()
         if self in TileFetcher.fetchers:
             TileFetcher.fetchers.remove(self)
-        self.callback(pixmap, self.params)
+        self.callback(pixmap, self.params, failed=failed, tiles=self.asked)
 
     def combineTiles(self):
+        """the flattened pixmap, and the squares of it that are missing"""
         ts = self.tilesize
         full = QImage(self.xTiles * ts, self.yTiles * ts, QImage.Format_ARGB32)
         full.fill(Qt.transparent)
+        xo = int((int(self.origin['X']) - self.origin['X']) * ts)
+        yo = int((int(self.origin['Y']) - self.origin['Y']) * ts)
+        view = QRect(0, 0, self.width, self.height)
+        failed = []
         painter = QPainter()
         painter.begin(full)
         yp = 0
@@ -89,12 +104,14 @@ class TileFetcher():
                 tile = self.tiles[y][x].get('image')
                 if tile is not None and not tile.isNull():
                     painter.drawImage(xp, yp, tile)
+                elif self.tiles[y][x].get('failed'):
+                    square = QRect(xp + xo, yp + yo, ts, ts) & view
+                    if not square.isEmpty():
+                        failed.append(square)
                 xp += ts
             yp += ts
         painter.end()
 
-        xo = int((int(self.origin['X']) - self.origin['X']) * ts)
-        yo = int((int(self.origin['Y']) - self.origin['Y']) * ts)
         cropped = full.copy(-xo, -yo, self.width, self.height)
 
-        return QPixmap(cropped)
+        return QPixmap(cropped), failed

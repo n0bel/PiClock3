@@ -1,10 +1,11 @@
 # Tests
 
-Six programs that check the half of the clock a desktop can check: reading a
-config, reporting what is wrong with it, saying where, reading a vector tile,
-and choosing which satellite frames to animate. They are here so you can run
-them against your own change, and so you have something to copy when your
-change deserves a test of its own.
+Seven programs that check the half of the clock a desktop can check: reading
+a config, reporting what is wrong with it, saying where, reading a vector
+tile, choosing which satellite frames to animate, and telling a missing radar
+tile from clear sky. They are here so you can run them against your own
+change, and so you have something to copy when your change deserves a test of
+its own.
 
 They are not a gate. Nothing runs them for you, there is no CI, and a pull
 request is not rejected for skipping them. They are a tool.
@@ -13,7 +14,7 @@ request is not rejected for skipping them. They are a tool.
 python3 tests/run.py
 ```
 
-That runs all six and answers with an exit code. Each is also a program in
+That runs all seven and answers with an exit code. Each is also a program in
 its own right, and running one directly gives you its own output:
 
 ```
@@ -33,6 +34,7 @@ because the clock finds plugins, layouts and themes by relative path.
 | `linetest.py` | whether a finding names the right file and line | PyQt5 |
 | `tiletest.py` | that a tile gives each caller the attributes it asked for | PyQt5 |
 | `satellitetest.py` | that satellite frames are only the hours the index lists | PyQt5 |
+| `frametest.py` | that missing radar tiles are hatched and asked for again | PyQt5 |
 
 `importtest.py` is the shallowest and the widest. The clock imports a plugin
 only when a config names one, so loading `PyQtPiClock3.py` reaches eleven of
@@ -47,12 +49,13 @@ runs wherever the requirements install. `importtest.py`, `logtest.py` and
 `linetest.py` load or run `PyQtPiClock3.py`, so they need Qt.
 `tiletest.py` needs it for a different reason: it decodes a tile, and
 `VectorTile` builds a `QPointF`. `satellitetest.py` needs it because a
-provider is a `QObject`. None of them opens a window.
+provider is a `QObject`, and `frametest.py` because a frame is a `QPixmap`.
+None of them opens a window.
 
-All six together take about half a minute on a desktop, most of it
-`checktest.py` resolving a config from disk 129 times over. `tiletest.py`
-and `satellitetest.py` are the quick ones — each builds what it reads in
-memory, and neither touches the disk or the network.
+All seven together take about half a minute on a desktop, most of it
+`checktest.py` resolving a config from disk 129 times over. `tiletest.py`,
+`satellitetest.py` and `frametest.py` are the quick ones — each builds what
+it reads in memory, and none touches the network.
 
 `run.py` reports a suite that cannot run as **skip** rather than as a
 failure. Not having Qt installed is a fact about your machine, not about your
@@ -160,6 +163,12 @@ are the wire format and nothing more.
 The same shape: a name, something that has to be true, and what came back.
 `provider()` builds one from a list of times, and `urls()` says which tiles
 a frame would fetch without fetching them.
+
+### to `frametest.py`
+
+The same shape again. `fetch()` runs a tiler whose every tile is answered by
+a function you give it, and `loop()` builds a `MapLoop` with nothing but
+what frames and compositing touch — hand it frames with `gotFramePixmap`.
 
 ## Two habits worth more than the tests
 

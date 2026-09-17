@@ -6,7 +6,7 @@ from ..Widget import Widget
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import (QPixmap, QImage, QPainter, QColor, QFont,
-                         QFontMetrics, QPainterPath, QPen, QBrush)
+                         QFontMetrics, QPainterPath, QPen, QBrush, QRegion)
 from PyQt5.QtWidgets import QLabel
 
 from ..DottedDict import Missing
@@ -50,6 +50,11 @@ RETRY_TRIES = 4
 # mistakes it for terrain.
 NO_MAP = '#3a3a3a'
 
+# the lines drawn where a frame's tiles did not arrive, so missing radar is
+# not read as clear sky.  The step is a fraction of the map's height.
+HATCH_STEP = 0.03
+HATCH_COLOR = '#80a0a0a0'
+
 
 class MapLoop(Widget):
 
@@ -73,6 +78,8 @@ class MapLoop(Widget):
         self.tries = {}
         self.framePixmaps = dict()
         self.finished = dict()
+        # time slot -> the squares of that frame whose tiles did not arrive
+        self.missing = dict()
         self.frame = 0
 
     def mapView(self):
@@ -149,6 +156,11 @@ class MapLoop(Widget):
         for t in list(self.finished):
             if t not in wanted:
                 self.finished.pop(t)
+        # a frame that lost tiles is asked for again, once an interval.  What
+        # it had keeps showing meanwhile.
+        for t in list(self.missing):
+            self.missing.pop(t)
+            self.framePixmaps.pop(t, None)
         self.getNextNeededFrame()
 
     def animationTick(self):
@@ -389,12 +401,29 @@ class MapLoop(Widget):
                     t, self.view, self.config, self.gotFramePixmap)
                 return
 
-    def gotFramePixmap(self, pixmap, timeSlot):
+    def gotFramePixmap(self, pixmap, timeSlot, failed=None, tiles=None):
         logger.debug("got radar pixmap %s %s %s", pixmap, timeSlot,
                      time.asctime(time.localtime(timeSlot)))
-        self.framePixmaps[timeSlot] = pixmap
-        if self.ready():
-            self.finished[timeSlot] = self.composite(timeSlot)
+        failed = failed or []
+        if failed:
+            logger.warning("%s: %s frame is missing %d of %s tiles",
+                           self.name,
+                           time.strftime('%H:%M', time.localtime(timeSlot)),
+                           len(failed), tiles if tiles else '?')
+            self.missing[timeSlot] = failed
+        else:
+            self.missing.pop(timeSlot, None)
+        if tiles and len(failed) >= tiles:
+            # nothing arrived, which would draw as clear sky, so it is not
+            # shown; an earlier copy stays
+            self.framePixmaps[timeSlot] = None
+            if not self.finished and self.ready():
+                # nor has anything else, so the map itself says so
+                self.mapLabel.setPixmap(self.composite(None, failed))
+        else:
+            self.framePixmaps[timeSlot] = pixmap
+            if self.ready():
+                self.finished[timeSlot] = self.composite(timeSlot)
         self.getNextNeededFrame()
 
     def ready(self):
@@ -417,21 +446,25 @@ class MapLoop(Widget):
         """finish whatever frames were waiting on the map arriving"""
         if not self.ready():
             return
-        for timeSlot in self.framePixmaps:
-            if timeSlot not in self.finished:
+        for timeSlot, frame in self.framePixmaps.items():
+            if frame is not None and timeSlot not in self.finished:
                 self.finished[timeSlot] = self.composite(timeSlot)
         if not self.finished:
             # no radar yet, and maybe none coming.  The markers, the overlay
             # and the base map's own credit belong on the map whether or not
-            # there is weather to draw over it.
-            self.mapLabel.setPixmap(self.composite(None))
+            # there is weather to draw over it - and if a frame came back with
+            # nothing in it, the hatch that says so.
+            newest = max(self.missing) if self.missing else None
+            self.mapLabel.setPixmap(
+                self.composite(None, self.missing.get(newest)))
 
-    def composite(self, timeSlot):
+    def composite(self, timeSlot, missing=None):
         """one flat pixmap: map, radar, overlay, markers, marks, captions.
 
         Compositing here rather than stacking transparent widgets is what puts
         the captions and the vendors' marks above the radar, and it happens
         once per frame fetched rather than on every repaint of the loop.
+        `missing` hatches squares when there is no frame to take them from.
         """
         out = QPixmap(self.mapPixmap.size())
         painter = QPainter()
@@ -443,6 +476,9 @@ class MapLoop(Widget):
             painter.setOpacity(self.opacity('frame-opacity'))
             painter.drawPixmap(0, 0, frame)
             painter.setOpacity(1.0)
+        if missing is None:
+            missing = self.missing.get(timeSlot)
+        self.hatch(painter, missing, out.height())
 
         if self.overlayPixmap is not None and not self.overlayPixmap.isNull():
             painter.setOpacity(self.opacity('overlay-opacity'))
@@ -458,6 +494,32 @@ class MapLoop(Widget):
         self.drawCaptions(painter, timeSlot, out.width(), out.height())
         painter.end()
         return out
+
+    @staticmethod
+    def hatch(painter, squares, height):
+        """diagonal lines over squares whose tiles did not arrive.
+
+        Spaced by the map's height rather than in pixels.
+        """
+        if not squares:
+            return
+        step = max(6, int(height * HATCH_STEP))
+        # one clip over every square and lines laid from the map's corner,
+        # so neighbors join without a seam and frames missing different
+        # squares carry the same pattern as the loop runs
+        region = QRegion()
+        for square in squares:
+            region = region.united(QRegion(square))
+        bounds = region.boundingRect()
+        top, bottom = bounds.top(), bounds.bottom() + 1
+        painter.save()
+        painter.setClipRegion(region)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setPen(QPen(QColor(HATCH_COLOR), max(1.0, step / 5.0)))
+        first = (bounds.left() + top) // step * step
+        for d in range(first, bounds.right() + bottom + step, step):
+            painter.drawLine(d - top, top, d - bottom, bottom)
+        painter.restore()
 
     def opacity(self, name):
         value = self.config.get(name)

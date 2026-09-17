@@ -449,6 +449,15 @@ time has made itself as untranslatable as one that hands over English.
 This is the only credit a radar gets, because radar tiles carry no mark of
 their own.
 
+**Say which tiles did not arrive.**  The callback also takes
+`failed=`, the squares of the pixmap whose tiles are missing, and
+`tiles=`, how many were asked for.  `MapLoop` hatches the missing squares,
+drops a frame where nothing arrived, and asks again next interval, so an
+outage is not drawn as clear sky.  Hand the callback to `TileFetcher` and
+both are filled in for you; a provider that draws its frames some other way
+passes them itself, or calls back with the pixmap alone and is taken as
+complete.
+
 ### If your images arrive with a mark already on them
 
 A base map from a static-image API usually has the provider's logo and credit

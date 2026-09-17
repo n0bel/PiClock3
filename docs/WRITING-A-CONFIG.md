@@ -350,6 +350,13 @@ Nothing is credited on the gray, because it is nobody's imagery.  A map that
 has no radar yet still draws everything else, so the markers and the labels
 do not wait on the weather.
 
+**Radar tiles that do not arrive are drawn hatched**, so a service having a
+bad day is not mistaken for clear sky.  A frame where none arrived is left
+out of the loop - and when that leaves no frame at all, the map is hatched
+over the missing tiles.  A frame missing any is asked for again each
+`interval:` while it is in the loop.  The log names the frame and how many
+tiles it lost.
+
 ## `markers:` - pins on a radar
 
 A list of places to draw a picture.  Only `location:` is required; a marker

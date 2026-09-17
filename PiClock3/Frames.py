@@ -21,11 +21,13 @@ class Frames(Provider):
 
     def getFramePixmap(self, timeSlot, view, layerConfig, callback):
         """fetch one slot's tiles for `view` and answer
-        callback(pixmap, timeSlot).
+        callback(pixmap, timeSlot, failed=..., tiles=...).
 
         The slot comes back so the caller can file a frame that arrives out
         of order, which they do: the tiles go out at once and land as they
-        land.
+        land.  `failed` is the squares whose tiles did not arrive and
+        `tiles` how many were asked for; TileFetcher supplies both, and a
+        provider that passes the callback to it need do nothing more.
         """
         raise NotImplementedError(
             '%s: %s supplies frames and has no getFramePixmap'
