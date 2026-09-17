@@ -147,6 +147,30 @@ Norwegian, Finnish, Czech, Icelandic and Hungarian write a plain period,
 which is just a character in `date-format:`; and the rest use a bare numeral.
 Leave the key out and no suffix is added.
 
+## `time-format:` - 3:05 or 15:05
+
+```yaml
+# en.yaml
+time-format: '%-I:%M'
+
+# fr.yaml
+time-format: '%H:%M'
+```
+
+The hour and the minute, and nothing else: the digital face and the corner
+of a forecast cell build their defaults around it, adding the seconds and
+`%p` where they want them.  So use `%H` for a language whose locale has no
+AM or PM - `%p` is blank there, and a twelve-hour 3:05 would not say which
+half of the day it means.
+
+The separator is yours too: `'%H.%M'` for Finnish, or `'%H h %M'` for the
+way French is often written in Quebec.  Leave the key out and English's
+twelve-hour clock is used.
+
+A config that wants a whole time on one line in the locale's own shape,
+seconds included, can write `%X` instead: `15.05.42` in Finnish,
+`03:05:42 PM` in American English.
+
 ## `strings:` - the everyday words
 
 ```yaml

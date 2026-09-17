@@ -47,7 +47,9 @@ class DigitalClock(Widget):
     def tick(self):
         now = self.now()
         self.pluginData.now = now
-        timestr = self.piclock.expand(self.format)
+        # a line ending in an empty %p would sit off center by its space
+        timestr = '\n'.join(line.rstrip() for line in
+                            self.piclock.expand(self.format).split('\n'))
         if self.lasttimestr != timestr:
             self.clockface.setText(
                 timestr.lower() if self.config['lowercase'] else timestr)

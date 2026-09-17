@@ -12,8 +12,8 @@ daily: 6
 # hours between the hourly cells
 hourly-step: 3
 
-# strftime for the corner of a cell
-hour-format: '%A %-I:%M%p'
+# strftime for the corner of a cell.  The hour and minute are the language's.
+hour-format: '%A {language.time-format}%p'
 day-format: '%A'
 
 # Where the parts sit inside one cell, as fractions of it - the same geometry

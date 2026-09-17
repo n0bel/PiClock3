@@ -13,6 +13,9 @@ locale: [de_DE.UTF-8, de_DE.utf8, German_Germany.1252, de_DE]
 
 date-format: '%A, {day}. %B %Y'
 
+# 15:05 - a 24-hour clock, since the locale has no AM or PM
+time-format: '%H:%M'
+
 strings:
   pressure: Luftdruck
   humidity: Luftfeuchte

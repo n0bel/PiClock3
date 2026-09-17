@@ -21,6 +21,9 @@ locale: [fr_FR.UTF-8, fr_FR.utf8, French_France.1252, fr_FR]
 date-format: '%A {day}<sup>{sup}</sup> %B %Y'
 date-ordinal: {1: er}
 
+# 15:05 - a 24-hour clock, since the locale has no AM or PM
+time-format: '%H:%M'
+
 strings:
   pressure: Pression
   humidity: Humidité

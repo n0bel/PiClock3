@@ -572,7 +572,7 @@ name keeps the table's answer.  The table, and how to add to it, is
 |---|---|
 | `hourly` `daily` | how many cells of each - 3 and 6.  Asking for more than the region has warns and draws what fits |
 | `hourly-step` | hours between the hourly cells, 3, so three of them reach nine hours out |
-| `hour-format` `day-format` | strftime for the corner of a cell, `%A %-I:%M%p` and `%A` |
+| `hour-format` `day-format` | strftime for the corner of a cell, `%A {language.time-format}%p` and `%A` - the hour and minute written the language's way |
 
 **`PiClock3.CurrentConditions`**
 
@@ -590,6 +590,7 @@ name keeps the table's answer.  The table, and how to add to it, is
 
 | | |
 |---|---|
+| `format` | the face.  The default is `{plugin-data.now:{language.time-format}\n%S %p}` - the language's hour and minute, then the seconds and AM or PM on a second line.  `%X` gives the locale's whole time on one line |
 | `extra-font-attributes` | anything Qt understands that has no setting of its own, put into the stylesheet as written |
 
 **`PiClock3.Date`**

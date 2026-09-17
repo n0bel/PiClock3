@@ -89,7 +89,13 @@ class Words():
         if name in self.TABLES:
             return Table(self.piclock, name)
         found = self.piclock.languages.setting(name)
-        return found if found is not None else Missing()
+        if found is None:
+            return Missing()
+        # a widget converts its own format for Windows before expanding it,
+        # so a format from the language file is converted here
+        if name.endswith('-format') and isinstance(found, str):
+            return Plugin.strftimePortableFormat(found)
+        return found
 
 
 class PiClock3(QWidget):

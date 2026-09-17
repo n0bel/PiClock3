@@ -10,6 +10,9 @@ locale: [nl_NL.UTF-8, nl_NL.utf8, Dutch_Netherlands.1252, nl_NL]
 
 date-format: '%A {day} %B %Y'
 
+# 15:05 - a 24-hour clock, since the locale has no AM or PM
+time-format: '%H:%M'
+
 strings:
   pressure: Luchtdruk
   humidity: Vochtigheid

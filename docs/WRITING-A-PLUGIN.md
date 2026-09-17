@@ -359,8 +359,13 @@ and keep what it gives you:
 
 ```python
 def start(self):
-    self.hourFormat = self.strftimePortableFormat(self.config['hour-format'])
+    self.hourFormat = self.strftimePortableFormat(
+        self.piclock.expand(self.config['hour-format']))
 ```
+
+Expand first when the default reaches into the language, as
+`'%A {language.time-format}%p'` does, so strftime sees a format rather
+than braces.
 
 Two reasons, and only one of them is portability.
 

@@ -47,10 +47,10 @@ providers:
 
 # Widgets occupy a region named by the page's layout, and draw in it.
 widgets:
-  # the face keeps the theme's font, and the shipped format - 12 hour,
-  # with the seconds and am/pm on a second line - but takes its own color
-  # and weight.  Set format: here to change it; %H for 24 hour, where %p
-  # has nothing to say.
+  # the face keeps the theme's font, and the shipped format - the
+  # language's hour and minute, with the seconds and am/pm on a second
+  # line - but takes its own color and weight.  Set format: here to
+  # change it.
   clock:
     plugin: PiClock3.DigitalClock
     region: clock

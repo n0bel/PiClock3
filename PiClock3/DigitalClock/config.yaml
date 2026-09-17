@@ -25,7 +25,9 @@ effect: glow 0.125
 # anything Qt understands that has no setting of its own
 extra-font-attributes: ""
 
-format: "{plugin-data.now:%-I:%M\n%S %p}"  # The format of the time
+# the language's hour and minute, then the seconds and AM or PM on a second
+# line
+format: "{plugin-data.now:{language.time-format}\n%S %p}"
 
 # a clock face reads better lowercased; a date does not
 lowercase: true

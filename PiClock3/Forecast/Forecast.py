@@ -31,9 +31,9 @@ class Forecast(Widget):
 
     def start(self):
         self.hourFormat = self.strftimePortableFormat(
-            self.config['hour-format'])
+            self.piclock.expand(self.config['hour-format']))
         self.dayFormat = self.strftimePortableFormat(
-            self.config['day-format'])
+            self.piclock.expand(self.config['day-format']))
         want = int(self.config['hourly']) + int(self.config['daily'])
         if want > len(self.regions):
             logger.warning(
