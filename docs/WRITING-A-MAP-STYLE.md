@@ -63,7 +63,7 @@ Eight ship, and any of OpenFreeMap's own five may be named as well:
 | `light` | a printed-map ground, the way radar.weather.gov draws one |
 | `daylight` | a bright green map in the shape of Mapbox Streets |
 | `midnight` | near-black ground and water, and nothing else |
-| `midnight-roads` | the other half of it: roads and names on nothing |
+| `midnight-roads` | the other half of it: roads, names and water edges on nothing |
 | `bright` `positron` `dark` `fiord` | theirs, trimmable but not recolorable |
 
 All eight are cut from Liberty, so all eight can be trimmed *and*
@@ -72,8 +72,8 @@ to run; `satellite` is the one that does not need a palette at all,
 since the ground under it is a photograph rather than a color.
 
 **Two of them are a pair.**  `midnight` under the weather and
-`midnight-roads` over it, which puts the roads and the place names above
-a storm instead of beneath it:
+`midnight-roads` over it, which puts the roads, the place names and the
+shorelines above a storm instead of beneath it:
 
 ```yaml
     base-provider: openfreemap
@@ -287,9 +287,15 @@ public language parameter, and the Google provider does not pass one on.
 Roles rather than layer ids, so a recolor need not know the cartography
 either:
 
-    land  land-high  water  park  boundary
+    land  land-high  water  waterway  water-outline  park  boundary
     road  road-casing  street  street-casing
     label  label-halo  shield  shield-text
+
+`water` colors lakes, seas and rivers together.  `waterway` gives rivers
+a color of their own, and `water-outline` draws the edge of a lake or sea
+one pixel wide.  `midnight-roads` makes `water` transparent and sets the
+other two, so a shoreline and a river still show where rain covers the
+map under them.
 
 `from:` names one of two shipped sets, `dark` or `light`, and anything
 beside it overrides.  Which set a block starts from, when it does not

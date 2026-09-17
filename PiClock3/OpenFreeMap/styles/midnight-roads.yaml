@@ -1,6 +1,7 @@
 description: >
-  The other half of midnight: roads, boundaries and place names on
-  nothing, to be drawn over the weather rather than under it.  Khaki
+  The other half of midnight: roads, boundaries, place names and the
+  edges of water on nothing, to be drawn over the weather rather than
+  under it.  Khaki
   lines and light labels, both on a black halo, which is what reads over
   green and yellow radar as well as over an empty map.
 
@@ -11,7 +12,7 @@ description: >
 
 from: liberty
 background: none
-layers: [boundaries, motorways, highways, roads, bridges, shields,
+layers: [water, boundaries, motorways, highways, roads, bridges, shields,
          places]
 
 # thin, for the same reason as daylight and more so: this one sits on
@@ -28,6 +29,11 @@ palette:
   street:        '#6a6040'
   street-casing: '#0b0b08'
   boundary:      '#7a7460'
+  # water as an edge and nothing inside it, so a shoreline still shows
+  # where rain covers the ground under it
+  water:         'rgba(0,0,0,0)'
+  water-outline: '#0b0b08'
+  waterway:      '#0b0b08'
   label:         '#b4b4b0'
   label-halo:    '#000000'
   # dark on the plate, unlike the labels beside it - the plate is part of

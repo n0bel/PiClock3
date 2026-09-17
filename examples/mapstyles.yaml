@@ -7,7 +7,7 @@
 #   radar1  satellite         a photograph under the weather
 #   radar2  terrain           the shipped default, for comparison
 #   radar3  midnight + midnight-roads
-#                             a pair: roads and names drawn OVER the
+#                             a pair: roads, names and shorelines OVER the
 #                             rain rather than under it
 #   radar4  a written block   layers:, palette: and background: instead
 #                             of a name
@@ -105,9 +105,9 @@ widgets:
         image: teardrop-home
 
   # 3. a pair.  The base is near-black ground and water and nothing
-  # else; the overlay is the roads and the names on nothing, drawn after
-  # the radar - so a road crossing a storm stays readable instead of
-  # disappearing under it.
+  # else; the overlay is the roads, the names and the shorelines on
+  # nothing, drawn after the radar - so a road or a lake crossing a storm
+  # stays readable instead of disappearing under it.
   radar3:
     plugin: PiClock3.MapLoop
     region: radars.1

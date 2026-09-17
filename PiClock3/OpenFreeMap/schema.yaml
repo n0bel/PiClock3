@@ -70,6 +70,8 @@ types:
       land:          {is: color}
       land-high:     {is: color}
       water:         {is: color}
+      waterway:      {is: color}
+      water-outline: {is: color}
       park:          {is: color}
       boundary:      {is: color}
       road:          {is: color}

@@ -197,6 +197,16 @@ roles:
   water:
     layers: [water, waterway_river, waterway_other, waterway_tunnel]
 
+  # rivers alone, after water so it wins.  Unset, rivers take water's
+  # color.
+  waterway:
+    layers: [waterway_river, waterway_other, waterway_tunnel]
+
+  # the edge of a lake or sea, drawn one pixel wide
+  water-outline:
+    paint: fill-outline-color
+    layers: [water]
+
   park:
     layers: [park, park_outline]
 
