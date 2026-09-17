@@ -282,11 +282,16 @@ picks a set - `default`, `metric`, `SI` or `nautical` ship - and the table
 behind it lives in `PiClock3/units/`, found the way themes and layouts are
 found, so a `units/` folder of your own or a plugin's merges over it.
 
-Languages are core in the same way.  `language: de` picks one - `en`, `de`
-and `nl` ship - and a language is one file in `PiClock3/languages/`, found on
-the same search path, so a `languages/` folder of your own or a plugin's
-merges over it.  A file holds the codes it answers to (`code: [de, deu,
-ger]`), the words, and a table of weather conditions.
+Languages are core in the same way.  `language: de` picks one, and a
+language is one file in `PiClock3/languages/` - what ships is what is in that
+folder - found on the same search path, so a `languages/` folder of your own
+or a plugin's merges over it.  A file holds the codes it answers to (`code:
+[de, deu, ger]`), the words, and a table of weather conditions.
+
+Without `language:` the clock is in English.  A code no file answers to is
+English too, and the log lists the codes it knows.  A regional code like
+`de-AT` uses its own file when there is one and `de` when there is not, and
+anything a file leaves out comes from English.
 
 Day and month names come from the system rather than from that table, and the
 language file lists the locales that mean it, so a config needs nothing
