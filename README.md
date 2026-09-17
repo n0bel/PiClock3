@@ -157,7 +157,7 @@ python3 PyQtPiClock3.py examples/meadow.yaml
 | `examples/mcmurdo.yaml` | McMurdo, as far the other way, under a theme whose art is generated rather than photographed |
 | `examples/clockwall.yaml` | six faces and six city names, the wall behind a hotel desk |
 | `examples/openfreemap.yaml` | the same clock with no `apikeys:` line at all - the base map is drawn here rather than fetched as a picture |
-| `examples/satellite.yaml` | NASA's Blue Marble under the radar, at Flagstaff where forest meets desert |
+| `examples/bluemarble.yaml` | NASA's Blue Marble under the radar, at Flagstaff where forest meets desert |
 | `examples/mapstyles.yaml` | four radars, four ways of writing a map style |
 | `examples/captions.yaml` | four radars, four ways of captioning one |
 | `examples/minimal.yaml` | the smallest clock that works, and a place to start from |
