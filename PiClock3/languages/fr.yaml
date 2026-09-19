@@ -24,6 +24,12 @@ date-ordinal: {1: er}
 # 15:05 - a 24-hour clock, since the locale has no AM or PM
 time-format: '%H:%M'
 
+# the sixteen points, keyed by the English abbreviation.  O for ouest,
+# and the rest follow from it
+compass: {N: N, NNE: NNE, NE: NE, ENE: ENE, E: E, ESE: ESE, SE: SE,
+          SSE: SSE, S: S, SSW: SSO, SW: SO, WSW: OSO, W: O, WNW: ONO,
+          NW: NO, NNW: NNO}
+
 strings:
   pressure: Pression
   humidity: Humidité

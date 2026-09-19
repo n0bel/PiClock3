@@ -96,13 +96,20 @@ in `Units.py`, which is handed the value already converted to the quantity's
 base:
 
 ```python
-def compass(value, unit):
+def compass(value, unit, units):
     """degrees as a point of the compass - a lookup, not arithmetic"""
-    return Compass.findHeading(value, 3).abbr
+    point = Compass.findHeading(value, 3).abbr
+    table = units.piclock.languages.setting('compass') or {}
+    return table.get(point, point)
 
 
 VIA = {'compass': compass}
 ```
+
+The value already converted to the base, the unit asked for, and the
+`Units` it is running in - which is how this one reaches the language's
+own letters for the sixteen points, `compass:` in
+[WRITING-A-LANGUAGE.md](WRITING-A-LANGUAGE.md).
 
 A `via:` naming something unregistered stops the clock and says so, rather
 than printing a number in the wrong unit.  Registering one means editing

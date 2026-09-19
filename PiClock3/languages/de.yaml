@@ -16,6 +16,12 @@ date-format: '%A, {day}. %B %Y'
 # 15:05 - a 24-hour clock, since the locale has no AM or PM
 time-format: '%H:%M'
 
+# the sixteen points, keyed by the English abbreviation.  O for Ost, and
+# W stays W for West
+compass: {N: N, NNE: NNO, NE: NO, ENE: ONO, E: O, ESE: OSO, SE: SO,
+          SSE: SSO, S: S, SSW: SSW, SW: SW, WSW: WSW, W: W, WNW: WNW,
+          NW: NW, NNW: NNW}
+
 strings:
   pressure: Luftdruck
   humidity: Luftfeuchte

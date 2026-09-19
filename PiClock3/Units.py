@@ -32,9 +32,16 @@ from compassheadinglib import Compass
 logger = logging.getLogger(__name__)
 
 
-def compass(value, unit):
-    """degrees as a point of the compass - a lookup, not arithmetic"""
-    return Compass.findHeading(value, 3).abbr
+def compass(value, unit, units):
+    """degrees as a point of the compass - a lookup, not arithmetic.
+
+    The sixteen points are letters in English and something else in many
+    languages - O for ouest in French, 北北東 in Japanese - so a language
+    file's compass: table is asked, keyed by the English abbreviation.
+    """
+    point = Compass.findHeading(value, 3).abbr
+    table = units.piclock.languages.setting('compass') or {}
+    return table.get(point, point)
 
 
 VIA = {'compass': compass}
@@ -198,7 +205,7 @@ class Units():
                     % spec['via'])
             return fn(self.convert(quantity, frm,
                                    self.quantities[quantity]['base'],
-                                   value), to)
+                                   value), to, self)
 
         out = self.convert(quantity, frm, to, value)
         if precision is None:

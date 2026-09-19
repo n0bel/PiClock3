@@ -171,6 +171,29 @@ A config that wants a whole time on one line in the locale's own shape,
 seconds included, can write `%X` instead: `15.05.42` in Finnish,
 `03:05:42 PM` in American English.
 
+## `compass:` - which letters a wind direction uses
+
+```yaml
+# fr.yaml
+compass: {N: N, NNE: NNE, NE: NE, ENE: ENE, E: E, ESE: ESE, SE: SE,
+          SSE: SSE, S: S, SSW: SSO, SW: SO, WSW: OSO, W: O, WNW: ONO,
+          NW: NO, NNW: NNO}
+```
+
+The sixteen points, keyed by the English abbreviation, because that is
+what the clock has before it draws one.  French writes O for *ouest*,
+German O for *Ost* while keeping W for *West*, and Dutch Z for *zuid*.
+
+Every point, rather than the four cardinals to build them from: that
+would assume a language puts its letters in English's order, and Chinese
+does not - northeast is 东北, east before north.  A language whose points
+are words rather than letters writes those instead, such as Japanese's
+北北東 for NNE.
+
+Leave the key out, or a point out of it, and the English abbreviation is
+drawn.  A direction shown as a number - `direction: deg` in a unit set -
+needs nothing here.
+
 ## `strings:` - the everyday words
 
 ```yaml
