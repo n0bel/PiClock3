@@ -53,7 +53,8 @@ distribute code to my PiClocks for testing.
 There is no manual.  What follows is enough to get it running.
 
 Log into your Pi, on the screen or over ssh, as an ordinary user - **not**
-as root.  The home directory you land in is where this should go.
+as root, in your home directory.  Everything after `cd PiClock3` runs in
+that folder.
 
 ```
 git clone https://github.com/n0bel/PiClock3.git
@@ -90,6 +91,13 @@ on the screen and quits rather than drawing something wrong.  Then:
 
 ```
 python3 PyQtPiClock3.py
+```
+
+**Start it from a terminal on the Pi's desktop.**  Over ssh it fails with
+`could not connect to display`.  To start it from ssh anyway:
+
+```
+DISPLAY=:0 python3 PyQtPiClock3.py
 ```
 
 The clock, the date, the almanac, the current conditions, the forecast and
