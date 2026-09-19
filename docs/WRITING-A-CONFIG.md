@@ -33,7 +33,7 @@ defaults, or do nothing until you want them.
 | `pages:` | which pages exist, and the layout and theme each one wears |
 | `location:` | latitude, longitude, timezone, elevation |
 | `language:` | which language file the words come from |
-| `units:` | which set of units - `default`, `metric`, `SI` or `nautical`, and see [WRITING-UNITS.md](WRITING-UNITS.md) |
+| `units:` | which set of units - `default`, `metric`, `SI` or `nautical`, and see [WRITING-UNITS.md](WRITING-UNITS.md).  Unset, the language's own: `language: fr` is metric |
 | `providers:` | plugins that fetch data and draw nothing |
 | `widgets:` | plugins that draw, each in a region its page's layout named |
 | `kind-settings:` / `plugin-settings:` | settings for every widget of a kind, or of a plugin |

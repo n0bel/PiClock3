@@ -171,6 +171,24 @@ A config that wants a whole time on one line in the locale's own shape,
 seconds included, can write `%X` instead: `15.05.42` in Finnish,
 `03:05:42 PM` in American English.
 
+## `units:` - what a clock in this language measures in
+
+```yaml
+# fr.yaml
+units: metric
+
+# en.yaml
+units: default
+```
+
+The set a clock uses when its config names none, so `language: fr` alone
+gives Celsius and km/h.  One of the sets in `units/sets.yaml` - `default`,
+`metric`, `SI` or `nautical` - or one a config or a plugin adds.
+
+`units:` in the config outranks it - what a French speaker in Minnesota
+writes - and `units:` on a single widget outranks both.  A language saying
+nothing leaves the default set.
+
 ## `compass:` - which letters a wind direction uses
 
 ```yaml

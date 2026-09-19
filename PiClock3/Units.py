@@ -102,10 +102,18 @@ class Units():
                     len(self.quantities), len(self.sets), self.setName())
 
     def setName(self):
-        """the set this clock is using"""
-        chosen = self.piclock.config.get('units')
-        if isinstance(chosen, str) and chosen:
-            return chosen
+        """the set this clock is using.
+
+        units: in the config, then the language's own, then the default
+        set.
+        """
+        # Check reads the tables without loading any words, so the
+        # language is asked only where there is one
+        languages = getattr(self.piclock, 'languages', None)
+        for chosen in (self.piclock.config.get('units'),
+                       languages.setting('units') if languages else None):
+            if isinstance(chosen, str) and chosen:
+                return chosen
         return 'default'
 
     def merge(self, folder):

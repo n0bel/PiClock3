@@ -26,7 +26,8 @@ location:
   timezone: Europe/Berlin
 
 # what to show things in.  The sets ship in PiClock3/units; a units/ folder
-# of your own, or a plugin's, can add more.
+# of your own, or a plugin's, can add more.  German would choose metric
+# anyway; it is written out because this file is what to copy from.
 units: metric
 
 # Providers supply data and occupy no region.

@@ -27,6 +27,11 @@ date-ordinal: {1: st, 2: nd, 3: rd, 21: st, 22: nd, 23: rd, 31: st, default: th}
 # hour and minute, for the defaults that show a time: 3:05
 time-format: '%-I:%M'
 
+# what a clock in this language measures in, unless the config names one.
+# Fahrenheit, inches and miles - a clock that wants Celsius says
+# units: metric in its config, which outranks this
+units: default
+
 strings:
   pressure: Pressure
   humidity: Humidity

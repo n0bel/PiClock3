@@ -29,6 +29,11 @@ Four ship: `default`, `metric`, `SI` and `nautical`.  An unknown name falls
 back to `default` rather than failing, so a typo costs you the set you meant
 and not the clock.
 
+**Say nothing and the language chooses**, where its file names a set -
+`units:` in
+[WRITING-A-LANGUAGE.md](WRITING-A-LANGUAGE.md).  Writing it here is how a
+French speaker in Minnesota keeps Fahrenheit.
+
 A widget can name its own, which is how one panel reads in knots while the
 rest of the clock is metric:
 

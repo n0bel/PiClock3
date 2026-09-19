@@ -18,7 +18,7 @@ ROOT = os.path.dirname(HERE)
 
 SUITES = ('importtest.py', 'checktest.py', 'logtest.py', 'linetest.py',
           'tiletest.py', 'satellitetest.py', 'frametest.py',
-          'timetest.py', 'compasstest.py')
+          'timetest.py', 'compasstest.py', 'unitsettest.py')
 
 
 def run(name):

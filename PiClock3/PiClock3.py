@@ -129,10 +129,12 @@ class PiClock3(QWidget):
         self.pageRatio = 1.0
         self.designAspect = None
         self.fontScale = 1.0
-        self.units = Units(self)
-        self.units.load()
+        # languages first: a set the config does not name comes from the
+        # language, so the words load first
         self.languages = Languages(self)
         self.languages.load()
+        self.units = Units(self)
+        self.units.load()
         self.setLocale()
         self.words = self.languages.strings()
         self.config['language'] = Words(self)
