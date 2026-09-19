@@ -33,6 +33,19 @@ sets:
     altitude: m
     height: m
 
+  # metric, but wind in mph
+  uk:
+    temperature: C
+    pressure: hPa
+    altimeter: hPa
+    speed: mph
+    direction: dir
+    depth: mm
+    rate: mm/h
+    distance: km
+    altitude: m
+    height: m
+
   SI:
     temperature: K
     pressure: Pa

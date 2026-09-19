@@ -25,9 +25,16 @@ Both are extended rather than edited - see **Adding your own** below.
 units: metric
 ```
 
-Four ship: `default`, `metric`, `SI` and `nautical`.  An unknown name falls
-back to `default` rather than failing, so a typo costs you the set you meant
-and not the clock.
+| set | what it shows |
+|---|---|
+| `default` | Fahrenheit, inches of mercury, mph, inches of rain, miles, feet |
+| `metric` | Celsius, hPa, km/h, millimeters, kilometers, meters |
+| `uk` | `metric`, but wind in mph |
+| `SI` | kelvin, pascals, meters per second, radians |
+| `nautical` | Celsius, knots, nautical miles, and inches of mercury and feet for the altimeter and altitude |
+
+An unknown name falls back to `default` rather than failing, so a typo
+costs you the set you meant and not the clock.
 
 **Say nothing and the language chooses**, where its file names a set -
 `units:` in

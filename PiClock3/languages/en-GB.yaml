@@ -1,0 +1,13 @@
+# English as written in Britain.  Only what differs from en.yaml is here;
+# the words, conditions, compass and twelve-hour time come from English.
+
+code: [en-GB, en-UK]
+
+name: English (UK)
+
+locale: [en_GB.UTF-8, en_GB.utf8, English_United Kingdom.1252, en_GB]
+
+# Saturday 19 September 2026 - the day before the month, and no suffix
+date-format: '%A {day} %B %Y'
+
+units: uk

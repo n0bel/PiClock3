@@ -19,8 +19,6 @@
 pages:
   wall: {order: 0, layout: clockwall, theme: clockwall}
 
-language: en
-
 location:
   latitude: 45
   longitude: -93

@@ -1,20 +1,15 @@
 # PiClock3 - London.
 #
 # The same clock as default.yaml, set up somewhere else: London
-# coordinates, Heathrow for the METAR, and metric units throughout.  It is
-# here to show what changes when you move - the location, the station and
-# the units - and what does not.
+# coordinates, Heathrow for the METAR, and British English with the units
+# it brings.  It is here to show what changes when you move - the
+# location, the station, the language and the units - and what does not.
 #
 # The coordinates are King's Cross, not anybody's house.  Change them.
 
 pages:
   clock-page: {order: 0, layout: classic, theme: london}
   maps-page:  {order: 1, layout: bigmaps, theme: london}
-
-# the words the clock speaks - one of the codes a language file
-# answers to.  Files ship in PiClock3/languages; a languages/ folder
-# of your own, or a plugin's, adds to them.
-language: en
 
 location:
   latitude: 51.5286416
@@ -23,9 +18,10 @@ location:
   # so the sunrise and sunset have to be London's
   timezone: Europe/London
 
-# what to show things in.  The sets ship in PiClock3/units; a units/ folder
-# of your own, or a plugin's, can add more.
-units: metric
+# British English: the date written day first, and the uk units - Celsius,
+# hPa and millimeters, with wind in mph.  Written out because this clock
+# is British wherever it runs.
+language: en-GB
 
 # Providers supply data and occupy no region.
 providers:

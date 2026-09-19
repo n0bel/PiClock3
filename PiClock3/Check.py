@@ -337,7 +337,9 @@ class Check():
             for base in ('PiClock3', 'plugins'):
                 found += glob.glob(os.path.join(base, '*', kind, '*.yaml'))
             found += glob.glob(os.path.join(kind, '*.yaml'))
-            return {os.path.splitext(os.path.basename(f))[0] for f in found}
+            # and the word that asks for the machine's own language
+            return {os.path.splitext(os.path.basename(f))[0]
+                    for f in found} | {'system'}
         if kind == 'unit-sets':
             return set(self.unitsTable().sets)
         if kind == 'timezones':

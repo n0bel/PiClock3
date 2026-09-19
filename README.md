@@ -148,7 +148,7 @@ python3 PyQtPiClock3.py examples/meadow.yaml
 | `examples/archer.yaml` | an archer against an orange sky |
 | `examples/meadow.yaml` | butterflies over a bright meadow, dark-blue clock |
 | `examples/hairline.yaml` | the stag background with thin, hard-edged frames |
-| `examples/london.yaml` | the Thames at night - and the same clock somewhere else: London, metric, its own timezone |
+| `examples/london.yaml` | the Thames at night - and the same clock somewhere else: London, British English, its own timezone |
 | `examples/berlin.yaml` | the same clock in German - `language: de`, metric, Berlin's timezone |
 | `examples/digital.yaml` | a digital face instead of hands, and what a theme reaches without being asked |
 | `examples/gallery.yaml` | the clock page works through six shipped backgrounds in turn; the maps page holds one |
@@ -278,9 +278,9 @@ widgets and occupies no region of its own.
 | `LibreWXRSatellite` | infrared satellite frames - the clouds.  No key |
 
 Units are core rather than a weather feature.  `units: metric` in a config
-picks a set - `default`, `metric`, `SI` or `nautical` ship - and the table
-behind it lives in `PiClock3/units/`, found the way themes and layouts are
-found, so a `units/` folder of your own or a plugin's merges over it.
+picks a set, and the table behind it lives in `PiClock3/units/` - what ships
+is in `sets.yaml` there - found the way themes and layouts are found, so a
+`units/` folder of your own or a plugin's merges over it.
 
 Languages are core in the same way.  `language: de` picks one, and a
 language is one file in `PiClock3/languages/` - what ships is what is in that
@@ -288,10 +288,12 @@ folder - found on the same search path, so a `languages/` folder of your own
 or a plugin's merges over it.  A file holds the codes it answers to (`code:
 [de, deu, ger]`), the words, and a table of weather conditions.
 
-Without `language:` the clock is in English.  A code no file answers to is
-English too, and the log lists the codes it knows.  A regional code like
-`de-AT` uses its own file when there is one and `de` when there is not, and
-anything a file leaves out comes from English.
+Without `language:` the clock speaks the machine's language - `LANG` and
+its relatives on a Pi, the user's language on Windows - and `language:
+system` says the same thing outright.  A language no file answers to is
+English, and the log says which it tried.  A regional code like `de-AT` uses
+its own file when there is one and `de` when there is not; a regional file
+writes only what differs and takes the rest from its base language.
 
 Day and month names come from the system rather than from that table, and the
 language file lists the locales that mean it, so a config needs nothing

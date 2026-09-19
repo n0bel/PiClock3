@@ -22,14 +22,29 @@ arrive at the same file.  Nothing requires a standard code - a language
 that has none can claim any name nothing else is using, or be known by the
 name of its file.
 """
+import copy
 import glob
 import logging
 import os
+import re
+import sys
 
 from .Config import readYaml
 from .ResolvedConfig import HOLDERS
 
 logger = logging.getLogger(__name__)
+
+# the word a config writes to ask for the machine's own language, and what
+# an unset language: means
+SYSTEM = 'system'
+
+# LC_ALL=C and its like are a request for no language rather than for a
+# language called C
+NOLANGUAGE = ('c', 'posix')
+
+# de_AT.UTF-8@euro -> de-at: the encoding and the modifier say nothing
+# about which words to draw
+LOCALE = re.compile(r'^([a-z]{2,8})(?:[_-]([a-z0-9]{2,8}))?', re.I)
 
 
 class Languages():
@@ -69,13 +84,103 @@ class Languages():
         return [f for i, f in enumerate(found) if f not in found[:i]]
 
     def load(self):
-        self.requested = self.chosen()
         for folder in self.folders():
             self.merge(folder)
+        self.inherit()
+        # after the files, so the machine's answer can be checked against
+        # the codes the files claim
+        self.requested = self.chosen()
         logger.info('languages: %s; using %s',
                     ', '.join('%s (%s)' % (v['name'], k)
                               for k, v in sorted(self.languages.items())),
                     self.chosen())
+
+    def inherit(self):
+        """a regional language takes what it does not say from its base.
+
+        So en-GB writes only what Britain does differently, rather than a
+        second copy of English that drifts from the first.  `from:` names
+        the base where the code does not.
+        """
+        for key, entry in sorted(self.languages.items()):
+            named = entry.get('from') or (key.split('-')[0]
+                                          if '-' in key else '')
+            base = self.byCode(str(named).lower()) if named else None
+            if base is None or base is entry:
+                continue
+            for table in ('strings', 'conditions'):
+                entry[table] = self._merge(entry[table],
+                                           copy.deepcopy(base[table]))
+            if not entry['locale']:
+                entry['locale'] = list(base['locale'])
+            for name, value in base.items():
+                if name not in self.STRUCTURED and name not in entry:
+                    entry[name] = copy.deepcopy(value)
+            logger.debug('language %s inherits from %s', key, base['name'])
+
+    def byCode(self, code):
+        """the entry answering to `code`, or None"""
+        for entry in self.languages.values():
+            if code in entry['codes']:
+                return entry
+        return None
+
+    def fromSystem(self):
+        """the code this machine is set to, or None.
+
+        Read in the order glibc reads them, then from the file Debian keeps
+        it in, since a clock started by systemd may have none of them set.
+        Windows sets none of the four and is asked outright.
+        """
+        asked = []
+        for name in ('LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG'):
+            # LANGUAGE is a preference list: fr_CA:fr:en
+            asked += (os.environ.get(name) or '').split(':')
+        asked += [self.fromFile(), self.fromWindows()]
+        codes = [c for c in (self.asCode(a) for a in asked) if c]
+        for code in codes:
+            if self.byCode(code) or self.byCode(code.split('-')[0]):
+                return code
+        # none of them has a file: the first is what to name in the log
+        return codes[0] if codes else None
+
+    @staticmethod
+    def fromFile():
+        """LANG or LC_ALL in Debian's /etc/default/locale, or None"""
+        try:
+            with open(os.path.join(os.sep, 'etc', 'default', 'locale'),
+                      encoding='utf-8') as fh:
+                for line in fh:
+                    name, _, value = line.partition('=')
+                    if name.strip() in ('LANG', 'LC_ALL'):
+                        return value.strip().strip('"\'')
+        except OSError:
+            pass
+        return None
+
+    @staticmethod
+    def fromWindows():
+        """the user's language on Windows, which sets no LANG"""
+        if not sys.platform.startswith('win'):
+            return None
+        try:
+            import ctypes
+            size = 85                   # LOCALE_NAME_MAX_LENGTH
+            buf = ctypes.create_unicode_buffer(size)
+            if ctypes.windll.kernel32.GetUserDefaultLocaleName(buf, size):
+                return buf.value
+        except Exception as e:
+            logger.debug('no language from Windows: %s', e)
+        return None
+
+    @staticmethod
+    def asCode(text):
+        """de_AT.UTF-8@euro as de-at, or None for nothing and for C"""
+        found = LOCALE.match((text or '').strip())
+        if not found or found.group(1).lower() in NOLANGUAGE:
+            return None
+        language, region = found.group(1).lower(), found.group(2)
+        return '%s-%s' % (language, region.lower()) if region else language
 
     INTENSITIES = ('-', '+', 'VC')
     DESCRIPTORS = ('MI', 'BC', 'PR', 'DR', 'BL', 'SH', 'TS', 'FZ')
@@ -215,7 +320,11 @@ class Languages():
         return os.path.splitext(os.path.basename(path))[0].lower()
 
     def chosen(self):
-        """the code the config asked for.
+        """the code this clock speaks.
+
+        The config's language:, or the machine's own where it says nothing
+        or says system.  English where the machine names a language no file
+        answers to.
 
         Read once and remembered, because config['language'] is replaced
         after loading by the file itself, so that a format string can reach
@@ -224,7 +333,18 @@ class Languages():
         if self.requested:
             return self.requested
         want = self.piclock.config.get('language')
-        return str(want).lower() if want else 'en'
+        want = str(want).lower() if want else SYSTEM
+        if want != SYSTEM:
+            return want
+        code = self.fromSystem()
+        if code and (self.byCode(code)
+                     or self.byCode(code.split('-')[0])):
+            logger.info('language: the machine says %s', code)
+            return code
+        if code:
+            logger.warning('this machine says %s, and no language file'
+                           ' answers to it; using English', code)
+        return 'en'
 
     def strings(self):
         """the table for the language this clock is set to.

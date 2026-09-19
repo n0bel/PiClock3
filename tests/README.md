@@ -1,11 +1,9 @@
 # Tests
 
-Nine programs that check the half of the clock a desktop can check: reading
-a config, reporting what is wrong with it, saying where, reading a vector
-tile, choosing which satellite frames to animate, telling a missing radar
-tile from clear sky, and writing a time and a wind direction the language's
-way. They are here so you can run them against your own change, and so you
-have something to copy when your change deserves a test of its own.
+Programs that check the half of the clock a desktop can check - the table
+below says what each one guards. They are here so you can run them against
+your own change, and so you have something to copy when your change deserves
+a test of its own.
 
 They are not a gate. Nothing runs them for you, there is no CI, and a pull
 request is not rejected for skipping them. They are a tool.
@@ -14,7 +12,7 @@ request is not rejected for skipping them. They are a tool.
 python3 tests/run.py
 ```
 
-That runs all nine and answers with an exit code. Each is also a program in
+That runs them all and answers with an exit code. Each is also a program in
 its own right, and running one directly gives you its own output:
 
 ```
@@ -37,6 +35,8 @@ because the clock finds plugins, layouts and themes by relative path.
 | `frametest.py` | that missing radar tiles are hatched and asked for again | PyQt5 |
 | `timetest.py` | that the shipped time defaults follow the language | PyQt5 |
 | `compasstest.py` | that a wind direction is written in the clock's language | PyQt5 |
+| `unitsettest.py` | that a language names the unit set its config does not | PyQt5 |
+| `systemlangtest.py` | that an unset language is the machine's, and a region inherits | PyQt5 |
 
 `importtest.py` is the shallowest and the widest. The clock imports a plugin
 only when a config names one, so loading `PyQtPiClock3.py` reaches eleven of
@@ -53,10 +53,10 @@ runs wherever the requirements install. `importtest.py`, `logtest.py` and
 `VectorTile` builds a `QPointF`. `satellitetest.py` needs it because a
 provider is a `QObject`, `frametest.py` because a frame is a `QPixmap`, and
 `timetest.py` because `Words` lives in `PiClock3.py`, which imports Qt, and
-`compasstest.py` because it loads `Units` through the clock. None of them
-opens a window.
+`compasstest.py`, `unitsettest.py` and `systemlangtest.py` because they
+load `Units` or `Languages` through the clock. None of them opens a window.
 
-All nine together take about half a minute on a desktop, most of it
+Together they take about half a minute on a desktop, most of it
 `checktest.py` resolving a config from disk 129 times over. `tiletest.py`,
 `satellitetest.py` and `frametest.py` are the quick ones — each builds what
 it reads in memory, and none touches the network.

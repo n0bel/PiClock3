@@ -72,6 +72,41 @@ name nothing else is using, or be known by the name of its file.
 
 `name:` is what the language calls itself, and is what the log lists.
 
+## Which language a clock speaks
+
+`language:` in the config, when it names one.  Otherwise - unset, or the
+word `system` - the machine's own, read the way glibc reads it: `LANGUAGE`
+first, which may be a list such as `fr_CA:fr:en`, then `LC_ALL`,
+`LC_MESSAGES` and `LANG`, then `/etc/default/locale` for a clock started
+where none of those is set, then the user's language on Windows.
+`de_AT.UTF-8@euro` is read as `de-at`, and `C` and `POSIX` as no language
+at all.
+
+The first of those some file answers to wins.  Where none does, the clock
+is English and the log names what the machine said, which is the usual
+explanation for an English clock on a machine set to something else.
+
+## A regional file writes only what differs
+
+```yaml
+# en-GB.yaml, as it ships
+code: [en-GB, en-UK]
+name: English (UK)
+locale: [en_GB.UTF-8, en_GB.utf8, English_United Kingdom.1252, en_GB]
+date-format: '%A {day} %B %Y'
+units: uk
+```
+
+A file whose code has a region - `en-GB`, `fr-CA`, `de-AT` - takes
+everything it does not say from the language before the dash: the words,
+the conditions, the settings and the locale.  So it holds the handful of
+things the region does differently, and a change to the base language
+reaches it.  A word the region spells its own way goes in its `strings:`
+or `conditions:`, and only that word.
+
+`from:` names a different base where the code alone would pick the wrong
+one.
+
 ## `locale:` - day and month names
 
 Day and month names are **not** in the table.  They come from the system,
@@ -182,8 +217,8 @@ units: default
 ```
 
 The set a clock uses when its config names none, so `language: fr` alone
-gives Celsius and km/h.  One of the sets in `units/sets.yaml` - `default`,
-`metric`, `SI` or `nautical` - or one a config or a plugin adds.
+gives Celsius and km/h.  One of the sets in `units/sets.yaml`, or one a
+config or a plugin adds - see [WRITING-UNITS.md](WRITING-UNITS.md).
 
 `units:` in the config outranks it - what a French speaker in Minnesota
 writes - and `units:` on a single widget outranks both.  A language saying

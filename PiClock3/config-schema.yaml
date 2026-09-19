@@ -59,8 +59,9 @@ settings:
   # from
   language: {is: string, names: languages}
   locale:   {is: string}
-  # a code the language file answers to, and the locale strftime is asked
-  # to use for day and month names.  Empty locale takes the machine's.
+  # a code the language file answers to, or system for the machine's own,
+  # which is also what saying nothing means.  locale is what strftime is
+  # asked to use for day and month names; empty takes the machine's.
 
   units: {is: string, names: unit-sets}
   # a set in units/sets.yaml, or one a plugin or you added

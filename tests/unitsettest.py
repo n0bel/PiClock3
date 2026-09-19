@@ -31,6 +31,7 @@ def units(config):
 
 def cases():
     for code, set_, speed in (('en', 'default', '10.0mph'),
+                              ('en-GB', 'uk', '10.0mph'),
                               ('fr', 'metric', '16.1km/h'),
                               ('de', 'metric', '16.1km/h'),
                               ('nl', 'metric', '16.1km/h')):
@@ -44,16 +45,17 @@ def cases():
         yield ('%s shows a wind speed as %s' % (code, speed),
                got == speed, got)
 
+    found = units({'language': 'en-GB'})
+    got = found.format('temperature', 'C', 20, setName=found.setName())
+    yield ('British English is Celsius beside its mph',
+           got.endswith('°C'), got)
+
     found = units({'language': 'fr', 'units': 'default'})
     yield ("a config's own units: outranks the language",
            found.setName() == 'default', found.setName())
 
     found = units({'language': 'nosuch'})
     yield ('a language with no units: measures in the default set',
-           found.setName() == 'default', found.setName())
-
-    found = units({})
-    yield ('no language named is the default set too',
            found.setName() == 'default', found.setName())
 
 
