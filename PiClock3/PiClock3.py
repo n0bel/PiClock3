@@ -144,6 +144,8 @@ class PiClock3(QWidget):
             self.setGeometry(self.screen)
             self.show()
         else:
+            # the pointer is not needed full screen; a window keeps it
+            self.setCursor(Qt.BlankCursor)
             self.showFullScreen()
         self.nextPage(0)
         logging.info("Startup Finished.")
