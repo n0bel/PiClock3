@@ -21,7 +21,6 @@ location:
 providers:
 
   openmeteo: {plugin: PiClock3.OpenMeteo}
-  metar: {plugin: PiClock3.Metar, METAR: KMSP}
   openfreemap: {plugin: PiClock3.OpenFreeMap}
 
   librewxr:  {plugin: PiClock3.LibreWXR}
@@ -47,7 +46,7 @@ widgets:
   current-conditions:
     plugin: PiClock3.CurrentConditions
     region: current
-    conditions-provider: metar
+    conditions-provider: openmeteo
 
   radar1:
     plugin: PiClock3.MapLoop
@@ -105,5 +104,5 @@ logging-rotate: per-run
 logging-max-size: 10
 logging-keep: 7
 
-# No apikeys: line.  Open-Meteo, METAR, LibreWXR and OpenFreeMap each ask
-# for none.
+# No apikeys: line.  Open-Meteo, LibreWXR and OpenFreeMap each ask for
+# none.

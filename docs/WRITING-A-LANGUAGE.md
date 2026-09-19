@@ -338,13 +338,12 @@ If it stays English, the file is not being read or its `code:` is not what
 you thought.  If the words are right but the order is not, `date-format:` is
 missing and English's was used.
 
-For the conditions, point the station at somewhere reporting something
-unusual.  A station is a provider rather than a widget, so:
+For the conditions, run a clock whose station reports something unusual:
 
 ```
-python3 PyQtPiClock3.py examples/berlin.yaml --set language=de         --set providers.metar.METAR=NZWD
+python3 PyQtPiClock3.py examples/mcmurdo.yaml --set language=de
 ```
 
 `NZWD` is Williams Field at McMurdo, which reports blowing snow.  It only
 transmits while the station is staffed, so if nothing arrives, that is why -
-`examples/mcmurdo.yaml` puts a model beside it for exactly that reason.
+the example puts a model beside it for exactly that reason.

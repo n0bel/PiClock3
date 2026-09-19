@@ -20,7 +20,6 @@ location:
 
 providers:
   openmeteo: {plugin: PiClock3.OpenMeteo}
-  metar:     {plugin: PiClock3.Metar}
   mapbox:    {plugin: PiClock3.Mapbox}
   librewxr:  {plugin: PiClock3.LibreWXR}
 
@@ -32,7 +31,7 @@ widgets:
   current-conditions:
     plugin: PiClock3.CurrentConditions
     region: current
-    conditions-provider: metar
+    conditions-provider: openmeteo
 
   forecast:
     plugin: PiClock3.Forecast

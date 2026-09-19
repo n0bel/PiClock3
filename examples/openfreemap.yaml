@@ -20,11 +20,9 @@ location:
 # Providers supply data and occupy no region.
 providers:
 
-  # the daily forecast.  No key: Open-Meteo asks for none.
+  # the forecast and the current conditions.  No key: Open-Meteo asks
+  # for none.
   openmeteo: {plugin: PiClock3.OpenMeteo}
-
-  # an actual observation from a nearby field
-  metar: {plugin: PiClock3.Metar, METAR: KMSP}
 
   # the base map under the radar, and the roads over it.  No key
   # and no account: they serve vector tiles and the cartography is
@@ -63,7 +61,7 @@ widgets:
   current-conditions:
     plugin: PiClock3.CurrentConditions
     region: current
-    conditions-provider: metar  # or openmeteo
+    conditions-provider: openmeteo
 
   radar1:
     plugin: PiClock3.MapLoop
@@ -151,5 +149,5 @@ logging-max-size: 10      # MB before it rolls; 0 for no limit
 logging-keep: 7           # how many older logs to keep
 
 # No apikeys: line at all, which is the whole point of this file.
-# Open-Meteo, METAR, LibreWXR and OpenFreeMap each ask for none, so
+# Open-Meteo, LibreWXR and OpenFreeMap each ask for none, so
 # this clock draws everything it draws without an account anywhere.

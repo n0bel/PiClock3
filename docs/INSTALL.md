@@ -79,8 +79,9 @@ from Mapbox.  Put a key in `ApiKeys.yaml`:
 
 For no key at all, start from `examples/openfreemap.yaml` instead.
 
-Then set your own place in `Config.yaml` - `latitude:`, `longitude:`, and
-the nearest airfield for `METAR:`.  The example sits at 45, -93 with KMSP.
+Then set your own place in `Config.yaml` - `latitude:` and `longitude:`.
+The example sits at 45, -93.  Its `metar:` lines say how to show a nearby
+airport's report instead of Open-Meteo's current conditions.
 
 Ask the clock what it thinks of the config:
 

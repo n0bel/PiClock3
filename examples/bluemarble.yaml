@@ -30,9 +30,6 @@ providers:
 
   openmeteo: {plugin: PiClock3.OpenMeteo}
 
-  # Flagstaff Pulliam, at 7000 feet
-  metar: {plugin: PiClock3.Metar, METAR: KFLG}
-
   openfreemap: {plugin: PiClock3.OpenFreeMap}
 
   # radar tiles - one plugin per service, neither needs a key.  RainViewer
@@ -62,7 +59,7 @@ widgets:
   current-conditions:
     plugin: PiClock3.CurrentConditions
     region: current
-    conditions-provider: metar
+    conditions-provider: openmeteo
 
   # zoom 7, where Blue Marble is real imagery rather than magnified
   radar1:
@@ -146,5 +143,5 @@ logging-rotate: per-run
 logging-max-size: 10
 logging-keep: 7
 
-# No apikeys: line, the same as openfreemap.yaml.  Open-Meteo, METAR,
-# LibreWXR, OpenFreeMap and NASA GIBS each ask for none.
+# No apikeys: line, the same as openfreemap.yaml.  Open-Meteo, LibreWXR,
+# OpenFreeMap and NASA GIBS each ask for none.

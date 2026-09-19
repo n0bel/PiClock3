@@ -23,10 +23,17 @@ location:
 # Providers supply data and occupy no region.
 providers:
 
-  # the daily forecast.  No key: Open-Meteo asks for none.
+  # the forecast and the current conditions.  No key: Open-Meteo asks
+  # for none.
   openmeteo: {plugin: PiClock3.OpenMeteo}
 
-  # an actual observation from a nearby field
+  # METAR is the weather report an airport sends about hourly: what was
+  # measured there, rather than a model's estimate for your spot.  To use
+  # it, put your nearest airport's four-letter ICAO code here - in the
+  # lower 48 states, K and its three-letter code, so MSP is KMSP - and
+  # change conditions-provider: below to metar.  Check the code first at
+  # https://aviationweather.gov/data/metar/?ids=KMSP - a small field may
+  # leave out the clouds and visibility, which leaves the panel thin.
   metar: {plugin: PiClock3.Metar, METAR: KMSP}
 
   # base map under the radar - needs a key in ApiKeys.yaml
@@ -64,7 +71,7 @@ widgets:
   current-conditions:
     plugin: PiClock3.CurrentConditions
     region: current
-    conditions-provider: metar  # or openmeteo
+    conditions-provider: openmeteo  # or metar - see providers: above
 
   radar1:
     plugin: PiClock3.MapLoop

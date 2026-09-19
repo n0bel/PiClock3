@@ -29,7 +29,6 @@ location:
 
 providers:
   openmeteo:  {plugin: PiClock3.OpenMeteo}
-  metar:      {plugin: PiClock3.Metar, METAR: KMSP}
   mapbox:     {plugin: PiClock3.Mapbox}
   googlemaps: {plugin: PiClock3.GoogleMaps}
   rainviewer: {plugin: PiClock3.RainViewer}
@@ -55,7 +54,7 @@ widgets:
   current-conditions:
     plugin: PiClock3.CurrentConditions
     region: current
-    conditions-provider: metar
+    conditions-provider: openmeteo
 
   # Nothing said about captions.  The line is the frame provider's own -
   # '14:20 LibreWXR' - top left, outlined so it carries over bright radar.

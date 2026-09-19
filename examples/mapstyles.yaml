@@ -26,7 +26,6 @@ location:
 providers:
 
   openmeteo: {plugin: PiClock3.OpenMeteo}
-  metar: {plugin: PiClock3.Metar, METAR: KMSP}
   openfreemap: {plugin: PiClock3.OpenFreeMap}
   # radar tiles - one plugin per service, neither needs a key.  RainViewer
   # stopped serving tiles above zoom 7 and returns a "Zoom Level Not
@@ -55,7 +54,7 @@ widgets:
   current-conditions:
     plugin: PiClock3.CurrentConditions
     region: current
-    conditions-provider: metar
+    conditions-provider: openmeteo
 
   # 1. a photograph.  Nothing is recolored, because there is nothing to
   # recolor - what is under the rain is the ground itself.
