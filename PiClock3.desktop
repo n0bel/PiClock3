@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=PiClock3
+Comment=Start the clock when the desktop starts
+# the clone's path, if not ~/PiClock3
+Exec=sh -c "~/PiClock3/startup.sh"
+Terminal=false

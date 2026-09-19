@@ -8,7 +8,7 @@ import os
 
 from PyQt5 import QtNetwork
 from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtGui import QImage
+from PyQt5.QtGui import QCursor, QImage, QPixmap
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
 from .ResolvedConfig import ResolvedConfig, noSuchPart
@@ -145,7 +145,10 @@ class PiClock3(QWidget):
             self.show()
         else:
             # the pointer is not needed full screen; a window keeps it
-            self.setCursor(Qt.BlankCursor)
+            # transparent, since some Wayland desktops ignore BlankCursor
+            clear = QPixmap(1, 1)
+            clear.fill(Qt.transparent)
+            self.setCursor(QCursor(clear))
             self.showFullScreen()
         self.nextPage(0)
         logging.info("Startup Finished.")
@@ -308,8 +311,7 @@ class PiClock3(QWidget):
                 "    radar1: {plugin: PiClock3.MapLoop, region: maps.1}\n\n"
                 "Start again from examples/default.yaml rather than "
                 "converting\n"
-                "this one.  See\n"
-                "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n")
+                "this one.\n")
         for pageName in self.config.pages:
             page = self.config.pages[pageName]
             if 'blocks' in page or 'layout' not in page:
@@ -321,8 +323,7 @@ class PiClock3(QWidget):
                     "    clock-page: "
                     "{order: 0, layout: classic, theme: circuit}\n\n"
                     "Start again from examples/default.yaml rather than\n"
-                    "converting this one.  See\n"
-                    "BREAKING-CONFIGURATION-CHANGE-2026-08-23.md.\n"
+                    "converting this one.\n"
                     % pageName)
 
     def _regionRect(self, pw, ph, r, widen=False):

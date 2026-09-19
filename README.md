@@ -17,126 +17,23 @@ That is `examples/default.yaml` as it ships, on the `classic` layout and the
 `circuit` theme - and on a Pi Zero W, which is the least hardware that will
 run it.
 
-> **August 23 and 24, 2026 - the configuration format changed and older
-> configs will not load.**  Pages now name a layout and a theme instead of
-> including a tree of blocks, and block names changed with it.  PiClock3
-> will tell you if it sees an older config.  This only affects
-> configurations written before that date - see
-> [BREAKING-CONFIGURATION-CHANGE-2026-08-23.md](BREAKING-CONFIGURATION-CHANGE-2026-08-23.md).
+## Installing
 
-## Work in progress
+[docs/INSTALL.md](docs/INSTALL.md) takes a fresh Raspberry Pi to a clock
+that starts itself at boot.  It runs on Raspberry Pi OS Bullseye, Bookworm
+and Trixie, 32-bit or 64-bit, from a Pi Zero W up.
 
-**This is being published to show the shape of the thing, not because it is
-finished.  It does work** - it has been running on real clocks throughout,
-and the shipped example configurations run as they are.  But it is not done,
-and it is worth knowing what you are getting:
+## Status
 
-- **There will be bugs.**  Whole areas have had little use outside the
-  handful of clocks they were written on.
-- **Things will keep moving.**  Plugin, layout and theme formats are settling
-  but are not frozen, and a change that breaks configurations is still
-  possible - the one on August 23, 2026 was such a change.
+PiClock3 runs every day on real clocks, and the shipped examples run as they
+are.  It is still growing, so plugin, layout and theme formats can change.
 
-If you want a clock to simply rely on today, use the original PiClock
-(https://github.com/n0bel/PiClock) or this fork of it
-(https://github.com/SerBrynden/PiClock), which is still being updated.  Come
-here to see where PiClock is going, to run it, and to say what is wrong with
-it.
+Bugs, requests and plans are in the issues:
+https://github.com/n0bel/PiClock3/issues.  The original PiClock is at
+https://github.com/n0bel/PiClock, and SerBrynden keeps a fork of it at
+https://github.com/SerBrynden/PiClock.
 
-Progress, plans and half-formed ideas live in the issues:
-https://github.com/n0bel/PiClock3/issues.  A bug or a specific request is
-welcome as its own.
-
-I'll be committing many partially complete commits here as an easy means to
-distribute code to my PiClocks for testing.
-
-There is no manual.  What follows is enough to get it running.
-
-Log into your Pi, on the screen or over ssh, as an ordinary user - **not**
-as root, in your home directory.  Everything after `cd PiClock3` runs in
-that folder.
-
-```
-git clone https://github.com/n0bel/PiClock3.git
-cd PiClock3
-sudo apt update
-sudo apt install python3-pyqt5 python3-yaml
-export PIP_BREAK_SYSTEM_PACKAGES=1
-python3 -m pip install -r requirements.txt
-cp examples/default.yaml Config.yaml
-cp examples/ApiKeys.yaml ApiKeys.yaml
-```
-
-**Now edit `ApiKeys.yaml`**, because what you just copied holds the words
-`YOUR API KEY` where a key goes:
-
-  - Mapbox - https://account.mapbox.com - goes in `mbapi`
-  - Google Static Maps - https://console.cloud.google.com - goes in `googleapi`
-
-The example points its radars at Mapbox; if you got a Google key instead,
-change `base-provider: mapbox` to `base-provider: googlemaps` in
-`Config.yaml`.
-
-Which keys a clock wants depends on the providers its config points at, so
-the way to find out is to ask:
-
-```
-python3 PyQtPiClock3.py --check
-```
-
-It reads the config, says what is wrong with it and exits - no window, no
-screen needed.  An unfilled key is one of the things it reports.  The clock
-makes the same check when it starts: if there is a problem it puts the list
-on the screen and quits rather than drawing something wrong.  Then:
-
-```
-python3 PyQtPiClock3.py
-```
-
-**Start it from a terminal on the Pi's desktop.**  Over ssh it fails with
-`could not connect to display`.  To start it from ssh anyway:
-
-```
-DISPLAY=:0 python3 PyQtPiClock3.py
-```
-
-The clock, the date, the almanac, the current conditions, the forecast and
-the radar all work at this point - but it thinks it is somewhere else.  The
-example sits at 45, -93 with KMSP for its METAR, because it has to say
-something.  Set your own latitude and longitude and your nearest METAR
-station in `Config.yaml`.
-
-The rest of this section is why those steps look the way they do.
-
-PyQt5 comes from apt on purpose.  Installing it with pip builds Qt from
-source, which takes hours on a Pi and usually runs out of memory first.
-
-`PIP_BREAK_SYSTEM_PACKAGES=1` is there for a similar reason.  Debian 12 and
-later refuse a pip install outside a venv and stop with `error:
-externally-managed-environment`.  That setting says you meant it.  Without
-`sudo`, pip then installs into `~/.local` and touches nothing apt owns - it is
-the name that is alarming, and only `sudo pip` that earns it.  Older pip does
-not know the setting and ignores it, so the one line serves Bullseye through
-Trixie.
-
-Those requirements land in `~/.local`, which belongs to the user who ran pip.
-Start the clock as that same user - one started as another gets
-`ModuleNotFoundError` for packages that are plainly installed.
-
-**Python 3.9 is the floor**, which is Raspberry Pi OS Bullseye.  Bullseye is
-what this is developed and tested on - Python 3.9.2 with PyQt 5.15.2.  Newer
-Raspberry Pi OS should be fine and `requirements.txt` already resolves the
-right package versions for it by itself, but it has had less use, so say so
-if something breaks.
-
-**A Pi Zero W runs it too**, on any of those releases - ARMv6, one 1 GHz
-core, 426 MB.  The first start after installing is the slow one, because
-Python is compiling the tree to bytecode as it imports it, and on a Zero
-that is enough to time out the first few web requests and leave the forecast
-column and the current conditions empty.  Start it again; the second run is
-warm and draws everything.
-
-### The example configurations
+## The example configurations
 
 Everything under `examples/` is there to be read and copied, never loaded
 by itself.  `examples/default.yaml` is the one to start from; most of the
@@ -172,20 +69,14 @@ python3 PyQtPiClock3.py examples/meadow.yaml
 | `examples/minimal.yaml` | the smallest clock that works, and a place to start from |
 | `examples/ApiKeys.yaml` | the keys file to copy, with links to where to get one |
 
-A theme is one line of a page: `maps-page: {order: 1, layout: bigmaps, theme:
-stag}`.  Writing your own is
-[docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md).
-
-A theme's `background:` can be a folder of pictures rather than one picture,
-and the clock works through them - F6 and F7 step, F8 holds.  Which pages do
-it follows from which theme they name.
-
 `Config.yaml` and `ApiKeys.yaml` are ignored by git, so what you write
 stays yours.  A plugin can ship an `examples/` folder of its own, along with
 `themes/`, `layouts/`, `units/` and `languages/`, so it arrives complete
 rather than as code with a list of things to fetch separately.
 
-### Trying something without editing anything
+## Trying something without editing anything
+
+### Any setting, from the command line
 
 Any setting in a config can be given on the command line, which is how to
 answer "what would it look like if" without editing a file and putting it
@@ -216,6 +107,8 @@ A plugin is reached the same way a theme reaches one, through its kind:
 --set kind-settings.digital-clock.font-weight=300
 ```
 
+### Another time
+
 `--at` starts the clock at another time and lets it run on from there, which
 is the only way to see a polar night in August:
 
@@ -232,7 +125,9 @@ that is all it has.  `start-at:` in a config does the same permanently.
 [docs/COMMAND-LINE-OPTIONS.md](docs/COMMAND-LINE-OPTIONS.md) explains why
 they are there.
 
-### Where a setting comes from
+## Where a setting comes from
+
+### The order of precedence
 
 A widget's settings are assembled from several places, each having the last
 word over the one before:
@@ -248,6 +143,8 @@ So a theme colors everything by saying `color:` once, a config overrules the
 theme without editing it, and one widget overrules both by naming a value
 itself.  `--set` writes into the config, which is why it beats a theme.
 
+### Colors and fonts
+
 Those five Qt names then travel two roads, neither needing the plugin's
 help.  The theme's `default:` goes on the page, and Qt hands its colors and
 fonts down to everything drawn there.  Whatever resolved for one widget goes
@@ -260,10 +157,12 @@ inherit it, so a region background belongs in a theme's `styles:`.
 tiers, applied by core to a widget's regions.  See
 [docs/WRITING-A-THEME.md](docs/WRITING-A-THEME.md).
 
-### Plugins that ship and work
+## What ships
 
 A widget draws in a region a layout named.  A provider supplies data to
 widgets and occupies no region of its own.
+
+### Widgets
 
 | widget | |
 |---|---|
@@ -275,6 +174,8 @@ widgets and occupies no region of its own.
 | `MapLoop` | an animated radar over a base map |
 | `Text` | words in a region - a city name over a clock face, a note under a map |
 
+### Providers
+
 | provider | |
 |---|---|
 | `Metar` | an observation from an airfield.  No key, no forecast |
@@ -285,10 +186,14 @@ widgets and occupies no region of its own.
 | `RainViewer`, `LibreWXR` | radar frames.  Neither needs a key |
 | `LibreWXRSatellite` | infrared satellite frames - the clouds.  No key |
 
+### Units
+
 Units are core rather than a weather feature.  `units: metric` in a config
 picks a set, and the table behind it lives in `PiClock3/units/` - what ships
 is in `sets.yaml` there - found the way themes and layouts are found, so a
 `units/` folder of your own or a plugin's merges over it.
+
+### Languages
 
 Languages are core in the same way.  `language: de` picks one, and a
 language is one file in `PiClock3/languages/` - what ships is what is in that
@@ -309,6 +214,8 @@ further.  On a Pi the locale has to exist first - `sudo dpkg-reconfigure
 locales` - and if none of them is installed the names stay in English and the
 log says so.  Setting `locale:` in a config overrides all of them.
 
+### Weather sources
+
 `CurrentConditions` and `Forecast` do not care which source they are given.
 A weather provider answers three questions - what it is doing now, the next
 hours, the next days - and answers empty for what it cannot know: a station
@@ -323,9 +230,11 @@ is what the conditions block shows beside the observation time.
 RainViewer stopped serving tiles above zoom 7 and returns a "Zoom Level Not
 Supported" image instead of an error, so a close radar needs `librewxr`.
 
-### Extending it
+## Extending it
 
-Ten guides, each answering one question:
+### Guides
+
+A guide for each question:
 
 | | |
 |---|---|
@@ -339,6 +248,8 @@ Ten guides, each answering one question:
 | [docs/FRAME-ART.md](docs/FRAME-ART.md) | drawing the nine-slice sheets a frame is made of |
 | [docs/MARKER-ART.md](docs/MARKER-ART.md) | drawing the pins a radar puts on a map |
 | [docs/COMMAND-LINE-OPTIONS.md](docs/COMMAND-LINE-OPTIONS.md) | `--set` and `--at`, and why a clock needs them |
+
+### Themes, layouts and plugins
 
 A theme, a layout and a plugin are separate on purpose: any theme works with
 any layout, and neither knows what the other is called.
@@ -363,6 +274,8 @@ One thing stays where it is: nothing carries a plugin but a plugin, since
 A language file is worth knowing about here even if you speak the one the
 clock ships: a plugin uses one to name what it draws, and a theme can use
 one to rename what the clock already draws.
+
+### Contributing
 
 [CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository
 rather than building on it.
