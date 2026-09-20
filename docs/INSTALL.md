@@ -166,6 +166,7 @@ otherwise.  `Config.yaml` and `ApiKeys.yaml` are untouched by a pull.
 
 | what you see | what it is |
 |---|---|
+| `server certificate verification failed`, or `apt update` failing, on a Pi that just booted | the clock is not set yet - `timedatectl` says when the network has set it, and the same commands then work |
 | `could not connect to display` | started over ssh - see [First run](#first-run) |
 | `ModuleNotFoundError` | the requirements are not installed for this user - rerun the pip line as them |
 | an empty desktop after boot | the clock stopped at startup - the reason is in `~/.xsession-errors` and `PyQtPiClock3.log` |
