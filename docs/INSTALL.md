@@ -22,7 +22,8 @@ are the same on every release it runs on.
 
 1. Write Raspberry Pi OS **with desktop** to the card with Raspberry Pi
    Imager, and in its settings give the user, the Wi-Fi, ssh, and the time
-   zone and keyboard for where the clock is.  The clock takes its language
+   zone and keyboard for where the clock is.  A Pi Zero W takes the 32-bit
+   release - it cannot run the 64-bit one.  The clock takes its language
    from the Pi's - see [WRITING-A-LANGUAGE.md](WRITING-A-LANGUAGE.md).
 2. Boot it.  The clock needs the desktop running to draw on, so set the Pi
    to start the desktop and log in automatically:
@@ -43,7 +44,7 @@ From your home directory:
 git clone https://github.com/n0bel/PiClock3.git
 cd PiClock3
 sudo apt update
-sudo apt install python3-pyqt5 python3-yaml
+sudo apt install -y python3-pyqt5 python3-yaml
 export PIP_BREAK_SYSTEM_PACKAGES=1
 python3 -m pip install -r requirements.txt
 cp examples/default.yaml Config.yaml
@@ -108,7 +109,9 @@ has no screen.  To start it on the Pi's screen from ssh:
 DISPLAY=:0 python3 PyQtPiClock3.py
 ```
 
-F4 quits.  Space turns the page.
+You should see the clock face, today's date across the top, the conditions
+and a radar down the left, and the forecast down the right.  F4 quits.
+Space turns the page to the maps.
 
 **On a Pi Zero**, the first start after installing is slow: Python compiles
 the tree as it imports it, which can time out the first web requests and
@@ -119,6 +122,7 @@ leave the forecast empty.  Start it again.
 ```
 mkdir -p ~/.config/autostart
 cp PiClock3.desktop ~/.config/autostart/
+sudo reboot
 ```
 
 When the desktop starts, it runs `startup.sh`, which shows **Starting

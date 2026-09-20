@@ -25,8 +25,9 @@ and Trixie, 32-bit or 64-bit, from a Pi Zero W up.
 
 ## Status
 
-PiClock3 runs every day on real clocks, and the shipped examples run as they
-are.  It is still growing, so plugin, layout and theme formats can change.
+PiClock3 runs every day on real hardware, and the shipped examples run as
+they are.  It is still growing, so plugin, layout and theme formats can
+change.
 
 Bugs, requests and plans are in the issues:
 https://github.com/n0bel/PiClock3/issues.  The original PiClock is at
