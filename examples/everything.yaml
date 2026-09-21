@@ -405,7 +405,7 @@ plugin-settings:
 theme:
   default:
     color: '#bbeeff'            # the text color everything inherits
-  #background: 'black.png'      # a picture of your own, for every page
+  #background: '#000'           # a color, or a picture: 'black.png'
 
 # --------------------------------------------------------------- layout
 #

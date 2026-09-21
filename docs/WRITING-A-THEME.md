@@ -88,6 +88,16 @@ background: background.png      # themes/nightshift/background.png
 `{this-folder}/background.png` says the same thing explicitly, and is what to
 write in a file that might be `!include`d from somewhere else.
 
+A color goes in the same place, for a theme whose page is plain:
+
+```yaml
+background: '#000'              # or '#103125', '#c0103125', or black
+```
+
+Three, six or eight hex digits - alpha first in the eight - or any color
+name Qt knows.  A file that exists wins the tie, since no filename is a
+color and somebody may have one called `red`.
+
 ### Publishing one
 
 A theme repository needs nothing but the yaml and the art.  It may hold

@@ -8,7 +8,7 @@ import os
 
 from PyQt5 import QtNetwork
 from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtGui import QCursor, QImage, QPixmap
+from PyQt5.QtGui import QColor, QCursor, QImage, QPixmap
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
 from .ResolvedConfig import ResolvedConfig, noSuchPart
@@ -44,6 +44,20 @@ def pluginClass(mod):
             continue
         cls, clsName = obj, name
     return cls, clsName
+
+
+def backgroundRule(name, value):
+    """the stylesheet behind a page: a color, or a picture.
+
+    A color where a picture would be - '#000', '#aarrggbb', or any name Qt
+    knows - so a theme that wants a plain page needs no art.  A file wins
+    the tie, since no filename is a color and somebody may have one called
+    red.
+    """
+    if not os.path.isfile(value) and QColor(value).isValid():
+        return "#%s { background-color: %s; }" % (name, value)
+    return ("#%s { border-image: url(%s) 0 0 0 0 stretch stretch; }"
+            % (name, value))
 
 
 class Table():
@@ -279,7 +293,7 @@ class PiClock3(QWidget):
                                 section == 'widgets')
 
     def _buildBackground(self, pageFrame, pageName, spec):
-        """one picture behind a page, or a folder of them"""
+        """one picture behind a page, or a color, or a folder of them"""
         name = self.qtName(pageName) + '-background'
         if isinstance(spec, dict):
             resolved = dict(spec)
@@ -297,9 +311,7 @@ class PiClock3(QWidget):
         bg = QLabel(pageFrame)
         bg.setObjectName(name)
         bg.setGeometry(0, 0, self.screen.width(), self.screen.height())
-        bg.setStyleSheet(
-            "#%s { border-image: url(%s) 0 0 0 0 stretch stretch; }"
-            % (name, self.expand(spec)))
+        bg.setStyleSheet(backgroundRule(name, self.expand(spec)))
 
     def _requireLayoutConfig(self):
         if 'plugins' in self.config:

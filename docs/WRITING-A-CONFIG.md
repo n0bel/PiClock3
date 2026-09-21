@@ -686,19 +686,20 @@ a config replaces it by naming its own:
 
 ```yaml
 theme:
-  background: 'black.png'        # where the clock is started, or any path
+  background: '#000'             # a color, or a picture: 'black.png'
 ```
 
 which is how to put a black page under a shipped theme without copying the
-theme.  A folder of pictures works here the same way it does in a theme -
-see [WRITING-A-THEME.md](WRITING-A-THEME.md) for both shapes, and for what
+theme.  A picture is a path - where the clock is started, or anywhere - and
+a folder of pictures works here the same way it does in a theme.  See
+[WRITING-A-THEME.md](WRITING-A-THEME.md) for all three shapes, and for what
 else a theme file holds: `borders:`, `styles:`, `kind-settings:` and the art
 each widget reaches for.
 
 `--set` reaches the same places for one run:
 
 ```
---set theme.background=black.png
+--set theme.background=#000
 --set theme.default.color=#ff8800
 ```
 
