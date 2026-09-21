@@ -680,6 +680,28 @@ That is what makes somebody else's theme usable when it is nearly right.  It
 applies to every page, since every page's theme and layout are merged with
 the same block.
 
+**Anything the file says can be said here**, not only the settings nested
+inside `default:`.  The picture behind a page is a theme's `background:`, so
+a config replaces it by naming its own:
+
+```yaml
+theme:
+  background: 'black.png'        # where the clock is started, or any path
+```
+
+which is how to put a black page under a shipped theme without copying the
+theme.  A folder of pictures works here the same way it does in a theme -
+see [WRITING-A-THEME.md](WRITING-A-THEME.md) for both shapes, and for what
+else a theme file holds: `borders:`, `styles:`, `kind-settings:` and the art
+each widget reaches for.
+
+`--set` reaches the same places for one run:
+
+```
+--set theme.background=black.png
+--set theme.default.color=#ff8800
+```
+
 ## `styles:`
 
 Named sets of raw Qt stylesheet properties, the same idea a theme's `styles:`
