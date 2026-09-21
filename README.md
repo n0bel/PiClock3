@@ -30,7 +30,10 @@ they are.  It is still growing, so plugin, layout and theme formats can
 change.
 
 Bugs, requests and plans are in the issues:
-https://github.com/n0bel/PiClock3/issues.  The original PiClock is at
+https://github.com/n0bel/PiClock3/issues.  If you want to build
+something, the ones marked
+[help wanted](https://github.com/n0bel/PiClock3/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+are asking for exactly that.  The original PiClock is at
 https://github.com/n0bel/PiClock, and SerBrynden keeps a fork of it at
 https://github.com/SerBrynden/PiClock.
 
@@ -280,6 +283,14 @@ one to rename what the clock already draws.
 
 [CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository
 rather than building on it.
+
+The issues marked
+[help wanted](https://github.com/n0bel/PiClock3/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+are the ones where somebody else's hardware or a spare evening would move
+things: a weather station on a network I do not own, an ambilight, buttons
+and a remote.  Several are a plugin of their own, which is the easiest
+place to start - [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md)
+covers it.
 
 I'll welcome any contributions.
 
