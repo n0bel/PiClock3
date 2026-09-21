@@ -23,8 +23,21 @@ are the same on every release it runs on.
 1. Write Raspberry Pi OS **with desktop** to the card with Raspberry Pi
    Imager, and in its settings give the user, the Wi-Fi, ssh, and the time
    zone and keyboard for where the clock is.  A Pi Zero W takes the 32-bit
-   release - it cannot run the 64-bit one.  The clock takes its language
-   from the Pi's - see [WRITING-A-LANGUAGE.md](WRITING-A-LANGUAGE.md).
+   release - it cannot run the 64-bit one.
+
+   The clock speaks the Pi's own language unless a config says otherwise,
+   and a fresh Raspberry Pi OS is `en_GB.UTF-8` whatever time zone you
+   chose - so a clock in Minnesota reads 15.0°C on Sunday 20 September.
+   Either set the Pi's locale, which fixes the whole machine:
+
+   ```
+   sudo raspi-config nonint do_change_locale en_US.UTF-8
+   ```
+
+   or leave the Pi alone and put `language: en` in `Config.yaml`, which
+   settles the clock only.  Restart the clock after either.
+   [WRITING-A-LANGUAGE.md](WRITING-A-LANGUAGE.md) lists the languages that
+   ship and what each brings.
 2. Boot it.  The clock needs the desktop running to draw on, so set the Pi
    to start the desktop and log in automatically:
 
