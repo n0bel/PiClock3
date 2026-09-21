@@ -16,6 +16,11 @@ class DottedDict(dict):
     def __getitem__(self, key):
         if '.' not in key:
             return super().__getitem__(key)
+        # a key that is there with its dots in it is itself, not a path:
+        # plugin-settings: is keyed by PiClock3.MapLoop and means that one
+        # plugin, not PiClock3 then MapLoop
+        if super().__contains__(key):
+            return super().__getitem__(key)
         value = self
         for subkey in key.split('.'):
             value = value[subkey]
