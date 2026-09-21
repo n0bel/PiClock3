@@ -71,6 +71,7 @@ python3 PyQtPiClock3.py examples/meadow.yaml
 | `examples/mapstyles.yaml` | four radars, four ways of writing a map style |
 | `examples/captions.yaml` | four radars, four ways of captioning one |
 | `examples/minimal.yaml` | the smallest clock that works, and a place to start from |
+| `examples/everything.yaml` | the other end: every provider and every setting each plugin takes, written out with what each one does.  For reading rather than copying |
 | `examples/ApiKeys.yaml` | the keys file to copy, with links to where to get one |
 
 `Config.yaml` and `ApiKeys.yaml` are ignored by git, so what you write

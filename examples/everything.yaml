@@ -1,0 +1,440 @@
+# PiClock3 - everything, written out and explained.
+#
+# Not a clock to run for its own sake: three pages, every provider, and
+# every setting each plugin takes, so you can read what exists rather than
+# hunt for it.  It does run - that is what keeps it honest - but the other
+# examples are the ones to copy from.
+#
+# A setting you do not write takes its default, and the defaults are in
+# PiClock3/<Plugin>/config.yaml.  Everything here is written out, defaults
+# included, which is exactly what you should NOT do in a config of your
+# own: say what you are changing, and let the rest move when the clock
+# improves.
+#
+# docs/WRITING-A-CONFIG.md is the reference this file illustrates.
+
+# ---------------------------------------------------------------- pages
+#
+# A page names a layout - where the regions are - and a theme - what they
+# look like.  order is the sequence they rotate in; space, a click or a tap
+# steps through them.  The names on the left are yours.
+pages:
+  clock-page: {order: 0, layout: classic, theme: circuit}
+  maps-page:  {order: 1, layout: bigmaps, theme: stag}
+  panel-page: {order: 2, layout: panel,   theme: circuit}
+
+# ------------------------------------------------------------- language
+#
+# The words the clock speaks.  Unset, or 'system', is the machine's own -
+# LANGUAGE, LC_ALL, LC_MESSAGES, LANG, then /etc/default/locale, and the
+# user's language on Windows.  A language no file answers to is English.
+# The files are in PiClock3/languages; docs/WRITING-A-LANGUAGE.md says how
+# to write one.
+language: en
+
+# Day and month names come from the system rather than from a language
+# file, and the file lists the locales that mean it.  This overrides that
+# choice, for a clock whose language is right but whose month names are
+# not.  The locale has to be installed - sudo dpkg-reconfigure locales.
+locale: en_US.UTF-8
+
+# ---------------------------------------------------------------- units
+#
+# What things are measured in.  Unset takes the set the language file
+# names, so an English clock is imperial and a French one metric without
+# either saying so.  The sets are in PiClock3/units/sets.yaml:
+# default, metric, uk, imperial, si.  docs/WRITING-UNITS.md explains them,
+# and how to write a set of your own.
+units: default
+
+# ------------------------------------------------------------- location
+#
+# Where the clock is.  Everything that needs a place reads these, so a
+# clock moves by changing them here rather than in each widget.
+location:
+  latitude: 45.0
+  longitude: -93.0
+  # blank is the machine's own zone, which is right when the clock sits
+  # where it is pointed.  Name one when it does not.
+  timezone: America/Chicago
+  # meters.  Sunrise and sunset shift slightly with it.
+  elevation: 260
+
+# ------------------------------------------------------------- start-at
+#
+# Start the clock somewhere else in time and let it run on from there -
+# how to see a polar night in August.  It is an offset, not a fixed
+# moment, so the seconds still run.  Commented out because a clock that
+# says the wrong time is only useful while you are looking at something.
+#start-at: 2026-12-21 13:45
+
+# ------------------------------------------------------------ providers
+#
+# A provider fetches and draws nothing.  A widget names the providers it
+# draws with.  A provider nothing points at is not loaded, so the ones
+# below that no widget names cost nothing but the reading.
+providers:
+
+  # the forecast and the current conditions.  No key: Open-Meteo asks for
+  # none, which is why it is what the examples use.
+  openmeteo:
+    plugin: PiClock3.OpenMeteo
+    refresh: 30           # minutes between asks
+    forecast-days: 9      # up to 16; the classic layout has room for 9
+    location:             # the place this provider asks about
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+      timezone: '{location.timezone}'
+      elevation: '{location.elevation}'
+
+  # an actual observation from an airport, about hourly.  No key.  METAR
+  # is the airport's four-letter ICAO code - in the lower 48 states, K and
+  # its three-letter code, so MSP is KMSP.
+  metar:
+    plugin: PiClock3.Metar
+    METAR: KMSP
+    refresh: 10           # minutes; stations report about hourly
+
+  # conditions and forecast, for people who already have one of these
+  # keys.  Both free plans.  The key comes from ApiKeys.yaml.
+  openweathermap:
+    plugin: PiClock3.OpenWeatherMap
+    apikey: '{apikeys.owmapi}'
+    refresh: 30           # minutes
+    forecast-days: 6      # what the free tier's 40 three-hour entries reach
+    location:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+  tomorrowio:
+    plugin: PiClock3.TomorrowIO
+    apikey: '{apikeys.tmapi}'
+    # minutes.  The free plan allows 25 an hour and 500 a day and this
+    # spends two each time round, so 30 leaves room for a second clock.
+    refresh: 30
+    forecast-days: 6
+    location:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+  # the base map under a radar.  Mapbox and Google each need a key; a
+  # radar names its own style: and overrides the one here.
+  mapbox:
+    plugin: PiClock3.Mapbox
+    apikey: '{apikeys.mbapi}'
+    style: mapbox/satellite-streets-v10
+
+  googlemaps:
+    plugin: PiClock3.GoogleMaps
+    apikey: '{apikeys.googleapi}'
+    style: hybrid         # Google calls it a maptype
+
+  # the base map with no key at all: vector tiles, drawn here, so the
+  # cartography is the clock's rather than a picture fetched ready-made.
+  # docs/WRITING-A-MAP-STYLE.md covers styles and how to write one.
+  openfreemap:
+    plugin: PiClock3.OpenFreeMap
+    style: terrain        # liberty is their whole cartography, and slower
+    style-folders: []     # folders of your own, searched before the shipped
+    credit-color: '#ffffff'   # their terms require the credit; these two
+    credit-halo: '#000000'    # only decide whether it reads light or dark
+    font-family: ''       # empty takes Qt's, which the rest of the clock uses
+    language: []          # empty follows the clock's language:
+
+  # radar frames.  Neither needs a key.  RainViewer stopped serving tiles
+  # above zoom 7 and answers with a "Zoom Level Not Supported" picture
+  # rather than an error, so a close radar wants librewxr.
+  librewxr:
+    plugin: PiClock3.LibreWXR
+    palette: 6            # which color scheme the service renders with
+    smooth: 1             # 1 blends between pixels, 0 leaves them square
+    snow: 1               # 1 draws snow in its own colors
+
+  rainviewer:
+    plugin: PiClock3.RainViewer
+    palette: 6
+    smooth: 1
+    snow: 1
+
+  # infrared satellite frames - the clouds - in place of radar.  No key.
+  librewxrsatellite:
+    plugin: PiClock3.LibreWXRSatellite
+
+# -------------------------------------------------------------- widgets
+#
+# A widget draws in a region its page's layout named.  region: is that
+# name; a layout that repeats a region numbers them, so maps.1 and maps.2
+# are the two radar boxes down the left of the classic layout.
+widgets:
+
+  # ---- the clock page
+
+  clock:
+    plugin: PiClock3.AnalogClock
+    region: clock
+    # the art set: a folder of clock-face.png, hour-hand.png,
+    # minute-hand.png and second-hand.png.  A theme names its own.
+    clock-images-folder: lightblue
+    clock-images-base-folder: '{plugin-folder}'
+    # blank is the clock's own zone.  A wall of faces each name a city.
+    timezone: '{location.timezone}'
+
+  date:
+    plugin: PiClock3.Date
+    region: date
+    format: '{language.date-format}'
+    timezone: '{location.timezone}'
+
+  astral:
+    plugin: PiClock3.Astral
+    region: bottom
+    format: "{language.strings.sunrise} {plugin-data.sunrise:%H:%M}
+             {language.strings.sunset} {plugin-data.sunset:%H:%M}
+             {language.strings.moon_phase} {plugin-data.moonphase}"
+    # used instead on a day the sun neither rises nor sets, where the
+    # format above would have no time to put in
+    polar-format: "{plugin-data.sun}
+                   {language.strings.moon_phase} {plugin-data.moonphase}"
+    location:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+      timezone: '{location.timezone}'
+      elevation: '{location.elevation}'
+
+  current-conditions:
+    plugin: PiClock3.CurrentConditions
+    region: current
+    # which provider answers what it is doing now.  openmeteo is a model's
+    # answer for your coordinates; metar is an instrument at an airport.
+    conditions-provider: openmeteo
+    observed-format: '%H:%M'    # then whatever the source calls itself
+    icons-folder: icons-lightblue
+    # where the parts sit inside the region, as fractions of it.  A theme
+    # or a config can move any of them; these are the shipped positions.
+    layout:
+      wxicon:    {horizontal-center: 0.0, top: -0.10, width: 0.55, height: 0.537}
+      wxdesc:    {left: 0.0, top: 0.342, width: 1.0, height: 0.135, font-size: 0.090}
+      temper:    {left: 0.0, top: 0.414, width: 1.0, height: 0.360, font-size: 0.240}
+      pressure:  {left: 0.0, top: 0.644, width: 1.0, height: 0.158, font-size: 0.105}
+      humidity:  {left: 0.0, top: 0.737, width: 1.0, height: 0.158, font-size: 0.105}
+      wind:      {left: 0.0, top: 0.829, width: 1.0, height: 0.102, font-size: 0.068}
+      feelslike: {left: 0.0, top: 0.889, width: 1.0, height: 0.093, font-size: 0.062}
+      wdate:     {left: 0.0, top: 0.944, width: 1.0, height: 0.084, font-size: 0.056}
+
+  forecast:
+    plugin: PiClock3.Forecast
+    region: forecast
+    forecast-provider: openmeteo
+    # how many cells show what; these should add to the cells the region
+    # has, which is nine in the classic layout
+    hourly: 3
+    daily: 6
+    hourly-step: 3              # hours between the hourly cells
+    hour-format: '%A {language.time-format}%p'
+    day-format: '%A'
+    icons-folder: icons-lightblue
+    layout:
+      icon: {left: 0.00, top: 0.00, width: 0.32, height: 1.00}
+      wx:   {left: 0.32, top: 0.02, width: 0.68, height: 0.74,
+             font-size: 0.20, align: left-top, wrap: true}
+      day:  {left: 0.32, bottom: 0.02, width: 0.68, height: 0.26,
+             font-size: 0.17, align: right-bottom}
+      # drawn once, in the last cell.  Removing it draws no credit, which
+      # Open-Meteo's license does not allow.
+      attribution: {left: 0.0, bottom: 0.0, width: 1.0, height: 0.22,
+                    font-size: 0.15, align: center}
+
+  # a radar with every setting written out.  Most configs say four or five
+  # of these and leave the rest.
+  radar1:
+    plugin: PiClock3.MapLoop
+    region: maps.1
+    base-provider: mapbox       # what the weather is drawn over
+    frame-provider: librewxr    # what the weather itself comes from
+    style: mapbox/satellite-streets-v10   # this radar's own base map style
+    center:                     # where the map is centered
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+    zoom: 7                     # 0 the world, 14 a few streets
+    interval: 10                # minutes between asking for new frames
+    frames: 7                   # how many are in the loop
+    frame-opacity: 1.0          # 1 is solid weather, lower lets the map through
+    dwell: 200                  # ms each frame is held
+    hold: 1200                  # ms the last frame is held, before it loops
+    # a second base map drawn over the radar, for the labels and roads the
+    # weather would otherwise cover.  Unset draws no such layer.
+    overlay-provider: ''
+    overlay-style: ''
+    overlay-opacity: 1.0
+    # pins.  Each takes a location:, and may take an image:, a color: and
+    # a size:.  The image is a name in the marker set, without the .png.
+    markers:
+      - location: {latitude: '{location.latitude}',
+                   longitude: '{location.longitude}'}
+        color: red
+        image: teardrop-home
+        size: mid
+        visible: 1
+    marker-images-folder: markers
+    marker-images-base-folder: '{plugin-folder}'
+    marker-size: 0.2            # a fraction of the map's height
+    # a name in the corner, for when several maps share a screen
+    label: 'Home'
+    label-size: 0.10
+    label-color: '#bef'
+    label-outline: false        # true, or a color, for a busy base map
+    # text drawn over the finished map.  Empty builds the list from label:
+    # and the attribution every map must carry; a list replaces both.
+    captions: []
+    caption-size: 0.06
+    caption-color: '#fff'
+    caption-time-format: '%H:%M'
+    font-family: ''             # empty takes the page's
+    # a base map arrives with the provider's logo drawn into it, and it is
+    # lifted back over the radar so the weather cannot bury it.  Their
+    # terms, not ours.
+    ignore-attribution-mask: false
+
+  radar2:
+    plugin: PiClock3.MapLoop
+    region: maps.2
+    base-provider: mapbox
+    frame-provider: librewxr
+    style: mapbox/satellite-streets-v10
+    zoom: 11                    # the close one
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+  # ---- the maps page
+
+  radar3:
+    plugin: PiClock3.MapLoop
+    region: radars.1
+    base-provider: openfreemap  # no key, drawn here
+    frame-provider: librewxr
+    style: terrain
+    zoom: 7
+    label: 'Wide'
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+  radar4:
+    plugin: PiClock3.MapLoop
+    region: radars.2
+    base-provider: openfreemap
+    frame-provider: librewxrsatellite   # clouds rather than rain
+    style: terrain
+    zoom: 5
+    label: 'Clouds'
+    center:
+      latitude: '{location.latitude}'
+      longitude: '{location.longitude}'
+
+  maps-caption:
+    plugin: PiClock3.DigitalClock
+    region: caption
+    format: "{plugin-data.now:%a %b} {plugin-data.now.day}
+             {plugin-data.now.year}   {plugin-data.now:%H:%M:%S}"
+    lowercase: false            # a clock face reads better lowercased
+    font-size: 0.75             # a fraction of the region's height
+    timezone: '{location.timezone}'
+    effect: none                # see the digital clock below
+    extra-font-attributes: ''
+
+  # ---- the panel page, showing the two widgets the others do not
+
+  panel-clock:
+    plugin: PiClock3.DigitalClock
+    region: clock
+    # the language's hour and minute, then seconds and AM or PM below
+    format: "{plugin-data.now:{language.time-format}\n%S %p}"
+    lowercase: true
+    font-size: 0.3
+    timezone: '{location.timezone}'
+    # glow <blur> <lighten>.  Blur is a fraction of the region's height,
+    # so the halo is the same size on any screen.  'none' for a flat face.
+    # The long form names a color outright, or offsets it into a shadow:
+    #   effect: {type: glow, blur: 0.125, color: '#fff', offset: 0}
+    effect: glow 0.125
+    extra-font-attributes: ''   # anything Qt takes that has no setting
+
+  panel-text:
+    plugin: PiClock3.Text
+    region: bottom
+    # what to draw.  It is expanded, so anything the clock knows can be
+    # written into it.
+    text: 'Everything, written out'
+    text-provider: ''           # a plugin supplying the words instead
+    # what to do with a line too wide for its region: fit shrinks it,
+    # marquee travels it past, clip lets the edge cut it
+    overflow: fit
+    marquee-speed: 0.25         # widths of the region per second
+    font-size: 0.3
+    extra-font-attributes: ''
+
+# -------------------------------------------------------- kind-settings
+#
+# Every widget of one kind at once, without naming any of them.  The key is
+# the plugin's kind - analog-clock, digital-clock, date, almanac,
+# current-conditions, forecast, radar, text - and it reaches whatever that
+# plugin takes.  A theme is the better home for these; a config has the
+# last word.
+kind-settings:
+  radar:
+    palette: 6                  # both radars, without naming either
+  digital-clock:
+    font-weight: 300
+
+# ------------------------------------------------------ plugin-settings
+#
+# The same idea, keyed by the plugin's name rather than its kind, for
+# reaching one plugin's settings wherever it is used.  --set cannot reach
+# this block, because a dot in a plugin name is a step down a path.
+plugin-settings:
+  PiClock3.MapLoop:
+    frames: 7
+
+# ---------------------------------------------------------------- theme
+#
+# A theme: block here is laid over whichever theme each page names, so a
+# theme that is nearly right can be adjusted without editing or owning it.
+# Anything the theme file says can be said here, including the picture
+# behind the page.
+theme:
+  default:
+    color: '#bbeeff'            # the text color everything inherits
+  #background: 'black.png'      # a picture of your own, for every page
+
+# --------------------------------------------------------------- layout
+#
+# The same, for the layout each page names.  Sizes are fractions of the
+# screen.
+layout:
+  regions:
+    clock: {width: 0.5}
+
+# --------------------------------------------------------------- styles
+#
+# Named sets of raw Qt stylesheet properties, which a layout region asks
+# for by name with style:.  A theme is the better home for them.
+styles:
+  date:
+    font-size: 0
+    qproperty-alignment: AlignCenter
+
+# -------------------------------------------------------------- logging
+#
+# PyQtPiClock3.log, in the PiClock3 folder, is the first thing to attach
+# to a bug report.  debug is loud and worth it when something is wrong.
+logging-level: info
+logging-rotate: per-run         # or 'daily'
+logging-max-size: 10            # MB before it rolls; 0 for no limit
+logging-keep: 7                 # how many older logs to keep
+
+# -------------------------------------------------------------- apikeys
+#
+# Every key in one file, out of this one, so a config can be shown to
+# somebody without showing your keys.  git ignores ApiKeys.yaml.
+apikeys: !include ApiKeys.yaml
