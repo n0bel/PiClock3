@@ -29,7 +29,8 @@ Use command `python --version` or `python3 --version` in terminal window to find
 If applicable, add screenshots to help explain your problem.
 
 **Log Output**
-Copy relevant portion of error log here. Remove sensitive API keys.
+The log is `PyQtPiClock3.log`, in the PiClock3 folder. Copy the relevant
+portion here, or attach the file. Remove sensitive API keys.
 
 **Additional context**
 Add any other context about the problem here.
