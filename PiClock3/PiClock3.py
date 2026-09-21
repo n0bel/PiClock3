@@ -529,7 +529,12 @@ class PiClock3(QWidget):
         # a third of the sheet each way, so the cells need not be square
         cw, ch = size.width() // 3, size.height() // 3
         bw = self.borderWidth(border, screenHeight)
-        style = ("border-image: url(%s) %d %d %d %d stretch stretch;"
+        # transparent, said outright.  A frame sits over the content it
+        # frames, so a background-color arriving from the page would fill
+        # the box and hide the radar or the forecast under it.  Every other
+        # widget says this for itself.
+        style = ("background-color: transparent;"
+                 " border-image: url(%s) %d %d %d %d stretch stretch;"
                  % (art, ch, cw, ch, cw))
         if edges is None:
             style += " border-width: %dpx;" % bw

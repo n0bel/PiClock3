@@ -243,7 +243,9 @@ theme would have to beat every plugin's idea of white before its own
 `background-color` travels the first road only.  CSS does not inherit it, so
 putting it on a region would paint a box behind every child - including the
 analog clock's face, which is a picture that expects to see through.  To give
-one region a background, use a `styles:` entry, below.
+one region a background, use a `styles:` entry, below.  For the page
+itself, `background:` takes a color, above - that draws behind everything
+rather than behind each widget.
 
 `font-size` is deliberately not among the five.  It is a fraction of whatever
 it sits in, and a page is not the same height as a region - the page's `0.02`
