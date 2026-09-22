@@ -12,6 +12,20 @@ shape of a date, the everyday words, and a table of weather conditions.
 
 ## Where a language goes
 
+Two destinations, and here the usual answer is the opposite of a plugin's
+or a theme's:
+
+1. **Into PiClock3 itself.**  Where a whole language belongs.  A
+   translation is small, everybody who speaks that language wants it, and
+   it is the easiest kind of change to review - so it is welcome.  Put it
+   in `PiClock3/languages/` and open a pull request.
+2. **Your own `languages/` folder.**  For words you want changed on your
+   own clock, or a language you are not ready to publish.  Files are
+   merged rather than replaced, so changing one word takes a file holding
+   one word.
+
+The rest of this section is the merging and the folders both rely on.
+
 There is a `languages` folder beside `Config.yaml`, at the top of the
 checkout, and that one is yours.  Create it - unlike `themes/` and
 `layouts/` it is not there already.  It is in `.gitignore` once you do, so

@@ -1,15 +1,57 @@
 # Writing a plugin
 
-A plugin is a folder holding a module and a `config.yaml` beside it.  Drop it
-into `plugins` and a config can name it; nothing has to be registered.  Start
-from [piclock3-plugin-template](https://github.com/n0bel/piclock3-plugin-template).
+A plugin is a folder holding a module, a `config.yaml` of its settings and
+their defaults, and a `schema.yaml` saying what those settings are.  Drop it
+into `plugins` and a config can name it; nothing has to be registered.
 
-They come in two sorts.  A **widget** draws in a region a layout named.  A
-**provider** supplies data to widgets and occupies no region of its own -
-which is why no theme reaches a provider, and why anything a theme should be
-able to say belongs on a widget.
+## Decide where it is going, before you write much
 
-Each sort is a class to subclass, and a provider picks the one that says
+There are two destinations, and they start differently:
+
+1. **Your own repository.**  Almost every plugin belongs here.  You
+   publish it, you maintain it, and it is yours alone.
+2. **Into PiClock3 itself.**  It becomes part of the core, and this
+   project's maintainers carry it from then on - so it is rare, and worth
+   asking about before you write much.
+
+**1. Your own repository.**  A camera, a data source for one country, a
+chart of something nobody else draws.  It lives in `plugins/`.  Start from
+the template - it is a GitHub template repository, so clicking *Use this
+template* gives you a repository of your own, which you clone into the
+clock:
+
+```
+cd PiClock3
+git clone https://github.com/you/piclock3-aurora plugins/Aurora
+```
+
+That way your plugin has a history of its own from the first minute.
+[Publishing one](#publishing-one) is the rest of it.
+
+**2. Into PiClock3 itself.**  The built-in set is meant to stay small -
+enough for a useful clock, plus the providers other plugins depend on - so
+open an issue before writing much.  If the answer is yes, the folder is
+`PiClock3/<Name>/` in a fork of this project and it arrives by pull
+request.  See [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+**Without a GitHub account, or when it is going into PiClock3:** take the
+template's files rather than its history.
+
+```
+git clone https://github.com/n0bel/piclock3-plugin-template plugins/Aurora
+rm -rf plugins/Aurora/.git     # its history is the template's, not yours
+```
+
+Downloading the template as a zip does the same thing without git.
+
+## Widgets and providers
+
+A plugin is one of two kinds.  A **widget** draws in a region a layout
+named.  A **provider** supplies data to widgets and occupies no region of
+its own - which is why no theme reaches a provider, and why anything a
+theme should be able to say belongs on a widget.
+
+Each kind is a class to subclass, and a provider picks the one that says
 what it supplies:
 
 ```python
@@ -38,26 +80,34 @@ belongs.
 
 ## Where a plugin goes
 
-There is a `plugins` folder beside `Config.yaml`, at the top of the checkout,
-and that one is yours.  It is in `.gitignore`, so `git pull` never has
-anything of yours to conflict with.
+A plugin is a folder, and which folder depends on the decision above.
 
-    PiClock3/<Name>/        the core plugins, shipped with the project
-    plugins/<name>/         yours and everybody else's
+    plugins/Aurora/       yours, or one you cloned
+    PiClock3/MapLoop/     one that ships with PiClock3
 
-Somebody else's is a git repository, cloned straight in:
+**Your own repository** - it lives in `plugins/`, beside `Config.yaml` at
+the top of the checkout.  PiClock3 does not track that folder, so
+`git pull` never overwrites what you put there.
+
+**Into PiClock3 itself** - it lives in `PiClock3/<Name>/`, inside your fork
+of this project.  That folder *is* tracked, which is what allows you to
+make a pull request, to contribute to the core of the project, and it is
+why the two places exist.
+
+To install somebody else's plugin, put their folder in `plugins/` - or let
+git fetch it for you:
 
 ```
 cd PiClock3
-git clone https://github.com/someone/piclock3-tides plugins/tides
+git clone https://github.com/someone/piclock3-aurora plugins/Aurora
 ```
 
 Then name it in a config, and give the instance a region to draw in:
 
 ```yaml
 widgets:
-  tides:
-    plugin: plugins.tides
+  aurora:
+    plugin: plugins.Aurora
     region: bottom
 ```
 
@@ -67,7 +117,7 @@ plugins, which are named `PiClock3.Astral` rather than
 the class into it:
 
 ```python
-from .Tides import *  # noqa: F401,F403
+from .Aurora import *  # noqa: F401,F403
 ```
 
 The loader imports that name and finds your class inside by inspection, so
@@ -108,7 +158,7 @@ is what makes a clone work the moment it lands.
 file is the list of what your plugin accepts - a default that exists only
 inside your `.py` is one nobody can find, and a theme cannot set what it
 cannot see.  A value the user has to supply still declares: empty, or the
-`{apikeys.mbapi}` sort of name that reaches their config.
+`{apikeys.mbapi}` kind of name that reaches their config.
 
 It is read by more than a person.  A setting missing from it is one no
 editor can offer and no check can validate, so `self.config.get('format')`
@@ -140,30 +190,32 @@ A plugin brings its own `languages/` and `units/` folders with it if it has
 them, and both are merged rather than first-wins, so a plugin adds words and
 quantities without editing the shipped tables:
 
-    plugins/tides/languages/en.yaml      merged over the shipped English
-    plugins/tides/units/quantities.yaml  merged over the shipped quantities
+    plugins/Aurora/languages/en.yaml      merged over the shipped English
+    plugins/Aurora/units/quantities.yaml  merged over the shipped quantities
 
 What goes in that quantities file, and why a set that has never heard of your
 quantity still works, is [WRITING-UNITS.md](WRITING-UNITS.md).
 
 **If you mean to contribute the plugin to PiClock3 itself**, that is the
-other folder: put it in `PiClock3/Tides/` alongside the core plugins, name it
-`PiClock3.Tides.Tides` in the config, and open a pull request.  Being inside
-the package is what makes it ship for everybody, and it is why the two
-locations exist rather than one.  See [CONTRIBUTING.md](../CONTRIBUTING.md).
+other folder: put it in `PiClock3/Aurora/` alongside the core plugins, name
+it `PiClock3.Aurora` in a config the way every shipped plugin is named, and
+open a pull request.  Being inside the package is what makes it ship for
+everybody, and it is why the two locations exist rather than one.  Ask
+first, as [Decide where it is going](#decide-where-it-is-going-before-you-write-much)
+says, and read [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ### What a plugin repository holds
 
-    __init__.py         from .Tides import *  # noqa: F401,F403
-    Tides.py            the module, holding your Widget or Provider subclass
-    config.yaml         its defaults, and the list of what a theme may set
-    schema.yaml         the shape of those settings
-    README.md           what it does, and any key it needs
-    languages/en.yaml   optional, words of its own
-    units/*.yaml        optional, quantities of its own
-    layouts/tall.yaml   optional, a layout with a region for what it draws
-    themes/tidal/       optional, a theme
-    examples/tides.yaml optional, run by naming it
+    __init__.py          required, from .Aurora import *  # noqa: F401,F403
+    Aurora.py            required, your Widget or Provider subclass
+    config.yaml          required, its defaults and what a theme may set
+    schema.yaml          required, the shape of those settings
+    README.md            what it does, and any key it needs
+    languages/en.yaml    optional, words of its own
+    units/*.yaml         optional, quantities of its own
+    layouts/tall.yaml    optional, a layout with a region for what it draws
+    themes/nightsky/     optional, a theme
+    examples/aurora.yaml optional, run by naming it
 
 A widget that draws something new usually needs somewhere to draw it, and
 no shipped layout declares a region for a thing that did not exist.  So a
@@ -174,7 +226,7 @@ it `classic` gets you a `--check` warning and the shipped `classic`.
 
 An example is run by naming it, from the clock's own directory:
 
-    python3 PyQtPiClock3.py plugins/tides/examples/tides.yaml
+    python3 PyQtPiClock3.py plugins/Aurora/examples/aurora.yaml
 
 `{this-folder}` is the folder of the file that said it, so art beside the
 example is found wherever the repository was cloned.  `apikeys: !include
@@ -182,8 +234,54 @@ ApiKeys.yaml` is read relative to the directory the clock was **started**
 in, so write the same line the shipped examples write and it finds the
 user's own keys.
 
-A `schema.yaml` is required, and `description:` is the only part of one that
-is - see [WRITING-A-SCHEMA.md](WRITING-A-SCHEMA.md).
+A `schema.yaml` is required.  Without one, `--check` says
+`plugins.Aurora has no schema.yaml, which is required` and counts it a
+problem rather than a warning.  Inside it, `description:` is the only part
+that is required in turn - see [WRITING-A-SCHEMA.md](WRITING-A-SCHEMA.md).
+
+### Publishing one
+
+If you started from the template, the plugin is already a repository:
+commit and push, and you are published.
+
+If you started in a plain folder instead, it has no history yet - PiClock3
+ignores `plugins/`, so none of your commits here are about it, and if the
+folder is lost so is the work.  Three commands, run where it already sits:
+
+```
+cd plugins/Aurora
+git init                      # this folder is now a project of its own
+git add .                     # everything in it
+git commit -m "what it does"  # the first version, saved
+```
+
+Give the repository a name that says what it is.  `piclock3-aurora` tells
+somebody what they are getting; calling it `PiClock3` gives you two
+projects with one name and nobody able to tell them apart.  Whoever
+installs it chooses the folder it lands in:
+
+```
+cd PiClock3
+git clone https://github.com/someone/piclock3-aurora plugins/Aurora
+```
+
+**Everything it needs travels with it** - the theme it wants, the layout
+that declares its region, its examples, its words, its units and its art.
+The search path looks inside a plugin's own folder for all of them, so
+they belong in your repository rather than loose in somebody's checkout.
+[What a plugin repository holds](#what-a-plugin-repository-holds), above,
+is the list.
+
+**What does not go in the shipped tree.**  `PiClock3/` is this project's:
+`PiClock3/themes/`, `PiClock3/layouts/` and `PiClock3/<Name>/` are tracked
+here, so anything of yours put there is what `git pull` conflicts with, and
+what a fresh clone does not have.  Your own parts go in `themes/`,
+`layouts/` and `plugins/` at the top of the checkout, which are ignored for
+exactly that reason - or inside the plugin repository you are publishing.
+
+One rule for the parts you bring: **a bundled part can add a name, never
+replace one.**  A layout of yours called `classic` draws a `--check`
+warning and the shipped `classic` is used.
 
 Ship a `README` that says which service it talks to and whether that needs an
 account.  A key belongs in the user's `ApiKeys.yaml`, never in your

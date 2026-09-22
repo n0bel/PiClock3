@@ -187,6 +187,11 @@ reads.
 
 ## Adding your own
 
+A set of your own is usually local - one clock, one preference - and lives
+in `units/` beside `Config.yaml`.  A *quantity* nobody has, on the other
+hand, is the kind of thing everybody with that instrument wants, so it is
+worth offering to PiClock3 itself by pull request rather than keeping.
+
 **Do not edit the shipped files.**  Units load from every folder on a search
 path, merged, least specific first:
 

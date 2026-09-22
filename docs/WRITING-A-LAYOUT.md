@@ -28,6 +28,17 @@ regions:
 
 ## Where a layout goes
 
+Two destinations, and they start differently:
+
+1. **Your own repository.**  Almost every layout belongs here.  You publish
+   it, you maintain it, and it is yours alone.
+2. **Into PiClock3 itself.**  It becomes part of the core, and this
+   project's maintainers carry it from then on - so it is rare, and worth
+   asking about before you draw much.
+
+The rest of this section is destination 1;
+[Publishing one](#publishing-one) is how it is published.
+
 There is a `layouts` folder beside `Config.yaml`, at the top of the checkout,
 and that one is yours.  It is searched before `PiClock3/layouts`, so a layout
 of your own named `classic` is used instead of the shipped one without
@@ -46,7 +57,7 @@ bottom rows are searched last, so a plugin that carries a layout called
 folders hold the same name, `--check` says which one wins:
 
     warning  layouts.tall: 2 folders hold a layout called 'tall'.
-             plugins/tides/layouts/tall.yaml is used;
+             plugins/Aurora/layouts/tall.yaml is used;
              themes/frost/layouts/tall.yaml is not
 
 The `plugins/*/layouts/` row is how a widget that needs a region no shipped
@@ -68,6 +79,43 @@ A layout is usually one file, `layouts/tall.yaml`, because a layout has no
 art - it is geometry.  A folder works too, `layouts/tall/layout.yaml` or
 `layouts/tall/tall.yaml`, which is what a repository named after itself looks
 like when it is cloned.
+
+### Publishing one
+
+Your layout has no history yet.  PiClock3 ignores `layouts/`, so none of
+your commits here are about it, and if the file is lost so is the work.
+Giving it a history of its own means making it a folder first, because a
+git project is a folder:
+
+```
+mkdir -p layouts/tall
+mv layouts/tall.yaml layouts/tall/layout.yaml
+cd layouts/tall
+git init                        # this folder is now a project of its own
+git add .                       # everything in it
+git commit -m "a tall layout"   # the first version, saved
+```
+
+Push it to GitHub under a name that says what it is -
+`piclock3-layout-tall` rather than `PiClock3` - and somebody else clones it
+into a folder they name, as above.
+Nothing of yours belongs in `PiClock3/layouts/`, which is this project's
+and is what `git pull` replaces.
+
+**What can travel with it.**  The search path looks inside `layouts/*/`,
+so these are found wherever the repository was cloned:
+
+| in your repository | what it is for |
+|---|---|
+| `layout.yaml` | the layout itself, named after the folder or `layout` |
+| `themes/frost/` | a theme it was drawn against |
+| `layouts/wide.yaml` | another layout - a set of them can share a repository |
+| `examples/tall.yaml` | a config somebody runs by naming it |
+| `languages/en.yaml` | words, if its regions want their own |
+| `units/quantities.yaml` | quantities of its own |
+
+A plugin is the one thing that cannot travel: `plugin:` names a module
+path, so a plugin is always its own repository, cloned into `plugins/`.
 
 **If you mean to contribute the layout to PiClock3 itself**, put it in
 `PiClock3/layouts/` and open a pull request - being inside the package is

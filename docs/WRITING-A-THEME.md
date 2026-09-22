@@ -13,6 +13,18 @@ Drawing the frames themselves is [FRAME-ART.md](FRAME-ART.md).
 
 ## Where a theme goes
 
+Two destinations, and they start differently:
+
+1. **Your own repository.**  Almost every theme belongs here.  You publish
+   it, you maintain it, and it is yours alone.
+2. **Into PiClock3 itself.**  It becomes part of the core, and this
+   project's maintainers carry it from then on - so it is rare, and worth
+   asking about before you draw much.  A theme is mostly pictures, so the
+   license on those is the first question anybody will ask.
+
+The rest of this section is destination 1, which is where the folders
+below come in; [Publishing one](#publishing-one) is how it is published.
+
 There is a `themes` folder beside `Config.yaml`, at the top of the checkout,
 and that one is yours.  It is searched before `PiClock3/themes`, so a theme
 of your own named `circuit` is used instead of the shipped one without
@@ -32,7 +44,7 @@ called `circuit` does not change which `circuit` your pages get - and
 
     warning  themes.circuit: 2 folders hold a theme called 'circuit'.
              PiClock3/themes/circuit/theme.yaml is used;
-             plugins/tides/themes/circuit/theme.yaml is not
+             plugins/Aurora/themes/circuit/theme.yaml is not
 
 Somebody else's theme is a git repository, cloned straight in:
 
@@ -100,21 +112,47 @@ color and somebody may have one called `red`.
 
 ### Publishing one
 
-A theme repository needs nothing but the yaml and the art.  It may hold
-more:
+A theme repository needs nothing but the yaml and the art.  **What else can
+travel with it**, all found inside `themes/*/` wherever it was cloned:
 
-    piclock3-theme-frost/       cloned into themes/frost/
-      theme.yaml
-      background.png  frame.png
-      markers/  hands/  icons-frost/     art the widgets use
-      layouts/tall.yaml                  the layout it was drawn against
-      examples/frost.yaml                run by path
-      README.md
+| in your repository | what it is for |
+|---|---|
+| `theme.yaml` | the theme itself, named after the folder or `theme` |
+| `background.png`, `frame.png` | the page and the frames |
+| `markers/`, `hands/`, `icons-frost/` | art the widgets use |
+| `layouts/tall.yaml` | the layout it was drawn against |
+| `themes/nightshift/` | another theme - a set of them can share a repository |
+| `examples/frost.yaml` | a config somebody runs by naming it |
+| `languages/en.yaml` | words, for a theme that renames what the clock draws |
+| `units/quantities.yaml` | quantities of its own |
+| `README.md` | what it looks like, and the license on the pictures |
+
+A plugin is the one thing that cannot travel: `plugin:` names a module
+path, so a plugin is always its own repository, cloned into `plugins/`.
 
 Worth adding: a README with a screenshot, a line saying which layouts it was
 drawn against (see [WRITING-A-LAYOUT.md](WRITING-A-LAYOUT.md)), and a
 license for the images - a theme is mostly pictures, and the license on
 those is the part somebody actually has to check.
+
+Your theme has no history yet.  PiClock3 ignores `themes/`, so none of your
+commits here are about it, and if the folder is lost so is the work.
+Giving it a history of its own takes three commands, run in the folder it
+already sits in:
+
+```
+cd themes/frost
+git init                            # this folder is now a project of its own
+git add .                           # everything in it, art included
+git commit -m "a theme in frost"    # the first version, saved
+```
+
+Push it to GitHub under a name that says what it is - `piclock3-theme-frost`
+rather than `PiClock3` - and somebody else clones it into a folder they
+name, as above.
+
+Nothing of yours belongs in `PiClock3/themes/`, which is this project's and
+is what `git pull` replaces.
 
 An example is run by naming it, from the clock's own directory:
 
