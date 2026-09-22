@@ -70,6 +70,11 @@ settings:
   # info when nothing says, so a clock that is behaving oddly rather than
   # raising still has a log to attach to a bug report
 
+  logging-to: {is: string}
+  # where the log goes, folder and name at once: PyQtPiClock3.log beside
+  # the program when nothing says.  A folder that is not there is made,
+  # and none is no log file at all, leaving stderr the whole log
+
   logging-rotate:   {is: scalar, one-of: [per-run, daily]}
   logging-max-size: {is: number, unit: megabytes, range: [0, 1000]}
   logging-keep:     {is: number, range: [0, 100]}

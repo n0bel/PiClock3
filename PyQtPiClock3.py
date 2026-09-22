@@ -211,9 +211,18 @@ def refuse(check, seconds=COUNTDOWN):
 
 
 class LogHandler(logging.handlers.RotatingFileHandler):
+    """rolled at the start of every run, so the run before is still there.
+
+    Only where there is something to keep.  Rolling a log nothing has
+    written yet files an empty one, and every empty one pushes a real run
+    a place nearer the end of logging-keep - so a clock restarted a few
+    times loses the night somebody wanted to read.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.doRollover()
+        if os.path.getsize(self.baseFilename):
+            self.doRollover()
 
 
 LOGFILE = 'PyQtPiClock3.log'
@@ -273,19 +282,48 @@ def number(value, default):
     return found if found >= 0 else default
 
 
+def logTarget(configName, settings):
+    """where the log goes, or None for nowhere.
+
+    A whole path rather than a folder, because two clocks on one machine
+    want two names as often as they want two folders, and a folder alone
+    cannot say that.  The folder is made if it is not there - being told
+    where to write and then refusing to helps nobody.
+
+    `none` is no file at all, said as a word rather than as an empty
+    value: a key written and left blank is a key somebody has not
+    finished typing, and it means the default the way a missing one
+    does.  Nothing is lost by turning it off - stderr is a handler of
+    its own and still gets everything.
+
+    logging-to: rather than logging-file:, because what it names is not
+    always a file - none already is not one.
+    """
+    path = early(configName, settings, 'logging-to') or LOGFILE
+    if path == 'none':
+        return None
+    folder = os.path.dirname(path)
+    if folder:
+        os.makedirs(folder, exist_ok=True)
+    return path
+
+
 def logHandler(configName, settings):
-    """the log, rolled the way the config asks.
+    """the log, rolled the way the config asks, or None for no log file.
 
     per-run at every start and again at logging-max-size, so the run
     before this one is still there and no one run fills a card.  daily
     at midnight instead, and not on a restart.
     """
+    path = logTarget(configName, settings)
+    if path is None:
+        return None
     keep = number(early(configName, settings, 'logging-keep'), 7)
     if early(configName, settings, 'logging-rotate') == 'daily':
         return logging.handlers.TimedRotatingFileHandler(
-            LOGFILE, when='midnight', backupCount=keep)
+            path, when='midnight', backupCount=keep)
     mb = number(early(configName, settings, 'logging-max-size'), 10.0)
-    return LogHandler(LOGFILE, maxBytes=int(mb * 1024 * 1024),
+    return LogHandler(path, maxBytes=int(mb * 1024 * 1024),
                       backupCount=keep)
 
 
@@ -321,8 +359,10 @@ if __name__ == '__main__':
         sys.exit(runCheck(configName, settings))
 
     fileh = logHandler(configName, settings)
-    fileh.setFormatter(fmt)
-    logger.addHandler(fileh)
+    # None where logging-to: is none, and then stderr is the whole log
+    if fileh is not None:
+        fileh.setFormatter(fmt)
+        logger.addHandler(fileh)
 
     try:
         app = QApplication(sys.argv)

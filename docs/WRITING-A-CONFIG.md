@@ -39,6 +39,7 @@ defaults, or do nothing until you want them.
 | `kind-settings:` / `plugin-settings:` | settings for every widget of a kind, or of a plugin |
 | `folders:` | named paths a setting can expand |
 | `logging-level:` | `debug`, `info`, `warning` |
+| `logging-to:` | where the log goes, folder and name, or `none` |
 | `logging-rotate:` / `logging-max-size:` / `logging-keep:` | when the log is rolled, and how many are kept |
 | `geometry:` | run in a window of a given size rather than filling the screen |
 | `apikeys:` | pulled in from `ApiKeys.yaml` with `!include` |
@@ -787,15 +788,40 @@ says nothing about what the clock was doing.
 
 ```yaml
 logging-level: info
+logging-to: PyQtPiClock3.log
 logging-rotate: per-run   # per-run or daily
 logging-max-size: 10      # MB; 0 for no limit
 logging-keep: 7
 ```
 
-`per-run` rolls the log at every start, so `PyQtPiClock3.log.1` is the run
-before this one - which is what makes trying a config four times leave four
-logs to compare.  It rolls again at `logging-max-size`, so a clock left up
-for months cannot fill the card.
+`logging-to` is folder and name at once - a name relative to where the
+clock was started, or a whole path.  A folder that is not there is made.
+Two clocks on one machine want two names as often as they want two
+folders, which is why it is not a folder setting:
+
+```yaml
+logging-to: /var/log/piclock/livingroom.log
+logging-to: none          # no log file at all
+```
+
+`none` writes no file, which is what a clock on a read-only card wants, or
+one started by systemd where the journal already has stderr.  Nothing is
+lost from the terminal - stderr is a separate handler and still gets every
+line - but there is then no log to attach to a bug report, so it is the
+same trade as `logging-level: warning` above.
+
+Written blank, `logging-to:` means the default rather than `none`: a key
+left empty is one somebody has not finished typing.
+
+It is `logging-to:` rather than `logging-file:` because what it names is
+not always a file, and `none` already is not one.
+
+`per-run` rolls the log at every start that has something to keep, so
+`PyQtPiClock3.log.1` is the run before this one - which is what makes
+trying a config four times leave four logs to compare.  A run that wrote
+nothing is not rolled, since filing an empty log pushes a real one a place
+nearer the end of `logging-keep`.  It rolls again at `logging-max-size`,
+so a clock left up for months cannot fill the card.
 
 `daily` rolls at midnight instead and **not** on a restart, so several runs
 of one day share a file, named `PyQtPiClock3.log.2026-09-07`.  Choose it to

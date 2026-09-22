@@ -28,7 +28,7 @@ because the clock finds plugins, layouts and themes by relative path.
 |---|---|---|
 | `importtest.py` | that every module still imports | PyQt5 |
 | `checktest.py` | what `--check` says about a broken config | the requirements |
-| `logtest.py` | the logging settings, read before the log exists | PyQt5 |
+| `logtest.py` | the logging settings, where the log is opened, and what it rolls | PyQt5 |
 | `linetest.py` | whether a finding names the right file and line | PyQt5 |
 | `tiletest.py` | that a tile gives each caller the attributes it asked for | PyQt5 |
 | `satellitetest.py` | that satellite frames are only the hours the index lists | PyQt5 |
@@ -37,6 +37,7 @@ because the clock finds plugins, layouts and themes by relative path.
 | `compasstest.py` | that a wind direction is written in the clock's language | PyQt5 |
 | `unitsettest.py` | that a language names the unit set its config does not | PyQt5 |
 | `systemlangtest.py` | that an unset language is the machine's, and a region inherits | PyQt5 |
+| `backgroundtest.py` | whether a `background:` is read as a color or as a picture | PyQt5 |
 
 `importtest.py` is the shallowest and the widest. The clock imports a plugin
 only when a config names one, so loading `PyQtPiClock3.py` reaches eleven of
@@ -52,9 +53,11 @@ runs wherever the requirements install. `importtest.py`, `logtest.py` and
 `tiletest.py` needs it for a different reason: it decodes a tile, and
 `VectorTile` builds a `QPointF`. `satellitetest.py` needs it because a
 provider is a `QObject`, `frametest.py` because a frame is a `QPixmap`, and
-`timetest.py` because `Words` lives in `PiClock3.py`, which imports Qt, and
+`timetest.py` because `Words` lives in `PiClock3.py`, which imports Qt,
 `compasstest.py`, `unitsettest.py` and `systemlangtest.py` because they
-load `Units` or `Languages` through the clock. None of them opens a window.
+load `Units` or `Languages` through the clock, and `backgroundtest.py`
+because `QColor` is what decides whether a value names a color. None of
+them opens a window.
 
 Together they take about half a minute on a desktop, most of it
 `checktest.py` resolving a config from disk 129 times over. `tiletest.py`,
@@ -146,6 +149,12 @@ A tuple: a name, the config text, any `--set` arguments, the setting, and
 what should come out. Most of its cases are one value written every way
 somebody might write it.
 
+Two of its sections ask a question the config text alone cannot answer, so
+they build their case in code and return `(name, wanted, got)`: `files()`
+for where the log is opened and whether a folder was made for it, `rolls()`
+for whether opening one rolled what was already there. Add to whichever
+answers your question without a temporary file, which is the first three.
+
 ### to `linetest.py`
 
 A fixture, the finding to look for, and what the parenthetical after the path
@@ -174,6 +183,12 @@ The same shape again. `fetch()` runs a tiler whose every tile is answered by
 a function you give it, and `loop()` builds a `MapLoop` with nothing but
 what frames and compositing touch — hand it frames with `gotFramePixmap`.
 
+### to `backgroundtest.py`
+
+A name, the value a `background:` holds, and which of the two rules it has
+to build — `COLOR` or `PICTURE`. A case that is about a file on disk makes
+one, since a file that exists is what breaks the tie.
+
 ## Two habits worth more than the tests
 
 ### Prove the test can fail
@@ -189,8 +204,8 @@ git checkout -- the-file
 ```
 
 This is how the logging change was checked. Deleting the two lines that strip
-quotes off a value fails 8 of `logtest.py`'s 26 cases — which is what proves
-those 8 are about anything, and it is worth doing to see. Without those two
+quotes off a value fails 9 of `logtest.py`'s 49 cases — which is what proves
+those 9 are about anything, and it is worth doing to see. Without those two
 lines, `logging-rotate: 'daily'` quietly falls back to per-run, which is a bug
 nobody would notice from a passing suite.
 

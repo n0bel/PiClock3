@@ -12,6 +12,7 @@ about.  It opens no window.
 """
 import importlib.util
 import os
+import shutil
 import sys
 import tempfile
 
@@ -63,6 +64,14 @@ READS = [
     # numbers read the same either way, though --check refuses a quoted one
     ('number bare', 'logging-keep: 3\n', [], 'logging-keep', '3'),
     ('number quoted', "logging-keep: '3'\n", [], 'logging-keep', '3'),
+    # a path, which is read as text like everything else here: a windows
+    # one keeps its backslashes, since nothing unescapes them
+    ('file bare', 'logging-to: /var/log/clock.log\n', [], 'logging-to',
+     '/var/log/clock.log'),
+    ('file with backslashes', 'logging-to: c:\\logs\\clock.log\n', [],
+     'logging-to', 'c:\\logs\\clock.log'),
+    ('file --set', 'logging-to: a.log\n', ['logging-to=b.log'],
+     'logging-to', 'b.log'),
 ]
 
 # (name, config text, --set, expected handler, maxBytes, backupCount)
@@ -86,6 +95,10 @@ BUILDS = [
      10 * 1024 * 1024, 3),
     ('keep negative', 'logging-keep: -2\n', [], 'LogHandler',
      10 * 1024 * 1024, 7),
+    # no file at all, whichever way it would have been rolled
+    ('none', 'logging-to: none\n', [], 'NoneType', None, None),
+    ('none while daily', 'logging-to: none\nlogging-rotate: daily\n', [],
+     'NoneType', None, None),
 ]
 
 
@@ -121,6 +134,58 @@ def levels():
         finally:
             os.unlink(path)
         out.append((name, want, logging.getLevelName(got)))
+    return out
+
+
+def files():
+    """where the log is opened, and the folder made to open it in"""
+    folder = os.path.join(tempfile.gettempdir(), 'logtest-%d' % os.getpid())
+    deep = os.path.join(folder, 'made', 'here', 'clock.log')
+    out = []
+    for name, text, sets, want in (
+            ('nothing said', 'pages: {}\n', [], clock.LOGFILE),
+            ('a name', 'logging-to: mine.log\n', [], 'mine.log'),
+            ('--set beats the file', 'logging-to: a.log\n',
+             ['logging-to=b.log'], 'b.log'),
+            ('a folder nobody made', 'logging-to: %s\n' % deep, [], deep),
+            # none is a word, and a blank is somebody who has not finished
+            # typing - so it means the default the way a missing key does
+            ('none', 'logging-to: none\n', [], None),
+            ('none quoted', "logging-to: 'none'\n", [], None),
+            ('none by --set', 'logging-to: mine.log\n',
+             ['logging-to=none'], None),
+            ('blank is not none', 'logging-to:\n', [], clock.LOGFILE)):
+        path = written(text)
+        try:
+            out.append((name, want, clock.logTarget(path, sets)))
+        finally:
+            os.unlink(path)
+    # the folder has to be there before the handler opens a file in it
+    out.append(('the folder is made', True,
+                os.path.isdir(os.path.dirname(deep))))
+    shutil.rmtree(folder, ignore_errors=True)
+    return out
+
+
+def rolls():
+    """whether opening the log rolls what it found.
+
+    A run with nothing to keep used to file an empty .1 anyway, and each
+    of those pushed a real run a place nearer the end of logging-keep.
+    """
+    out = []
+    for name, before, want in (('nothing there', None, False),
+                               ('an empty log', '', False),
+                               ('a log with a run in it', 'a line\n', True)):
+        folder = tempfile.mkdtemp()
+        path = os.path.join(folder, 'clock.log')
+        if before is not None:
+            with open(path, 'w', encoding='utf-8') as fh:
+                fh.write(before)
+        handler = clock.LogHandler(path, maxBytes=0, backupCount=7)
+        handler.close()
+        out.append((name, want, os.path.isfile(path + '.1')))
+        shutil.rmtree(folder, ignore_errors=True)
     return out
 
 
@@ -163,9 +228,11 @@ def main():
         if maxBytes is not None and getattr(h, 'maxBytes', None) != maxBytes:
             bad.append('maxBytes %s, wanted %s'
                        % (getattr(h, 'maxBytes', None), maxBytes))
-        if h.backupCount != keep:
+        # keep is None where there is no handler to ask
+        if keep is not None and h.backupCount != keep:
             bad.append('backupCount %s, wanted %s' % (h.backupCount, keep))
-        h.close()
+        if h is not None:
+            h.close()
         os.unlink(path)
         for leftover in ('PyQtPiClock3.log', 'PyQtPiClock3.log.1'):
             if os.path.isfile(leftover):
@@ -176,8 +243,28 @@ def main():
         else:
             print('  ok    build %-26s %s' % (name, kind))
 
+    where, rolled = files(), rolls()
+    for name, want, got in where:
+        if got == want:
+            print('  ok    file  %-26s %s' % (name, got))
+        else:
+            failed += 1
+            print('  FAIL  file  %-26s wanted %r, got %r'
+                  % (name, want, got))
+
+    for name, want, got in rolled:
+        if got == want:
+            print('  ok    roll  %-26s %s'
+                  % (name, 'rolled' if got else 'left alone'))
+        else:
+            failed += 1
+            print('  FAIL  roll  %-26s wanted %s, got %s'
+                  % (name, 'a roll' if want else 'no roll',
+                     'a roll' if got else 'no roll'))
+
     print('\n  %d cases, %d failed'
-          % (len(LEVELS) + len(READS) + len(BUILDS), failed))
+          % (len(LEVELS) + len(READS) + len(BUILDS)
+             + len(where) + len(rolled), failed))
     return 1 if failed else 0
 
 

@@ -429,6 +429,7 @@ styles:
 # PyQtPiClock3.log, in the PiClock3 folder, is the first thing to attach
 # to a bug report.  debug is loud and worth it when something is wrong.
 logging-level: info
+logging-to: PyQtPiClock3.log    # folder and name, or none for no file
 logging-rotate: per-run         # or 'daily'
 logging-max-size: 10            # MB before it rolls; 0 for no limit
 logging-keep: 7                 # how many older logs to keep
