@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QLabel
 
+from . import Folders
 from .Config import zoneFor
 from .Plugin import Plugin
 
@@ -216,7 +217,7 @@ class Widget(Plugin):
         # set somebody supplied, so it is where it says it is
         where = [folder] if '/' in folder.replace(os.sep, '/') else []
         where += [os.path.join(base, folder)
-                  for base in ('icons', os.path.join('PiClock3', 'icons'))]
+                  for base in Folders.roots('icons')]
         for base in where:
             path = os.path.join(base, name + '.png')
             if os.path.isfile(path):

@@ -36,7 +36,13 @@ checkout, and that one is yours.  Create it - unlike `themes/` and
     plugins/*/languages/    a third-party plugin's
     themes/*/languages/     what a theme brought with it
     layouts/*/languages/    what a layout brought with it
-    languages/              yours, and read last
+    languages/              yours, and read last of these
+    what named-paths: says  a folder of yours anywhere else, read after
+
+A file you keep somewhere else does not have to be copied in here.
+`named-paths: languages:` in a config names where it is, and because it
+is the most specific place it is read last of all and wins.  See
+[WRITING-A-CONFIG.md](WRITING-A-CONFIG.md).
 
 Every file claiming the same language is **merged**, later winning, rather
 than the first one found being used whole.  That is the difference from

@@ -32,6 +32,7 @@ import os
 import re
 import zoneinfo
 
+from . import Folders
 from .Config import ConfigError, GEOMETRY, Lines, readYaml as read
 from .ResolvedConfig import (partHolders, partPaths, partRoots,
                              pluginFolder, ResolvedConfig)
@@ -882,6 +883,7 @@ class Check():
                          "no %s named %r, so this region takes the theme's"
                          ' default' % (key, name))
 
+        self.checkNamedPaths()
         self.checkParts()
         self.checkClashes()
         self.checkKinds()
@@ -890,6 +892,18 @@ class Check():
         # that is not known until every widget has been read
         self.checkKeys()
         return self.found
+
+    def checkNamedPaths(self):
+        """a folder named-paths: names and nobody has.
+
+        A warning rather than a problem: the clock reads the folders that
+        are there and draws, so this is a clock that works and a folder
+        of yours that is not being read - which looks from the outside
+        like a layout of yours being ignored for no reason.
+        """
+        for where, path in Folders.missing():
+            self.warning(where, 'no folder %s, so nothing is read from it'
+                                % path)
 
     def checkParts(self):
         """each layout and theme a page named, against its own schema.

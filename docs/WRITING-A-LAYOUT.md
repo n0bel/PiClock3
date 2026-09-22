@@ -45,11 +45,16 @@ of your own named `classic` is used instead of the shipped one without
 touching what ships.  It is in `.gitignore`, so `git pull` never has anything
 of yours to conflict with.
 
-    layouts/                yours, and searched first
+    what named-paths: says  a folder of yours anywhere else
+    layouts/                yours, and searched first of these
     PiClock3/layouts/       shipped with the project
     plugins/*/layouts/      what a plugin brought with it
     themes/*/layouts/       what a theme brought with it
     layouts/*/layouts/      what a layout brought with it
+
+A layout you keep somewhere else does not have to be copied in here:
+`named-paths: layouts:` in a config names where it is, and it is searched
+before all of these.  See [WRITING-A-CONFIG.md](WRITING-A-CONFIG.md).
 
 **A layout somebody bundled can add a name, never replace one.**  The three
 bottom rows are searched last, so a plugin that carries a layout called

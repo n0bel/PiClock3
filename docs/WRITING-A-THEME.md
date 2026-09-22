@@ -31,11 +31,17 @@ of your own named `circuit` is used instead of the shipped one without
 touching what ships - and `git pull` never has anything of yours to conflict
 with.  It is in `.gitignore` for the same reason.
 
-    themes/                 yours, and searched first
+    what named-paths: says  a folder of yours anywhere else
+    themes/                 yours, and searched first of these
     PiClock3/themes/        shipped with the project
     plugins/*/themes/       what a plugin brought with it
     themes/*/themes/        what a theme brought with it
     layouts/*/themes/       what a layout brought with it
+
+A theme you keep somewhere else - your own git repository, a folder you
+back up - does not have to be copied in here.  `named-paths: themes:` in
+a config names where it is, and it is searched before all of these.  See
+[WRITING-A-CONFIG.md](WRITING-A-CONFIG.md).
 
 **A theme somebody bundled can add a name, never replace one.**  The three
 bottom rows are searched last, so cloning a plugin that carries a theme
@@ -224,6 +230,8 @@ name is looked for in `icons/` at the top of the checkout and then in
 folder is yours and is in `.gitignore`; unlike them it is not there until
 you make it.  A name with a `/` in it is a path instead, which is how a
 theme reaches a set it ships: `icons-folder: '{this-folder}/icons-frost'`.
+Sets you keep elsewhere are reached by name too, through
+`named-paths: icons:` in a config.
 
 Markers are the one worth a note.  Which pins a radar draws, and where they
 go, are the config's - a theme that named the list would be dictating where

@@ -38,6 +38,7 @@ because the clock finds plugins, layouts and themes by relative path.
 | `unitsettest.py` | that a language names the unit set its config does not | PyQt5 |
 | `systemlangtest.py` | that an unset language is the machine's, and a region inherits | PyQt5 |
 | `backgroundtest.py` | whether a `background:` is read as a color or as a picture | PyQt5 |
+| `folderstest.py` | which folders each kind is looked for in, and in what order | yaml |
 
 `importtest.py` is the shallowest and the widest. The clock imports a plugin
 only when a config names one, so loading `PyQtPiClock3.py` reaches eleven of
@@ -48,8 +49,10 @@ asks one question of all of them and answers nothing else.
 `checktest.py` imports `PiClock3.Check` and nothing else. `Check` has no
 PyQt import anywhere in it, on purpose — its own docstring says a config
 should be readable "on a machine with no display and no api keys" — so it
-runs wherever the requirements install. `importtest.py`, `logtest.py` and
-`linetest.py` load or run `PyQtPiClock3.py`, so they need Qt.
+runs wherever the requirements install. `folderstest.py` is lighter still:
+`Folders` is paths and globs, and knows nothing about Qt or a config.
+`importtest.py`, `logtest.py` and `linetest.py` load or run
+`PyQtPiClock3.py`, so they need Qt.
 `tiletest.py` needs it for a different reason: it decodes a tile, and
 `VectorTile` builds a `QPointF`. `satellitetest.py` needs it because a
 provider is a `QObject`, `frametest.py` because a frame is a `QPixmap`, and
@@ -188,6 +191,16 @@ what frames and compositing touch — hand it frames with `gotFramePixmap`.
 A name, the value a `background:` holds, and which of the two rules it has
 to build — `COLOR` or `PICTURE`. A case that is about a file on disk makes
 one, since a file that exists is what breaks the tie.
+
+### to `folderstest.py`
+
+A name, what came back, and what should have. `cases()` is the folders as
+they are without a config, written out by hand rather than built from the
+rule the code uses — a test that shares the rule cannot catch the rule
+being wrong — and runs inside `Made()`, which puts a fixture bundle in
+each of `plugins/`, `themes/` and `layouts/` so the order between them is
+visible. `named()` is what `named-paths:` adds, and calls
+`Folders.setFrom()` itself with the block it wants.
 
 ## Two habits worth more than the tests
 

@@ -20,13 +20,12 @@ plugin can add a quantity and you can override any of it:
 Merged at load time, so a malformed file is a readable startup message
 rather than a KeyError inside a Qt callback with nothing in the log.
 """
-import glob
 import logging
 import os
 import re
 
+from . import Folders
 from .Config import readYaml
-from .ResolvedConfig import HOLDERS
 from compassheadinglib import Compass
 
 logger = logging.getLogger(__name__)
@@ -80,12 +79,9 @@ class Units():
         bring a units file too: every folder a repository is cloned into
         is looked in, not only plugins/.
         """
-        found = [os.path.join('PiClock3', 'units')]
-        for holder in ('PiClock3',) + HOLDERS:
-            found += sorted(glob.glob(os.path.join(holder, '*', 'units')))
-        found.append('units')
-        # PiClock3/units also matches the PiClock3/* glob
-        return [f for i, f in enumerate(found) if f not in found[:i]]
+        # PiClock3/units also matches the PiClock3/* glob, and merging
+        # drops the copy that would have won twice
+        return Folders.merging('units')
 
     def load(self):
         """every units file there is, merged, least specific first"""

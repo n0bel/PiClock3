@@ -37,6 +37,7 @@ defaults, or do nothing until you want them.
 | `providers:` | plugins that fetch data and draw nothing |
 | `widgets:` | plugins that draw, each in a region its page's layout named |
 | `kind-settings:` / `plugin-settings:` | settings for every widget of a kind, or of a plugin |
+| `named-paths:` | folders of your own to look in for layouts, themes, plugins, languages, units and icons |
 | `folders:` | named paths a setting can expand |
 | `logging-level:` | `debug`, `info`, `warning` |
 | `logging-to:` | where the log goes, folder and name, or `none` |
@@ -745,6 +746,76 @@ A name that is not there comes back empty rather than complaining, so
 `{plugin-data.sunrise:%H:%M}` draws nothing on a day the sun does not rise
 instead of failing on the format specifier.  That cuts both ways: a brace you
 meant literally is eaten too.
+
+## `named-paths:` - folders of your own
+
+Six things are found by looking in folders rather than by being named in
+code: layouts, themes, plugins, languages, units and icons.  The clock
+looks inside the checkout for all of them.  `named-paths:` adds folders
+anywhere else:
+
+```yaml
+named-paths:
+  base:    /home/me/clockwork      # holds layouts/ themes/ plugins/ ...
+  layouts: /home/me/radar-layouts
+```
+
+**`base:` is a folder shaped like the top of a checkout.**  Naming one
+reaches every kind at once - `/home/me/clockwork/layouts`,
+`/home/me/clockwork/themes`, `/home/me/clockwork/plugins` and the rest,
+each used only if it exists.  It is the one to write when your own work
+lives together in a folder you keep, back up, or have in git.
+
+The other six name a folder for one kind:
+
+| | |
+|---|---|
+| `layouts:` `themes:` | a layout or theme of your own, or somebody's you cloned |
+| `plugins:` | a folder holding plugin folders, the way `plugins/` does |
+| `languages:` `units:` | files that merge over what is shipped |
+| `icons:` | a folder holding icon sets, the way `icons/` does |
+
+Every key is optional, and so is the whole block - a config with none of
+it looks exactly where it always did.  Each takes one folder or a list:
+
+```yaml
+named-paths:
+  themes: [/home/me/themes, /mnt/share/themes]
+```
+
+**What you name is looked in first**, ahead of the checkout's own folders,
+so a layout of yours called `classic` is used instead of the shipped one
+without touching anything that ships.  Where both a per-kind key and
+`base:` name somewhere for the same kind, the per-kind one is looked in
+first, being the more specific thing to have said.
+
+**A folder that is not there is not an error.**  The clock reads the ones
+that are, so a config can name a share that is not mounted today and still
+start.  `--check` says which:
+
+    warning  named-paths.themes: no folder /mnt/share/themes, so nothing
+             is read from it
+
+**A plugin out there is named by itself**, without `plugins.` in front:
+
+```yaml
+named-paths:
+  plugins: /home/me/clockwork/plugins
+widgets:
+  aurora: {plugin: Aurora, region: side}
+```
+
+`plugins.Aurora` goes on meaning the `plugins/` folder in the checkout,
+because two folders cannot both be the `plugins` package.  Everything else
+a plugin brings with it - its words, its units, its icons - is found the
+same way it is inside the checkout.
+
+From the command line, the same paths as any other setting:
+
+```
+--set named-paths.base=/home/me/clockwork
+--set "named-paths.layouts=[/a, /b]"
+```
 
 ## `folders:` - deprecated
 

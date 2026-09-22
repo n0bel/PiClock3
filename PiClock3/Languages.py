@@ -29,8 +29,8 @@ import os
 import re
 import sys
 
+from . import Folders
 from .Config import readYaml
-from .ResolvedConfig import HOLDERS
 
 logger = logging.getLogger(__name__)
 
@@ -74,14 +74,10 @@ class Languages():
         A cloned repository may bring words of its own whatever it was
         cloned for: a plugin naming what it draws, a theme renaming what
         the clock calls things.  So every folder one is cloned into is
-        looked in, not only plugins/.
+        looked in, not only plugins/.  Folders has the list; merging is
+        the end of it that is read last and so wins.
         """
-        found = [os.path.join('PiClock3', 'languages')]
-        for holder in ('PiClock3',) + HOLDERS:
-            found += sorted(glob.glob(
-                os.path.join(holder, '*', 'languages')))
-        found.append('languages')
-        return [f for i, f in enumerate(found) if f not in found[:i]]
+        return Folders.merging('languages')
 
     def load(self):
         for folder in self.folders():

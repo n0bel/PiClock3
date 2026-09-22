@@ -45,6 +45,24 @@ types:
     is: scalar
     one-of: [debug, info, warning]
 
+  folder-list:
+    is: list
+    of: string
+
+  named-paths-block:
+    is: block
+    of:
+      base:      {of: [string, folder-list]}
+      layouts:   {of: [string, folder-list]}
+      themes:    {of: [string, folder-list]}
+      plugins:   {of: [string, folder-list]}
+      languages: {of: [string, folder-list]}
+      units:     {of: [string, folder-list]}
+      icons:     {of: [string, folder-list]}
+    # base: holds layouts/, themes/, plugins/ and the rest, so it is one
+    # folder shaped like the top of a checkout.  The others name a folder
+    # for that one kind, and are looked in before base:
+
 settings:
 
   pages:     {is: table, of: page, required: true}
@@ -105,6 +123,12 @@ settings:
   unit-sets: {is: table, of: block}
   # raw Qt properties by name, and unit sets of your own.  A theme's
   # styles: of the same name wins over the config's.
+
+  named-paths: {is: named-paths-block}
+  # folders of your own to look in for layouts, themes, plugins,
+  # languages, units and icons, before the checkout's own.  All of it is
+  # optional, and a folder that is not there is a warning rather than a
+  # stop
 
   folders: {is: table, of: string}
   # named paths a setting can expand.  Only a marker's image: ever read

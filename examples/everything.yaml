@@ -424,6 +424,21 @@ styles:
     font-size: 0
     qproperty-alignment: AlignCenter
 
+# --------------------------------------------------- folders of yours
+#
+# Layouts, themes, plugins, languages, units and icons are found by
+# looking in folders.  These add your own, anywhere on disk, and are
+# looked in before the checkout's.  base: is one folder holding
+# layouts/, themes/, plugins/ and the rest; the others name one kind.
+# All optional, one folder or a list, and a folder that is not there is
+# a --check warning rather than a stop.
+# Commented out because naming a folder nobody has is a warning, which
+# this file should not produce.
+# named-paths:
+#   base: /home/me/clockwork    # holds layouts/ themes/ plugins/ ...
+#   layouts: /home/me/radar-layouts
+#   themes: [/a, /b]            # and plugins: languages: units: icons:
+
 # -------------------------------------------------------------- logging
 #
 # PyQtPiClock3.log, in the PiClock3 folder, is the first thing to attach

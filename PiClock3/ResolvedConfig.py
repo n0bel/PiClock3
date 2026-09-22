@@ -13,12 +13,13 @@ Finding a plugin is the one thing this leaves to its caller: the clock has
 the imported module and takes the folder from that, Check finds one on
 disk.  So the folder arrives as an argument.
 """
-import glob
 import logging
 import os
 
+from . import Folders
 from .Config import ConfigError, merge, readYaml, thisFolder
 from .DottedDict import DottedDict
+from .Folders import HOLDERS
 
 
 logger = logging.getLogger(__name__)
@@ -72,40 +73,34 @@ def localArt(part, home):
 
 
 def pluginFolder(module):
-    """where a plugin's files are, without importing it"""
+    """where a plugin's files are, without importing it.
+
+    A bare name is a plugin in a folder named-paths: named, since two
+    packages cannot both be `plugins`; a dotted one is the checkout's.
+    """
     part = module.replace('.', os.sep)
-    for folder in (part, os.path.join('plugins', part)):
+    for root in partRoots('plugins'):
+        folder = os.path.join(root, part) if root else part
         if os.path.isdir(folder):
             return folder
     return None
 
 
-# the three folders a published repository is cloned into, and so the three
-# that may carry something else along with them - a layout, a theme, words,
-# units.  Not a plugin: `plugin:` names a module path, so one inside a theme
-# would have to be called themes.frost.plugins.tides.
-HOLDERS = ('plugins', 'themes', 'layouts')
-
-
 def partRoots(kind):
-    """the folders a layout or a theme may sit in, most specific first.
+    """the folders a part of this kind may sit in, most specific first.
 
     One list, because three things walk it: the loader, the checker
     spelling a name against what exists, and the sentence about a name
     that is nowhere.  Three copies of it drift into a layout the clock
     loads and --check calls a mistake.
 
-    Yours, then the shipped one, then whatever a cloned repository brought
-    with it.  Bundles come last on purpose: a bundled part can add a name
-    and never replace one, so somebody's theme may bring the layout it was
-    drawn against and may not quietly become the `classic` a config
-    already names.
+    What named-paths: named, then yours, then the shipped one, then
+    whatever a cloned repository brought with it.  Bundles come last on
+    purpose: a bundled part can add a name and never replace one, so
+    somebody's theme may bring the layout it was drawn against and may
+    not quietly become the `classic` a config already names.
     """
-    yield kind
-    yield os.path.join('PiClock3', kind)
-    for holder in HOLDERS:
-        for found in sorted(glob.glob(os.path.join(holder, '*', kind))):
-            yield found
+    return Folders.roots(kind)
 
 
 def partPathsIn(root, kind, name):
@@ -199,6 +194,10 @@ class ResolvedConfig():
 
     def __init__(self, config):
         self.config = config
+        # before anything is looked for: named-paths: decides where the
+        # folders are, and this is the first thing built from a config
+        # that has had its --set arguments laid over it
+        Folders.setFrom(config)
         # page name -> its layout and theme, in the config's own order,
         # since the later page wins a name two layouts both declare
         self.pages = {}

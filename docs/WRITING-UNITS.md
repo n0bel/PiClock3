@@ -201,6 +201,7 @@ path, merged, least specific first:
     themes/*/units/           what a theme brought with it
     layouts/*/units/          what a layout brought with it
     units/                    yours, beside Config.yaml
+    what named-paths: says    a folder of yours anywhere else, read after
 
 The last one is not there until you make it, and is in `.gitignore` once
 you do.

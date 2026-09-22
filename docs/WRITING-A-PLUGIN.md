@@ -85,6 +85,13 @@ A plugin is a folder, and which folder depends on the decision above.
     plugins/Aurora/       yours, or one you cloned
     PiClock3/MapLoop/     one that ships with PiClock3
 
+A third place, for one you are writing and keep somewhere else:
+`named-paths: plugins:` in a config names a folder that holds plugin
+folders, the way `plugins/` does, and a plugin found there is named by
+itself - `plugin: Aurora` rather than `plugin: plugins.Aurora`, since two
+folders cannot both be the `plugins` package.  See
+[WRITING-A-CONFIG.md](WRITING-A-CONFIG.md).
+
 **Your own repository** - it lives in `plugins/`, beside `Config.yaml` at
 the top of the checkout.  PiClock3 does not track that folder, so
 `git pull` never overwrites what you put there.
