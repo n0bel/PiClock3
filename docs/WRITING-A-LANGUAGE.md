@@ -26,8 +26,8 @@ or a theme's:
 
 The rest of this section is the merging and the folders both rely on.
 
-There is a `languages` folder beside `Config.yaml`, at the top of the
-checkout, and that one is yours.  Create it - unlike `themes/` and
+There is a `languages` folder beside `Config.yaml`, in the PiClock3
+folder, and that one is yours.  Create it - unlike `themes/` and
 `layouts/` it is not there already.  It is in `.gitignore` once you do, so
 `git pull` never has anything of yours to conflict with.
 

@@ -170,8 +170,8 @@ def files():
 def rolls():
     """whether opening the log rolls what it found.
 
-    A run with nothing to keep used to file an empty .1 anyway, and each
-    of those pushed a real run a place nearer the end of logging-keep.
+    A run with nothing to keep must not file an empty .1: each of those
+    costs a place at the end of logging-keep, where a real run was.
     """
     out = []
     for name, before, want in (('nothing there', None, False),

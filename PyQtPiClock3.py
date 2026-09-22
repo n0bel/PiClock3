@@ -213,10 +213,9 @@ def refuse(check, seconds=COUNTDOWN):
 class LogHandler(logging.handlers.RotatingFileHandler):
     """rolled at the start of every run, so the run before is still there.
 
-    Only where there is something to keep.  Rolling a log nothing has
-    written yet files an empty one, and every empty one pushes a real run
-    a place nearer the end of logging-keep - so a clock restarted a few
-    times loses the night somebody wanted to read.
+    Only where there is something to keep: an empty log filed as
+    PyQtPiClock3.log.1 counts against logging-keep, and a clock restarted
+    a few times would drop the run somebody meant to read.
     """
 
     def __init__(self, *args, **kwargs):
@@ -296,7 +295,7 @@ def logTarget(configName, settings):
     does.  Nothing is lost by turning it off - stderr is a handler of
     its own and still gets everything.
 
-    logging-to: rather than logging-file:, because what it names is not
+    It is logging-to: and not logging-file: because what it names is not
     always a file - none already is not one.
     """
     path = early(configName, settings, 'logging-to') or LOGFILE
@@ -359,7 +358,7 @@ if __name__ == '__main__':
         sys.exit(runCheck(configName, settings))
 
     fileh = logHandler(configName, settings)
-    # None where logging-to: is none, and then stderr is the whole log
+    # None where logging-to: is none, and stderr gets every line anyway
     if fileh is not None:
         fileh.setFormatter(fmt)
         logger.addHandler(fileh)

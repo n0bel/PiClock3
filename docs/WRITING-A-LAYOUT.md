@@ -39,7 +39,7 @@ Two destinations, and they start differently:
 The rest of this section is destination 1;
 [Publishing one](#publishing-one) is how it is published.
 
-There is a `layouts` folder beside `Config.yaml`, at the top of the checkout,
+There is a `layouts` folder beside `Config.yaml`, in the PiClock3 folder,
 and that one is yours.  It is searched before `PiClock3/layouts`, so a layout
 of your own named `classic` is used instead of the shipped one without
 touching what ships.  It is in `.gitignore`, so `git pull` never has anything

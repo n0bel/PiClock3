@@ -751,8 +751,8 @@ meant literally is eaten too.
 
 Six things are found by looking in folders rather than by being named in
 code: layouts, themes, plugins, languages, units and icons.  The clock
-looks inside the checkout for all of them.  `named-paths:` adds folders
-anywhere else:
+looks inside the PiClock3 folder for all of them.  `named-paths:` adds
+folders anywhere else:
 
 ```yaml
 named-paths:
@@ -760,7 +760,7 @@ named-paths:
   layouts: /home/me/radar-layouts
 ```
 
-**`base:` is a folder shaped like the top of a checkout.**  Naming one
+**`base:` is a folder shaped like the PiClock3 folder itself.**  Naming one
 reaches every kind at once - `/home/me/clockwork/layouts`,
 `/home/me/clockwork/themes`, `/home/me/clockwork/plugins` and the rest,
 each used only if it exists.  It is the one to write when your own work
@@ -783,7 +783,7 @@ named-paths:
   themes: [/home/me/themes, /mnt/share/themes]
 ```
 
-**What you name is looked in first**, ahead of the checkout's own folders,
+**What you name is looked in first**, ahead of the PiClock3 folder's own,
 so a layout of yours called `classic` is used instead of the shipped one
 without touching anything that ships.  Where both a per-kind key and
 `base:` name somewhere for the same kind, the per-kind one is looked in
@@ -805,10 +805,10 @@ widgets:
   aurora: {plugin: Aurora, region: side}
 ```
 
-`plugins.Aurora` goes on meaning the `plugins/` folder in the checkout,
-because two folders cannot both be the `plugins` package.  Everything else
-a plugin brings with it - its words, its units, its icons - is found the
-same way it is inside the checkout.
+`plugins.Aurora` still means the `plugins/` folder inside the PiClock3
+folder, because two folders cannot both be the `plugins` package.
+Everything else a plugin brings with it - its words, its units, its icons
+- is found the same way it is in there.
 
 From the command line, the same paths as any other setting:
 
@@ -916,8 +916,8 @@ repeating it.
 
 **The name is read from where you started the clock, not from beside the
 config.**  That is why every example says `!include ApiKeys.yaml` and they
-all get the one file at the top of the checkout, wherever the example
-itself lives.  A file that is not there says so, and says where it looked.
+all get the one file in the PiClock3 folder, wherever the example itself
+lives.  A file that is not there says so, and says where it looked.
 
 Only Mapbox and Google need a key.  Radar frames from RainViewer and
 LibreWXR are free, so are LibreWXR's satellite frames and the METAR, and so

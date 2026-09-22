@@ -8,9 +8,10 @@ languages and units are every file found, merged, the last one winning.
 So the order is load bearing in two directions, and this is where that is
 written down.
 
-The first half is what the folders were before `Folders` existed, with a
-bundle in each of the three holder folders to make the order visible.  A
-refactor that quietly reorders them is what it is for.
+The first half is the folders that are there when no config names any,
+with a bundle in each of the three holder folders so the order between
+them is visible.  A change that quietly reorders any of it is what this
+is for.
 
 It writes fixture folders under plugins/, themes/ and layouts/, and
 removes them again.  It refuses to run over anything already there.
@@ -87,7 +88,7 @@ def cases():
     out.append(('icons, and no bundle brings one',
                 Folders.roots('icons'),
                 ['icons', p('PiClock3', 'icons')]))
-    out.append(('plugins: the checkout itself, then plugins/',
+    out.append(('plugins: the PiClock3 folder itself, then plugins/',
                 Folders.roots('plugins'), ['', 'plugins']))
     return out
 
@@ -123,7 +124,7 @@ def named():
                 Folders.roots('layouts')[0], 'layouts'))
 
     Folders.setFrom({})
-    out.append(('no block at all is the checkout alone',
+    out.append(('no block at all is the shipped folders alone',
                 Folders.roots('layouts')[0], 'layouts'))
 
     # a folder that is not there is the clock's business to ignore and

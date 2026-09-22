@@ -92,9 +92,9 @@ itself - `plugin: Aurora` rather than `plugin: plugins.Aurora`, since two
 folders cannot both be the `plugins` package.  See
 [WRITING-A-CONFIG.md](WRITING-A-CONFIG.md).
 
-**Your own repository** - it lives in `plugins/`, beside `Config.yaml` at
-the top of the checkout.  PiClock3 does not track that folder, so
-`git pull` never overwrites what you put there.
+**Your own repository** - it lives in `plugins/`, beside `Config.yaml` in
+the PiClock3 folder.  PiClock3 does not track that folder, so `git pull`
+never overwrites what you put there.
 
 **Into PiClock3 itself** - it lives in `PiClock3/<Name>/`, inside your fork
 of this project.  That folder *is* tracked, which is what allows you to
@@ -275,7 +275,7 @@ git clone https://github.com/someone/piclock3-aurora plugins/Aurora
 **Everything it needs travels with it** - the theme it wants, the layout
 that declares its region, its examples, its words, its units and its art.
 The search path looks inside a plugin's own folder for all of them, so
-they belong in your repository rather than loose in somebody's checkout.
+they belong in your repository rather than loose in somebody's install.
 [What a plugin repository holds](#what-a-plugin-repository-holds), above,
 is the list.
 
@@ -283,7 +283,7 @@ is the list.
 `PiClock3/themes/`, `PiClock3/layouts/` and `PiClock3/<Name>/` are tracked
 here, so anything of yours put there is what `git pull` conflicts with, and
 what a fresh clone does not have.  Your own parts go in `themes/`,
-`layouts/` and `plugins/` at the top of the checkout, which are ignored for
+`layouts/` and `plugins/` in the PiClock3 folder, which are ignored for
 exactly that reason - or inside the plugin repository you are publishing.
 
 One rule for the parts you bring: **a bundled part can add a name, never

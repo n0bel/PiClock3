@@ -896,10 +896,10 @@ class Check():
     def checkNamedPaths(self):
         """a folder named-paths: names and nobody has.
 
-        A warning rather than a problem: the clock reads the folders that
-        are there and draws, so this is a clock that works and a folder
-        of yours that is not being read - which looks from the outside
-        like a layout of yours being ignored for no reason.
+        A warning rather than a problem: the clock reads the folders
+        that are there and draws.  What it looks like from the outside
+        is a layout of yours being ignored for no reason, which is worth
+        a line here.
         """
         for where, path in Folders.missing():
             self.warning(where, 'no folder %s, so nothing is read from it'

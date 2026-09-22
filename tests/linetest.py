@@ -81,16 +81,16 @@ def where(found, startswith):
 
 
 # a theme and a layout have to be found where the clock looks for them, so
-# these are written into the checkout and taken away again.  The leading
-# underscore is the whole safety of it: themes/ and layouts/ hold whatever
-# somebody has installed, and a fixture named after a real one would be
-# deleted at the end of the run.
+# these are written into the PiClock3 folder and taken away again.  The
+# leading underscore is the whole safety of it: themes/ and layouts/ hold
+# whatever somebody has installed, and a fixture named after a real one
+# would be deleted at the end of the run.
 THEME_NAME = LAYOUT_NAME = '_selftest'
 
 
 class Fixture():
     """temp config, and any theme or layout a case needs, taken away
-    again.  themes/ and layouts/ at the top of the checkout are ignored by
+    again.  themes/ and layouts/ in the PiClock3 folder are ignored by
     git, so a fixture there leaves nothing behind."""
 
     def __init__(self, config, theme=None, layout=None):

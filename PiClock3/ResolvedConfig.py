@@ -76,7 +76,8 @@ def pluginFolder(module):
     """where a plugin's files are, without importing it.
 
     A bare name is a plugin in a folder named-paths: named, since two
-    packages cannot both be `plugins`; a dotted one is the checkout's.
+    packages cannot both be `plugins`; a dotted one is in the PiClock3
+    folder.
     """
     part = module.replace('.', os.sep)
     for root in partRoots('plugins'):

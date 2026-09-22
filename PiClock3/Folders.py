@@ -1,13 +1,10 @@
 """Where the clock looks for the things a config names.
 
 Six kinds are found by looking on disk rather than by being imported:
-layouts, themes, plugins, languages, units and icons.  Each folder list
-used to be written out where it was needed, in the same shape four times
-over - the name itself, `PiClock3/<name>`, and whatever a cloned
-repository brought with it.  They are here instead, so a folder added to
-one of them is added everywhere that kind is looked for, and so the
-clock and `--check` cannot come to different answers about where
-something is.
+layouts, themes, plugins, languages, units and icons.  Every folder each
+of them is looked for in is here, in one place: a folder added to a kind
+is added everywhere that kind is looked for, and the clock and `--check`
+cannot come to different answers about where something is.
 
 `named-paths:` adds folders of your own to any of them:
 
@@ -16,7 +13,7 @@ something is.
       layouts: /home/me/radar-layouts
 
 Everything in it is optional, a string or a list, and what it names is
-looked in before the checkout's own folders.
+looked in before the PiClock3 folder's own.
 
 Two orders come out of here, because the kinds use their answers
 differently.  A layout or a theme is one file, so the first one found
@@ -38,9 +35,8 @@ HOLDERS = ('plugins', 'themes', 'layouts')
 KINDS = ('layouts', 'themes', 'plugins', 'languages', 'units', 'icons')
 
 # what named-paths: said, and what of it went onto sys.path.  Module
-# state, because every folder below is already relative to the directory
-# the clock was started in - the search path is one per process, and
-# threading it through five call sites would not make it less so.
+# state, because every folder below is relative to the directory the
+# clock was started in: the search path is one per process.
 _named = {}
 _added = []
 
@@ -100,11 +96,12 @@ def bundles(kind, holders):
 
 
 def shipped(kind):
-    """the checkout's own folders for this kind, most specific first.
+    """the PiClock3 folder's own folders for this kind, most specific
+    first.
 
     Not one rule for all six: a core plugin ships words and units and
     cannot ship a layout, and an icon set is looked for in two folders
-    and no bundle.  Written as the four lists they have always been.
+    and no bundle.  So four lists rather than one with exceptions in it.
     """
     if kind in ('layouts', 'themes'):
         return ([kind, os.path.join('PiClock3', kind)]
@@ -119,7 +116,8 @@ def shipped(kind):
                 + [os.path.join('PiClock3', kind)])
     if kind == 'icons':
         return ['icons', os.path.join('PiClock3', 'icons')]
-    # plugins: '' is the checkout itself, where PiClock3.MapLoop is
+    # plugins: '' is the PiClock3 folder itself, where PiClock3.MapLoop
+    # is found
     return ['', 'plugins']
 
 
@@ -145,7 +143,7 @@ def onPath():
     """the named plugin folders, importable.
 
     A plugin of yours is named by itself - `plugin: Aurora` - since
-    `plugins.Aurora` has to go on meaning the checkout's own, two
+    `plugins.Aurora` still means the one in the PiClock3 folder, two
     packages not being able to share a name.  What a previous config
     added comes off first, so one process reading two configs does not
     keep the first one's folders.

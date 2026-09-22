@@ -25,7 +25,7 @@ Two destinations, and they start differently:
 The rest of this section is destination 1, which is where the folders
 below come in; [Publishing one](#publishing-one) is how it is published.
 
-There is a `themes` folder beside `Config.yaml`, at the top of the checkout,
+There is a `themes` folder beside `Config.yaml`, in the PiClock3 folder,
 and that one is yours.  It is searched before `PiClock3/themes`, so a theme
 of your own named `circuit` is used instead of the shipped one without
 touching what ships - and `git pull` never has anything of yours to conflict
@@ -224,7 +224,7 @@ is.  `{this-folder}` is the theme's own directory, so `marker-images-folder:
 markers` above means `themes/mine/markers/`.
 
 Weather icons are the one set found by name rather than by path.  A bare
-name is looked for in `icons/` at the top of the checkout and then in
+name is looked for in `icons/` in the PiClock3 folder and then in
 `PiClock3/icons/`, so a set installed as `icons/frost/` is named
 `icons-folder: frost` from anywhere.  Like `themes/` and `layouts/` that
 folder is yours and is in `.gitignore`; unlike them it is not there until

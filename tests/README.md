@@ -19,8 +19,9 @@ its own right, and running one directly gives you its own output:
 python3 tests/checktest.py
 ```
 
-Run them from wherever you like — each moves to the checkout root itself,
-because the clock finds plugins, layouts and themes by relative path.
+Run them from wherever you like — each moves to the PiClock3 folder
+itself, because the clock finds plugins, layouts and themes by relative
+path.
 
 ## What is here
 
@@ -255,7 +256,7 @@ overnight.** The interesting failures are the ones a short desktop run never
 sees — a rollover, a daylight saving change, a timer that drifts after a
 day, a service that stops answering at 3am.
 
-## A note on your checkout
+## A note on your own folders
 
 `checktest.py` and `linetest.py` write fixture plugins, themes and layouts
 into `plugins/`, `themes/` and `layouts/`, because that is where the clock
