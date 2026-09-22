@@ -294,6 +294,44 @@ Ship a `README` that says which service it talks to and whether that needs an
 account.  A key belongs in the user's `ApiKeys.yaml`, never in your
 `config.yaml` - see [Two rules](#two-rules-worth-reading-before-you-publish).
 
+## Trying it, without writing a config first
+
+A widget has nowhere to draw except inside a whole config - a page, a
+layout with a region the right shape, a theme, and every provider it
+names.  `tools/plugintest.py` writes one and runs it, so what is on the
+screen is your plugin and nothing else:
+
+```
+python3 tools/plugintest.py plugins.Aurora
+python3 tools/plugintest.py plugins.Aurora --region 0.3x1.0 --repeat 5
+python3 tools/plugintest.py Aurora --base /home/me/clockwork --check
+```
+
+It reads your `schema.yaml` to find out what your plugin is: `provides:`
+makes it a provider, and it is given the shipped widget that draws that
+role.  A `{is: provider, provides: [...]}` setting is a provider it
+needs, and where several shipped ones would answer, it stops and lists
+them with the flag that picks one:
+
+    conditions-provider wants a provider of conditions, and 4 here
+    provide it.  Say which:
+
+      --provider conditions-provider=PiClock3.Metar       --set ...METAR=
+      --provider conditions-provider=PiClock3.OpenMeteo
+      --provider conditions-provider=PiClock3.OpenWeatherMap  a key in
+                                                          ApiKeys.yaml
+
+What it cannot work out is the shape of the region your widget wants, or
+whether it expects a repeated one - `--region WxH` as fractions of the
+window, and `--repeat N` for a column of cells like a forecast.  `--set
+zoom=9` sets a setting on the plugin, and `--set frame-provider.palette=4`
+one on a provider it is using.  `--base` is for a plugin you keep outside
+the PiClock3 folder, and a plugin found there is named by itself.
+
+It writes nothing into the PiClock3 folder: the config and its layout go
+in a folder in the system temp directory, and the clock it starts keeps no
+log file, so the terminal you ran it in is the log.  `--help` is the rest.
+
 ## Weather providers say what the sky is doing, not what to call it
 
 A weather provider answers `conditions()`, `hourly(count, step)` and
