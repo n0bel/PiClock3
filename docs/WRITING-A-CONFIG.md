@@ -255,6 +255,11 @@ a service covering one country knows its extent better than a config does,
 so if it declares a `center:` or a `zoom:` of its own, a map that says
 nothing takes it.  Say either on the widget and yours wins.
 
+**RainViewer stops at zoom 7.**  Above that it sends a gray "Zoom Level Not
+Supported" card in place of the radar, as an ordinary picture, so nothing
+in the log says anything is wrong.  A map closer in than zoom 7 needs a
+`frame-provider:` of LibreWXR, which serves every zoom.
+
 **`style:` is the base map itself**, named in whatever vocabulary the
 provider uses: a Mapbox style id like `mapbox/satellite-streets-v10`, one
 of Google's four maptypes - `roadmap`, `satellite`, `terrain` or `hybrid` -
