@@ -14,7 +14,10 @@ types:
       order:  {is: number, required: true}
       layout: {is: string, names: layouts, required: true}
       theme:  {is: string, names: themes, required: true}
-    # order is what the pages step through, not what the file lists
+      dwell:  {is: number, unit: seconds, range: [0, 3600]}
+    # order is what the pages step through, not what the file lists.  A
+    # dwell of 0 waits to be turned, and the hour cap catches a MapLoop's
+    # milliseconds written here by habit
 
   provider-entry:
     is: block
@@ -71,6 +74,9 @@ settings:
   apikeys:   {is: table, of: string}
   # apikeys: !include ApiKeys.yaml is the usual shape, so a key never sits
   # in the file you would show somebody
+
+  page-dwell: {is: number, unit: seconds, range: [0, 3600]}
+  # the dwell of a page that gives none.  Unset, pages wait to be turned
 
   location: {is: location, required: true}
   # where the clock is pointed, and what a plugin's own location: defaults

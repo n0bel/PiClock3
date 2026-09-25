@@ -7,7 +7,7 @@ import logging.handlers
 import os
 
 from PyQt5 import QtNetwork
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect, QTimer
 from PyQt5.QtGui import QColor, QCursor, QImage, QPixmap
 from PyQt5.QtWidgets import (QWidget, QLabel, QApplication, QFrame)
 
@@ -133,6 +133,11 @@ class PiClock3(QWidget):
         # pluginData is.  Beside the config because it cannot live on one.
         self.pluginTiers = {}
         self.slideshows = []
+        # every turn restarts it, so a page turned by hand gets its whole
+        # dwell rather than what was left of the last page's
+        self.pageTimer = QTimer(self)
+        self.pageTimer.setSingleShot(True)
+        self.pageTimer.timeout.connect(lambda: self.nextPage(1))
         # already built, and already checked, by whoever is starting this
         self.resolved = resolved or ResolvedConfig(config).build()
         # before anything asks the time
@@ -847,7 +852,20 @@ class PiClock3(QWidget):
             instance.applyEffect(region, region.height())
         instance.start()
 
+    def dwell(self, pageName):
+        """seconds a page stays before the next turns in, 0 for until
+        somebody turns it"""
+        page = self.config.pages[pageName]
+        if page.get('dwell') is not None:
+            return page['dwell']
+        return self.config.get('page-dwell') or 0
+
     def nextPage(self, n):
+        """turn n pages on, or back for a negative n.
+
+        Every turn goes through here - the keys, a click, the timer - so a
+        plugin that turns pages should call this too.
+        """
         current = -1
         count = 0
         for pageName in self.pages:
@@ -867,6 +885,10 @@ class PiClock3(QWidget):
                 logging.debug("Setting page %s (%s) to visible"
                               % (current, pageName))
                 page.setVisible(True)
+                self.pageTimer.stop()
+                seconds = self.dwell(pageName)
+                if seconds:
+                    self.pageTimer.start(int(seconds * 1000))
         for show in self.slideshows:
             show.pageChange()
         for pluginName in self.plugins:

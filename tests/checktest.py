@@ -215,6 +215,15 @@ CASES = [
          wants=['problem widgets.radar1.zoom: 47 is not in the allowed'
                 ' range of 0 to 20'],
          forbids=['warning widgets.radar1.zoom']),
+    dict(name='a page dwell and the default for the rest',
+         config=config(a=put('pages', 'clock-page', 'dwell', 60),
+                       b=put('page-dwell', 30)),
+         wants=[], forbids=['dwell']),
+    dict(name='a page dwell written in milliseconds',
+         config=config(a=put('pages', 'clock-page', 'dwell', 60000)),
+         wants=['problem pages.clock-page.dwell: 60000 is not in the'
+                ' allowed range'],
+         forbids=[]),
     dict(name='a value outside the set its schema allows',
          config=config(a=put('providers', 'googlemaps',
                              {'plugin': 'PiClock3.GoogleMaps',

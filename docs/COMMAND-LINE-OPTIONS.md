@@ -388,7 +388,9 @@ type at:
 | `F8` | hold the slideshow, or let it run |
 
 A tap on a touchscreen arrives as a left click, which is the point of
-having one: the clock on the wall has no keyboard in front of it.
+having one: the clock on the wall has no keyboard in front of it.  Pages
+can also turn by themselves - `dwell` in
+[WRITING-A-CONFIG.md](WRITING-A-CONFIG.md#pages).
 
 F6, F7 and F8 are the keys PiClock v1 used for these, and act on the
 slideshow of the page being looked at.

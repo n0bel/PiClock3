@@ -31,6 +31,7 @@ defaults, or do nothing until you want them.
 | | |
 |---|---|
 | `pages:` | which pages exist, and the layout and theme each one wears |
+| `page-dwell:` | seconds a page stays before the next turns in by itself |
 | `location:` | latitude, longitude, timezone, elevation |
 | `language:` | which language file the words come from.  Unset, or `system`, the machine's own; English where no file answers to it |
 | `units:` | which set of units - `metric` for one, and the rest in [WRITING-UNITS.md](WRITING-UNITS.md).  Unset, the language's own: `language: fr` is metric |
@@ -66,6 +67,24 @@ pages:
 Each page names a **layout**, which says where the regions are, and a
 **theme**, which says what they look like.  `order` is the sequence they
 rotate in; the space bar steps through them, and so does a click or a tap.
+
+To have them turn by themselves, give each page a `dwell`, the seconds it
+stays before the next one comes in, and `page-dwell` for the pages that do
+not give one:
+
+```yaml
+page-dwell: 30
+
+pages:
+  clock-page: {order: 0, layout: classic, theme: circuit, dwell: 60}
+  maps-page:  {order: 1, layout: bigmaps, theme: circuit, dwell: 20}
+```
+
+A dwell of 0 is a page that stays until somebody turns it, and with
+neither set no page turns by itself.  A page turned by hand gets its whole
+dwell, counted from the turn.  A dwell is seconds; a MapLoop's `dwell` is
+milliseconds per frame, so the two are not the same number.  An hour is
+the longest a page can be given.
 
 The names on the left are yours.  What matters is that the names under a
 layout's `regions:` are the ones your widgets ask for - `classic` has
