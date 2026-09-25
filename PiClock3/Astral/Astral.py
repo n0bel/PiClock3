@@ -28,9 +28,11 @@ class Astral(Widget):
         self.format = self.strftimePortableFormat(self.config.format)
         self.polarFormat = self.strftimePortableFormat(
             self.config['polar-format'])
-        timer = QTimer()
-        timer.timeout.connect(self.doAstral)
-        timer.start(1000)
+        # kept on self: a timer nothing holds is collected when start()
+        # returns, and the almanac then never moves past its first day
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.doAstral)
+        self.timer.start(1000)
 
         self.doAstral()
 
