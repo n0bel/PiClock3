@@ -149,6 +149,7 @@ env*.bat
 /AGENTS.md
 /RULES.md
 /.claude/
+/local/
 
 # installed plugins
 /plugins/*
