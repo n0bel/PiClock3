@@ -6,23 +6,13 @@ kind: digital-clock
 # it with kind-settings: {digital-clock: {color: ...}} when it wants this
 # one different.
 
-# a fraction of the height of the region it sits in.  A value with units,
-# 20px, is used as written.
 font-size: 0.3
 
-# glow <blur> <lighten>.  Blur is a fraction of the region's height, so the
-# halo is the same size on any screen.  Lighten is how far the glow is
-# brightened from this widget's own color, and defaults to 150: a pale color
-# has clipped to white by then, a dark one has only brightened.  100 leaves
-# the color alone.  'none' or 'glow 0' for a flat face.
-#
-#   effect: {type: glow, blur: 0.125, color: '#fff', offset: 0}
-#
-# is the long form, for naming a color outright or offsetting it into a
-# drop shadow.
+# a blur that is a fraction of the region's height, so the halo is the
+# same size on any screen.  Lighten is left at 150, where a pale color has
+# clipped to white and a dark one has only brightened.
 effect: glow 0.125
 
-# anything Qt understands that has no setting of its own
 extra-font-attributes: ""
 
 # the language's hour and minute, then the seconds and AM or PM on a second
@@ -32,6 +22,6 @@ format: "{plugin-data.now:{language.time-format}\n%S %p}"
 # a clock face reads better lowercased; a date does not
 lowercase: true
 
-# the zone this face shows.  Blank is the clock's own, so a wall of them
-# each name a city while one clock on a wall names none.
+# the clock's own, so a wall of them each name a city while one clock on a
+# wall names none
 timezone: '{location.timezone}'

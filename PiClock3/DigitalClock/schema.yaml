@@ -4,12 +4,28 @@ description: >
 
 settings:
 
-  font-size: {is: font-size}
-  effect:    {of: [string, effect]}
-  # any widget takes one; this is where the glowing face comes from
-  format:    {is: string}
-  lowercase: {is: boolean}
-  extra-font-attributes: {is: string}
-  # anything Qt understands that has no setting of its own, put into the
-  # stylesheet as written
-  timezone: {is: string, names: timezones}
+  font-size:
+    is: font-size
+    help: How tall the digits are, as a fraction of the region's height or
+      as a measure such as 20px.
+  effect:
+    of: [string, effect]
+    help: A glow or a shadow behind the digits, as glow <blur> <lighten>
+      or as a block.  none draws a flat face.
+    # any widget takes one; this is where the glowing face comes from
+  format:
+    is: string
+    help: What is drawn.  {plugin-data.now} is the time, and takes a
+      strftime format in the braces.
+  lowercase:
+    is: boolean
+    help: When true, the text is drawn in lowercase.
+  extra-font-attributes:
+    is: string
+    help: Qt stylesheet properties with no setting of their own, added as
+      written.
+  timezone:
+    is: string
+    names: timezones
+    help: The zone this face shows, such as Europe/London.  Blank is the
+      clock's own.

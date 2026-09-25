@@ -224,7 +224,9 @@ is sitting over a column.
 
 `aspect: 1.0` makes the region square, measured off its **width** - so on a
 16:9 screen `width: 0.3` with `aspect: 1.0` is already about half the height.
-That catches people out.
+That catches people out.  A region with a `height` and no `width` is
+measured off its height instead.  Either way `aspect` is the height over
+the width, so `2.0` is twice as tall as it is wide.
 
 `horizontal-center` and `vertical-center` place a region relative to the
 middle of the page, offset by the fraction given.  `0.0` is dead center;

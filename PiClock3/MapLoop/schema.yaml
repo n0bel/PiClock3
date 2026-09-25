@@ -10,78 +10,186 @@ types:
   marker-sizes:
     is: scalar
     one-of: [small, mid, tiny]
-    # v1's three names, each a proportion of marker-size
+    help: PiClock v1's three names for a marker's size, each a proportion
+      of marker-size.
 
   marker:
     is: block
+    help: A pin drawn on the map at one place.
     of:
-      location: {is: location, required: true}
+      location:
+        is: location
+        required: true
+        help: Where the pin goes.
       image:
         is: string
         names:
           files:
             - '{folders.marker}/*.png'
             - '{marker-images-base-folder}/{marker-images-folder}/*.png'
-        # a pin from the set this radar draws, without the .png - the two
-        # folders markerPath looks in, in the order it looks.  A theme
-        # pointing at a set of its own moves the second one, so a shipped
-        # name it does not hold really is a marker that will not draw.
-        # A value with a / in it is a path, the way markerPath reads one.
-      color:    {is: color}
-      size:     {of: [number, measure, marker-sizes]}
-      visible:  {of: [boolean, number]}
-      # drawn unless set to something other than 1
+        help: A pin from the set this map draws, named without the .png,
+          or a path to a picture of your own.
+        # the two folders markerPath looks in, in the order it looks.  A
+        # theme pointing at a set of its own moves the second one, so a
+        # shipped name it does not hold really is a marker that will not
+        # draw.  A value with a / in it is a path, the way markerPath
+        # reads one.
+      color:
+        is: color
+        help: The color the pin is tinted.
+      size:
+        of: [number, measure, marker-sizes]
+        help: How tall this pin is drawn, in place of marker-size.
+      visible:
+        of: [boolean, number]
+        help: Set to 0 or false to hide the pin without deleting it.
 
   caption-entry:
     of: [string, caption]
-    # a bare string is the whole entry, everything else defaulted - the
-    # same shorthand-or-block shape effect: has
+    help: A line of text on the map, as a bare string or as a block that
+      places it.
+    # the same shorthand-or-block shape effect: has
 
   caption:
     is: block
     with: placement
+    help: A line of text on the map, placed the way a layout places a
+      region.
     # placement rather than geometry: a caption is as big as its text
     of:
-      text:        {is: string, required: true}
-      size:        {is: size}
-      color:       {is: color}
-      font-family: {is: string, inherits: page}
-      outline:     {of: [boolean, color]}
-      # true takes black or white from the text's own color
+      text:
+        is: string
+        required: true
+        help: The words.  A name in braces is filled in, such as
+          {plugin-data.frame-time} for when the frame was taken.
+      size:
+        is: size
+        help: How tall the text is, in place of caption-size.
+      color:
+        is: color
+        help: The text's color, in place of caption-color.
+      font-family:
+        is: string
+        inherits: page
+        help: The face it is drawn in, in place of the map's font-family.
+      outline:
+        of: [boolean, color]
+        help: An outline behind the text.  true takes black or white from
+          the text's own color, and a color names one outright.
 
 settings:
 
-  base-provider:    {is: provider, provides: [map], required: true}
-  frame-provider:   {is: provider, provides: [frames], required: true}
-  overlay-provider: {is: provider, provides: [map]}
+  base-provider:
+    is: provider
+    provides: [map]
+    required: true
+    help: The provider that draws the map under the weather.
+  frame-provider:
+    is: provider
+    provides: [frames]
+    required: true
+    help: The provider of the timestamped frames, radar or satellite.
+  overlay-provider:
+    is: provider
+    provides: [map]
+    help: The provider that draws overlay-style.  Unset, it is
+      base-provider.
 
-  center: {is: location}
-  zoom:   {is: number, range: [0, 20]}
+  center:
+    is: location
+    help: Where the map is centered.  Unset, it is the frame provider's
+      if it gives one, and the clock's location if not.
+  zoom:
+    is: number
+    range: [0, 20]
+    help: How far in the map is drawn, from 0 for the whole world to 20
+      for one street.  Unset, it is the frame provider's if it gives one.
 
-  interval: {is: number, unit: minutes}
-  frames:   {is: number}
-  dwell:    {is: number, unit: milliseconds}
-  hold:     {is: number, unit: milliseconds}
+  interval:
+    is: number
+    unit: minutes
+    help: How often the frame provider is asked which frames it has.  Not
+      the time between frames, which is the provider's own.
+  frames:
+    is: number
+    help: How many of the latest frames the loop plays.
+  dwell:
+    is: number
+    unit: milliseconds
+    help: How long each frame is shown.
+  hold:
+    is: number
+    unit: milliseconds
+    help: How long the newest frame stays before the loop starts over.
 
-  frame-opacity:   {is: number, range: [0, 1]}
-  overlay-opacity: {is: number, range: [0, 1]}
-  overlay-style:   {is: string}
+  frame-opacity:
+    is: number
+    range: [0, 1]
+    help: How solid the frames are drawn, from 0 for invisible to 1 for
+      solid.
+  overlay-opacity:
+    is: number
+    range: [0, 1]
+    help: How solid the overlay is drawn, from 0 for invisible to 1 for
+      solid.
+  overlay-style:
+    is: string
+    help: A second style of map drawn over the weather, for the labels
+      and roads it would cover.  Unset, there is none.
 
-  markers:                   {is: list, of: marker}
-  marker-size:               {of: [number, measure, marker-sizes]}
-  marker-images-folder:      {is: string}
-  marker-images-base-folder: {is: string}
+  markers:
+    is: list
+    of: marker
+    help: Pins drawn on the map.
+  marker-size:
+    of: [number, measure, marker-sizes]
+    help: How tall a marker is drawn when its own size says nothing, as a
+      fraction of the map's height or as a measure such as 20px.
+  marker-images-folder:
+    is: string
+    help: The set of pictures a marker's image is found in.
+  marker-images-base-folder:
+    is: string
+    help: The folder that holds the sets of marker pictures.
 
-  label:         {is: string}
-  label-size:    {is: size}
-  label-color:   {is: color}
-  label-outline: {of: [boolean, color]}
+  label:
+    is: string
+    help: A name drawn in the map's corner.  Unset, there is none.
+  label-size:
+    is: size
+    help: How tall the label is, as a fraction of the map's height.
+  label-color:
+    is: color
+    help: The label's color.
+  label-outline:
+    of: [boolean, color]
+    help: An outline behind the label.  true takes black or white from
+      the label's own color, and a color names one outright.
 
-  captions:            {is: list, of: caption-entry}
-  caption-size:        {is: size}
-  caption-color:       {is: color}
-  caption-time-format: {is: strftime}
+  captions:
+    is: list
+    of: caption-entry
+    help: Lines of text drawn over the map.  Empty, they are the label
+      and the credit line every map must carry.
+  caption-size:
+    is: size
+    help: How tall a caption is when its own size says nothing, as a
+      fraction of the map's height.
+  caption-color:
+    is: color
+    help: A caption's color when its own says nothing.
+  caption-time-format:
+    is: strftime
+    help: How the time on the built-in credit line is written.
 
-  font-family: {is: string, inherits: page}
+  font-family:
+    is: string
+    inherits: page
+    help: The face the label and the captions are drawn in.  Empty, it is
+      the page's.
 
-  ignore-attribution-mask: {is: boolean}
+  ignore-attribution-mask:
+    is: boolean
+    help: When true, the weather covers the base map's own logo and
+      credit, which are otherwise drawn back over it.  Read the provider's
+      terms first.

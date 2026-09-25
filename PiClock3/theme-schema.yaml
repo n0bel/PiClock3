@@ -9,62 +9,116 @@ types:
 
   border:
     is: block
+    help: A frame drawn around a region, from a picture.
     of:
-      art:   {is: string, required: true}
-      width: {is: number}
-      inset: {is: number}
-    # art takes {this-folder} to find the picture beside the theme that
-    # named it.  width is a fraction of the region, inset how far the
-    # frame's own edge sits inside its picture.
+      art:
+        is: string
+        required: true
+        help: The picture.  {this-folder} finds one beside the theme.
+      width:
+        is: number
+        help: How thick the frame is, as a fraction of the screen's
+          height.
+      inset:
+        is: number
+        help: Where the region's contents start inside the frame, as a
+          fraction of its width.  0.5 is the middle of the frame.
 
   slideshow:
     is: block
-    # more than one picture behind a page.  Name a folder of them, or the
-    # files one by one - each theme ships its own background.png, so a
-    # slideshow across themes has to name them.
+    help: Several pictures behind a page, one after another.
+    # each theme ships its own background.png, so a slideshow across
+    # themes has to name them
     of:
-      folder:   {is: string}
-      files:    {is: list, of: string}
-      interval: {is: number, unit: seconds}
-      order:    {is: scalar, one-of: [sorted, random]}
-      fit:      {is: scalar, one-of: [cover, contain]}
-      color:    {is: color}
+      folder:
+        is: string
+        help: A folder of pictures to show.
+      files:
+        is: list
+        of: string
+        help: Pictures to show, one by one.
+      interval:
+        is: number
+        unit: seconds
+        help: How long each picture is shown.
+      order:
+        is: scalar
+        one-of: [sorted, shuffle]
+        help: Whether the pictures come in name order, or shuffled.
+      fit:
+        is: scalar
+        one-of: [cover, contain]
+        help: With cover, the picture fills the page and is cropped.  With
+          contain, all of it shows, with color around it.
+      color:
+        is: color
+        help: The color around a picture that does not fill the page.
 
   qt-defaults:
     is: block
-    # the five names Qt owns, and font-size beside them.  Only the five
-    # cascade, and only into a widget that declares the name; font-size is
-    # here for the page itself, being a fraction of whatever it lands in.
+    help: What every widget on the page starts with.
+    # only the five Qt names cascade, and only into a widget that declares
+    # the name; font-size is here for the page itself, being a fraction of
+    # whatever it lands in.
     of:
-      color:            {is: color}
-      background-color: {is: color}
-      font-family:      {is: string}
-      font-style:       {is: string}
-      font-weight:      {of: [string, number]}
-      font-size:        {is: font-size}
-      # font-weight takes 100 to 900 as well as normal and bold, and Qt
-      # reads either - 300 arrives as a number and reaches the stylesheet
-      # as one, where it is the weight between light and regular.
+      color:
+        is: color
+        help: The text's color.
+      background-color:
+        is: color
+        help: The color behind a widget.
+      font-family:
+        is: string
+        help: The face text is drawn in.
+      font-style:
+        is: string
+        help: Whether the text is normal, italic or oblique.
+      font-weight:
+        of: [string, number]
+        help: How heavy the text is, normal, bold, or a number from 100 to
+          900.
+      font-size:
+        is: font-size
+        help: How tall the text is.
+      # 300 arrives as a number and reaches the stylesheet as one, where it
+      # is the weight between light and regular
 
 settings:
 
-  name:        {is: string, required: true}
-  description: {is: string}
+  name:
+    is: string
+    required: true
+    help: The theme's name.
+  description:
+    is: string
+    help: What the theme looks like, in a sentence.
 
-  default: {is: qt-defaults}
-  # what every widget on the page starts with
+  default:
+    is: qt-defaults
+    help: What every widget on the page starts with.
 
-  styles:  {is: table, of: block}
-  # raw Qt properties, by name.  A layout region's style: names one.
+  styles:
+    is: table
+    of: block
+    help: Qt properties by name.  A layout region's style names one.
 
-  borders: {is: table, of: border}
-  # by name.  A layout region's border: names one, or true for default.
+  borders:
+    is: table
+    of: border
+    help: Frames by name.  A layout region's border names one, or true for
+      the one called default.
 
-  background: {of: [string, slideshow]}
-  # one picture, or the block above for several
+  background:
+    of: [string, slideshow]
+    help: What is behind the page, a picture, a color, or a slideshow.
 
-  kind-settings:   {is: table, of: block}
-  plugin-settings: {is: table, of: block}
-  # settings for every plugin of a kind, and for one plugin by name.  A
-  # kind means interchangeable with, so a kind-setting means the same thing
-  # to each plugin wearing it.
+  kind-settings:
+    is: table
+    of: block
+    help: Settings for every plugin of a kind, such as radar.
+  plugin-settings:
+    is: table
+    of: block
+    help: Settings for one plugin by name, such as PiClock3.MapLoop.
+  # a kind means interchangeable with, so a kind-setting means the same
+  # thing to each plugin wearing it.

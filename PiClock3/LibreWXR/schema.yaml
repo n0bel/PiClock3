@@ -7,9 +7,16 @@ provides: [frames]
 
 settings:
 
-  palette: {is: number}
-  smooth:  {is: number}
-  snow:    {is: number}
-  # the three the service takes in a tile's path.  smooth and snow are 0 or
-  # 1; the palettes are the service's own numbering, and which exist is its
-  # to say rather than ours.
+  palette:
+    is: number
+    help: The color scheme the radar is drawn in, by the service's own
+      number.
+  smooth:
+    is: number
+    help: Set to 1 to blur the radar data smooth, or 0 to leave it as it
+      is.
+  snow:
+    is: number
+    help: Set to 1 to draw snow in colors of its own, or 0 not to.
+  # the three the service takes in a tile's path.  Which palettes exist is
+  # the service's to say rather than ours.

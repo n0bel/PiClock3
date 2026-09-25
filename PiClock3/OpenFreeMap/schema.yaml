@@ -11,42 +11,61 @@ types:
 
   map-style:
     is: block
+    help: A map style of your own, starting from a shipped one.  Written
+      on a theme, it adjusts the style rather than replacing it.
     of:
-      from:       {is: string}
-      layers:     {is: list, of: layer-group}
-      background: {of: [map-ground, color]}
-      weight:     {is: number, range: [0.1, 4]}
-      palette:    {is: map-palette}
-      language:   {of: [string, language-codes]}
+      from:
+        is: string
+        help: The style to start from, a shipped name or a file of your
+          own.  Unset, liberty.
+      layers:
+        is: list
+        of: layer-group
+        help: Which groups of the map to keep.  Unset, all of them.
+      background:
+        of: [map-ground, color]
+        help: What is drawn under the layers, a color or one of the named
+          grounds.  none makes the style an overlay.
+      weight:
+        is: number
+        range: [0.1, 4]
+        help: How thick every line is drawn, as a multiple of the style's
+          own widths.
+      palette:
+        is: map-palette
+        help: The colors the map is drawn in, by what each thing is.
+      language:
+        of: [string, language-codes]
+        help: The language the map's labels are written in, as a code or
+          a list of codes, best first.
     # weight: scales every line width rather than replacing it, so a
     # road still thickens as it is zoomed into, just less of it.  Every
     # shipped style sets it below 1: Liberty draws heavier than a radar
     # wants, and under weather the thinner cartography is easier to see
     # through.
-    # which cartography to take, which of its layers to keep, what sits
-    # under them, and what color they end up.  Nothing here writes a
-    # layer: every zoom-width curve and every filter stays the source
-    # style's, which is what makes this worth doing rather than drawing
-    # a map of our own.
+    # nothing here writes a layer: every zoom-width curve and every
+    # filter stays the source style's, which is what makes this worth
+    # doing rather than drawing a map of our own.
 
   language-codes:
     is: list
     of: string
-    # the language codes to try, in order: `name:<code>` is asked of each
-    # feature in turn, then `name:latin`, then whatever local name the
-    # data carries.  A language file's own code: list is where these come
-    # from when nothing names them, and the order it wrote them in is the
-    # order they are asked in - its first code being its everyday one.
+    help: Language codes to try in order, such as [de, en].  A label with
+      none of them is written in Latin script, or in its local name.
+    # `name:<code>` is asked of each feature in turn, then `name:latin`,
+    # then whatever local name the data carries.  A language file's own
+    # code: list is where these come from when nothing names them, and the
+    # order it wrote them in is the order they are asked in - its first
+    # code being its everyday one.
 
   map-ground:
     is: scalar
     one-of: [none, relief, blue-marble]
-    # what a background: may name instead of a color.  A ground is a
-    # raster source and naming one substitutes it for the style's own,
-    # so `relief` is Natural Earth used as the shape of the land and
-    # `blue-marble` is NASA's photograph of it drawn as it arrives.
-    # grounds.yaml is the list; adding one is an edit there and a name
-    # here, and nothing else.
+    help: A ground in place of a color.  relief is shaded relief in the
+      palette's colors, and blue-marble is NASA's photograph of the ground.
+    # a ground is a raster source and naming one substitutes it for the
+    # style's own.  grounds.yaml is the list; adding one is an edit there
+    # and a name here, and nothing else.
 
   layer-group:
     is: scalar
@@ -54,6 +73,7 @@ types:
              boundaries, motorways, highways, roads, streets, paths, rail,
              bridges, shields, street-names, places, countries, states,
              regions, localities, places-of-interest, buildings, airports]
+    help: One group of the map's layers, such as roads or water.
     # groups rather than the source style's layer ids, because
     # road_trunk_primary_casing is not a thing a config should know.
     # Said in OpenMapTiles terms - a source layer and a feature the
@@ -65,48 +85,99 @@ types:
 
   map-palette:
     is: block
+    help: The colors the map is drawn in, by what each thing is.  A role
+      not named keeps the color of the set it starts from.
     of:
-      from:          {is: string, one-of: [dark, light]}
-      land:          {is: color}
-      land-high:     {is: color}
-      water:         {is: color}
-      waterway:      {is: color}
-      water-outline: {is: color}
-      park:          {is: color}
-      boundary:      {is: color}
-      road:          {is: color}
-      road-casing:   {is: color}
-      street:        {is: color}
-      street-casing: {is: color}
-      label:         {is: color}
-      label-halo:    {is: color}
-      shield:        {is: color}
-      shield-text:   {is: color}
+      from:
+        is: string
+        one-of: [dark, light]
+        help: The shipped set of colors to start from.  Unset, the one
+          that suits the background.
+      land:
+        is: color
+        help: Woods, fields and built-up areas.
+      land-high:
+        is: color
+        help: The sunlit slopes of the relief ground.
+      water:
+        is: color
+        help: Lakes, seas and rivers.
+      waterway:
+        is: color
+        help: Rivers and streams, in place of water.
+      water-outline:
+        is: color
+        help: The edge of a lake or sea, one pixel wide.
+      park:
+        is: color
+        help: Parks and reserves.
+      boundary:
+        is: color
+        help: Country and state lines.
+      road:
+        is: color
+        help: Motorways and main roads.
+      road-casing:
+        is: color
+        help: The edges of motorways and main roads.
+      street:
+        is: color
+        help: Secondary roads, streets and paths.
+      street-casing:
+        is: color
+        help: The edges of secondary roads, streets and paths.
+      label:
+        is: color
+        help: Names on the map.
+      label-halo:
+        is: color
+        help: The outline around names, so they read over the map.
+      shield:
+        is: color
+        help: Route number shields.
+      shield-text:
+        is: color
+        help: The numbers on route shields.
     # roles rather than layer ids, so a recolor does not have to know the
-    # cartography either.  Which set it starts from comes from the
-    # background's own luminance unless from: says, and with no background
-    # either it starts from none.  Unlike layers:, a
-    # role does name Liberty's layers underneath - a road and its casing
-    # are the same class on the same source layer and only the id tells
-    # them apart - so a palette reaches Liberty and what is cut from it.
+    # cartography either.  With no background and no from:, it starts
+    # from neither.  Unlike layers:, a role does name Liberty's layers
+    # underneath - a road and its casing are the same class on the same
+    # source layer and only the id tells them apart - so a palette reaches
+    # Liberty and what is cut from it.
 
 settings:
 
-  style: {of: [string, map-style]}
-  # a shipped name - liberty, terrain, roads, light - one of theirs by
-  # name, or a block.  A block merges tier by tier where a string
-  # replaces, which is what lets a theme recolor without restating the
-  # layer list.
+  style:
+    of: [string, map-style]
+    help: The map drawn, a shipped name such as terrain or liberty, or a
+      block that adjusts one.  A radar's own style wins over this.
+  # a block merges tier by tier where a string replaces, which is what
+  # lets a theme recolor without restating the layer list.
 
-  style-folders: {is: list, of: string}
-  credit-color:  {is: color}
-  credit-halo:   {is: color}
-  font-family:   {is: string, inherits: page}
+  style-folders:
+    is: list
+    of: string
+    help: Folders of your own to look for a style name in, nearest
+      first.  They can add names and hide shipped ones.
+  credit-color:
+    is: color
+    help: The color of the credit drawn into the map.
+  credit-halo:
+    is: color
+    help: The outline behind the credit, so it reads over the map.
+  font-family:
+    is: string
+    inherits: page
+    help: The face the map's labels and its credit are drawn in.  Empty,
+      Qt's default.
 
-  language:     {of: [string, language-codes]}
-  map-language: {of: [string, language-codes]}
-  # which language the map's labels are written in, best first.  Empty
-  # takes the clock's own language:, whose file lists the codes it
-  # answers to, so most clocks never set this.  It is language: on this
-  # provider and in a style block, and map-language: on a widget, which
-  # is what lets one clock show the same cartography in two languages.
+  language:
+    of: [string, language-codes]
+    help: The language the map's labels are written in, as a code or a
+      list of codes, best first.  Empty, the clock's own language.
+  map-language:
+    of: [string, language-codes]
+    help: The same as language, said on a radar, for that one map.
+  # language: on this provider and in a style block, and map-language: on
+  # a widget, which is what lets one clock show the same cartography in
+  # two languages.

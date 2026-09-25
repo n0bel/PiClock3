@@ -41,6 +41,7 @@ path.
 | `backgroundtest.py` | whether a `background:` is read as a color or as a picture | PyQt5 |
 | `folderstest.py` | which folders each kind is looked for in, and in what order | yaml |
 | `pagetest.py` | that pages turn by themselves, each for its own dwell | PyQt5 |
+| `helptest.py` | that every shipped type, setting and field has a `help:`, written as sentences | yaml |
 
 `importtest.py` is the shallowest and the widest. The clock imports a plugin
 only when a config names one, so loading `PyQtPiClock3.py` reaches eleven of

@@ -260,7 +260,9 @@ no screen attached, or something building the project, can run.
 problem  widgets.forecast.forecast-provider (Config.yaml line 46): 'metar'
          provides conditions, and this wants daily or hourly
 problem  widgets.radar1.zoom (Config.yaml line 67): 47 is not in the
-         allowed range of 0 to 20
+         allowed range of 0 to 20.  How far in the map is drawn, from 0
+         for the whole world to 20 for one street.  Unset, it is the frame
+         provider's if it gives one.
 warning  widgets.radar1.labl (Config.yaml line 68): nothing declares this
          setting, so it is dropped
 Config.yaml: 2 problems, 1 warning
@@ -269,7 +271,8 @@ Config.yaml: 2 problems, 1 warning
 Each says which file and which line it is about.  A theme or a layout
 names its own file rather than the config, since that is where you would
 have to go looking.  A value that came from `--set` says that instead,
-because it is not in any file.
+because it is not in any file.  A value that is wrong is followed by what
+the setting is, from the `help:` in its schema.
 
 **A problem means it cannot work**, and exits `1`.  **A warning means it
 runs, but not as written**, and exits `0`.  So a script can treat the exit

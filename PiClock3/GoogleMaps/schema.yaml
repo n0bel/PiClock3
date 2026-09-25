@@ -7,7 +7,15 @@ provides: [map]
 
 settings:
 
-  apikey: {is: apikey, required: true}
-  style:  {is: scalar, one-of: [roadmap, satellite, terrain, hybrid]}
+  apikey:
+    is: apikey
+    required: true
+    help: Your Google Maps Platform key, usually {apikeys.googleapi} to
+      take it from ApiKeys.yaml.
+  style:
+    is: scalar
+    one-of: [roadmap, satellite, terrain, hybrid]
+    help: Which of Google's four maps is drawn.  A radar's own style wins
+      over this.
   # Google's four maptypes, and nothing else.  A Mapbox style id here is
   # answered with 200 and a roadmap, so the name is checked before asking.

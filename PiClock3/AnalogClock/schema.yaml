@@ -4,8 +4,17 @@ description: >
 
 settings:
 
-  clock-images-folder:      {is: string}
-  clock-images-base-folder: {is: string}
-  # the set, and where sets live.  Base folder is a template so a theme can
-  # point it at {this-folder} and carry a face of its own.
-  timezone: {is: string, names: timezones}
+  clock-images-folder:
+    is: string
+    help: The set of pictures the face and hands are drawn from.
+  clock-images-base-folder:
+    is: string
+    help: The folder that holds the sets of clock pictures.
+  # the base folder is a template so a theme can point it at {this-folder}
+  # and carry a face of its own
+
+  timezone:
+    is: string
+    names: timezones
+    help: The zone this face shows, such as Europe/London.  Blank is the
+      clock's own.

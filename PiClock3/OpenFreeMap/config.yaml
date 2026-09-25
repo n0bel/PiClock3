@@ -1,33 +1,20 @@
 kind: basemap
 
-# the picture under a radar, or over one.  A radar names its own style:
-# and overrides this; liberty is their whole cartography and the trimmed
-# ones are several times quicker to draw.  A name, or a block - see
-# docs/WRITING-A-MAP-STYLE.md.
+# the trimmed styles are several times quicker to draw than liberty, their
+# whole cartography.  A radar names its own style: and overrides this.
 style: terrain
 
-# where a style name is looked for, nearest first.  A folder of your own,
-# or one a plugin brought, adds names to the shipped ones and can shadow
-# them - the way languages and marker sets already work.  The plugin's own
-# styles/ is looked in last and needs no entry here.
+# the plugin's own styles/ is looked in last and needs no entry here
 style-folders: []
 
-# the credit this draws into the map itself, since nothing is baked into
-# a vector tile.  Their terms require it and no config can remove it; what
-# these two set is only whether it reads against a light map or a dark one.
+# nothing is baked into a vector tile, so the credit their terms require is
+# drawn here.  White on black reads against a light map or a dark one.
 credit-color: '#ffffff'
 credit-halo: '#000000'
 
-# the face the map's labels and its credit are drawn in.  Empty takes
-# Qt's default, which is the one the rest of the clock uses.
+# Qt's default, which is the one the rest of the clock uses
 font-family: ''
 
-# which language the map's labels are written in, best first.  Empty takes
 # the clock's own language:, whose file lists the codes it answers to - so
-# a German clock reads Hudson-Bucht without saying anything here.  Where
-# the data has no name in any of them the label falls back to Latin script
-# and then to whatever local name the feature carries.
-#
-# A radar says map-language: for one map of its own, and a style block
-# says language: beside its palette and its weight.
+# a German clock reads Hudson-Bucht without saying anything here
 language: []

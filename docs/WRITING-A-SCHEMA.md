@@ -1,15 +1,14 @@
 # Writing a schema
 
-A plugin's `config.yaml` declares its settings and their defaults, and a
-comment beside each says what it does.  That is enough for a person reading
-the file.  It is not enough for a program: nothing outside the plugin can
-tell that `marker-size: 0.2` is a fraction of the map rather than a count of
-pixels, that `size:` also takes `small`, `mid` or `tiny` and nothing else,
-or that `forecast-provider:` has to name something the config's own
-`providers:` block defines.
+A plugin's `config.yaml` declares its settings and their defaults.  A
+program reading it cannot tell that `marker-size: 0.2` is a fraction of the
+map rather than a count of pixels, that `size:` also takes `small`, `mid`
+or `tiny` and nothing else, or that `forecast-provider:` has to name
+something the config's own `providers:` block defines.
 
 A `schema.yaml` beside the `config.yaml` says the **shape** of what the
-plugin accepts.  The defaults stay where they are.
+plugin accepts, and what each setting is.  The defaults stay where they
+are.
 
 ```yaml
 description: >
@@ -20,9 +19,16 @@ provides: [conditions]
 
 settings:
 
-  METAR:   {is: string, required: true}
-  refresh: {is: number, unit: minutes}
-  # a station reports about hourly, so asking oftener re-reads one line
+  METAR:
+    is: string
+    required: true
+    help: The airfield's four-letter ICAO code, such as KMSP for
+      Minneapolis.
+
+  refresh:
+    is: number
+    unit: minutes
+    help: How often the station's latest report is fetched.
 ```
 
 That is a whole schema.  Most are this size.
@@ -129,10 +135,15 @@ at the same level - not `width:` inside a `placement:` block:
   geometry:
     is: block
     with: placement
+    help: Where a box sits inside the box holding it, and how big it is,
+      each value a fraction of that one.
     of:
-      width:  {is: number}
-      height: {is: number}
-      aspect: {is: number}
+      width:
+        is: number
+        help: How wide.
+      height:
+        is: number
+        help: How tall.
 ```
 
 ## And whatever else is true of it
@@ -154,6 +165,39 @@ at the same level - not `width:` inside a `placement:` block:
 required, optional, inherited - are what a blank default cannot tell you by
 itself, and saying which is most of what a schema adds.
 
+## `help:` says what it is
+
+Every type, setting and field in a block has a `help:`.  It is what an
+editor shows beside the setting, so it is written for somebody filling in a
+config: whole sentences, a capital first and a period last.  A schema
+missing one is a warning from `--check`, and the plugin still loads.
+
+```yaml
+  refresh:
+    is: number
+    unit: minutes
+    help: How often the station's latest report is fetched.
+```
+
+**The schema says what a setting is, and `config.yaml` says why its default
+is that value.**  Neither repeats the other, so there is no second copy to
+fall out of step.  Metar's `config.yaml` says only that stations report
+about hourly, which is why `refresh:` is 10 and not 1.  A default nobody
+would question needs no comment at all.
+
+**Leave out what the line already says.**  `unit: minutes` is in the spec,
+so "in minutes" in the help adds nothing.  What is worth saying is what the
+spec cannot: what a special value means, and what a setting is often
+mistaken for.  MapLoop's `interval:` is how often the frame provider is
+asked, not the time between frames.
+
+A comment in a schema is for whoever edits the schema - why a spec is
+shaped the way it is.  Somebody writing a config never sees it.
+
+**A colon then a space, or a space then `#`, ends yaml's text early**, so
+avoid both in a help.  `tests/helptest.py` checks the shipped schemas for
+it, and for a help that is missing or does not end in a period.
+
 ## `names:` is the one worth reaching for
 
 Some strings are not free text at all.  They have to name something that
@@ -168,8 +212,11 @@ exists somewhere else:
     timezones   a zone this machine has, blank being its own
 
 ```yaml
-  forecast-provider: {is: provider, provides: [hourly, daily], required: true}
-  region:            {of: [region-name, region-names], required: true}
+  forecast-provider:
+    is: provider
+    provides: [hourly, daily]
+    required: true
+    help: The provider the forecast comes from.
 ```
 
 A misspelled provider name is a `KeyError` at startup and a misspelled
@@ -190,11 +237,14 @@ not one of them, so a block names the folder instead - written as your own
 settings, not as a path:
 
 ```yaml
-  dial-folder: {is: string}
+  dial-folder:
+    is: string
+    help: The folder the dials are found in.
   dial:
     is: string
     names:
       files: '{dial-folder}/*.png'
+    help: The dial drawn, named without the .png.
 ```
 
 The names are the basenames of whatever the glob finds, so `clear-day` is
@@ -265,20 +315,34 @@ types:
 
   marker:
     is: block
+    help: A pin drawn on the map at one place.
     of:
-      location: {is: location, required: true}
-      image:    {is: string}
-      color:    {is: color}
-      size:     {of: [number, measure, marker-sizes]}
+      location:
+        is: location
+        required: true
+        help: Where the pin goes.
+      color:
+        is: color
+        help: The color the pin is tinted.
+      size:
+        of: [number, measure, marker-sizes]
+        help: How tall this pin is drawn, in place of marker-size.
 
   marker-sizes:
     is: scalar
     one-of: [small, mid, tiny]
+    help: PiClock v1's three names for a marker's size, each a proportion
+      of marker-size.
 
 settings:
 
-  markers:     {is: list, of: marker}
-  marker-size: {of: [number, measure, marker-sizes]}
+  markers:
+    is: list
+    of: marker
+    help: Pins drawn on the map.
+  marker-size:
+    of: [number, measure, marker-sizes]
+    help: How tall a marker is drawn when its own size says nothing.
 ```
 
 A type invented here belongs to this plugin.  Put it in `core-types.yaml`

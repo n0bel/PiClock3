@@ -4,14 +4,33 @@ description: >
 
 settings:
 
-  text:          {is: string}
-  text-provider: {is: provider, provides: [text]}
+  text:
+    is: string
+    help: The words drawn.  A name in braces is filled in, such as
+      {location.latitude}.  Blank draws nothing.
+  text-provider:
+    is: provider
+    provides: [text]
+    help: A provider that supplies the words instead, and says when they
+      change.
   # neither is required: a region with no words in it draws none
 
-  overflow:      {is: string, one-of: [fit, marquee, clip]}
-  marquee-speed: {is: number, range: [0.01, 10]}
+  overflow:
+    is: string
+    one-of: [fit, marquee, clip]
+    help: What happens to a line too wide for the region.  fit shrinks it,
+      marquee moves it past from right to left, and clip lets the edge
+      cut it.
+  marquee-speed:
+    is: number
+    range: [0.01, 10]
+    help: How far a marquee moves in a second, in widths of the region.
 
-  font-size:     {is: font-size}
-  extra-font-attributes: {is: string}
-  # anything Qt understands that has no setting of its own, put into the
-  # stylesheet as written
+  font-size:
+    is: font-size
+    help: How tall the words are, as a fraction of the region's height or
+      as a measure such as 20px.  0 is as large as fits.
+  extra-font-attributes:
+    is: string
+    help: Qt stylesheet properties with no setting of their own, added as
+      written.

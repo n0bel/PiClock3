@@ -6,7 +6,14 @@ provides: [conditions, hourly, daily]
 
 settings:
 
-  refresh:       {is: number, unit: minutes}
-  forecast-days: {is: number, range: [1, 16]}
-  # the service gives up to 16; the classic layout has room for 9
-  location:      {is: location}
+  refresh:
+    is: number
+    unit: minutes
+    help: How often the forecast is fetched.
+  forecast-days:
+    is: number
+    range: [1, 16]
+    help: How many days ahead to ask for, up to Open-Meteo's 16.
+  location:
+    is: location
+    help: Where the forecast is for.  Unset, the clock's location.

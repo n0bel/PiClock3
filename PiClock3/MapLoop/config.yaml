@@ -12,59 +12,44 @@ interval: 10
 frames: 7
 frame-opacity: 1.0
 
-# a second style of base map drawn over the radar, for labels and roads
-# the radar would otherwise cover.  Unset draws no such layer at all.
 overlay-style: ''
 overlay-opacity: 1.0
 overlay-provider: ''
 dwell: 200
 hold: 1200
 
-# pins drawn on the map.  Each takes a location:, and optionally an image:,
-# a color: and a size:.  See docs/WRITING-A-CONFIG.md.
 markers: []
 
-# the set a marker's image: is found in, and where sets live.  A theme names
-# a set of its own to restyle the pins without touching anybody's locations.
+# two settings rather than one path, so a theme can name a set of its own
+# and restyle the pins without touching anybody's locations
 marker-images-folder: markers
 marker-images-base-folder: '{plugin-folder}'
 
-# how tall a marker is drawn when its own size: says nothing.  A fraction of
-# the map's height rather than a count of pixels, so a pin takes the same
-# share of a small radar as of a large one.  A size with units is used as
-# written; small, mid and tiny are v1's three names, each a proportion of
-# this.
+# a fraction of the map's height rather than a count of pixels, so a pin
+# takes the same share of a small radar as of a large one
 marker-size: 0.2
 
-# a name in the corner, for when more than one map is on the screen.  Unset
-# draws nothing, which is right for a clock with only one.
+# none, which is right for a clock with only one map
 label: ''
-label-size: 0.10          # a fraction of the map's height, as every size here is
+label-size: 0.10
 label-color: '#bef'
 
-# an outline behind the name, for a base map light enough or busy enough to
-# swallow it.  true takes black or white from the label's own color; a color
-# names one outright.  Off by default: the name sits in a corner a config
-# chose, where the caption has to survive whatever the radar puts under it.
+# off, because the name sits in a corner a config chose, where a caption
+# has to survive whatever the radar puts under it
 label-outline: false
 
-# text drawn over the finished map.  Empty builds the list from label: above
-# and the attribution line every map must carry; a list of your own replaces
-# both.  See docs/WRITING-A-CONFIG.md.
 captions: []
-caption-size: 0.06        # a fraction of the map's height
+caption-size: 0.06
 caption-color: '#fff'
 
-font-family: ''           # empty takes the page's
+font-family: ''
 
-# the time on the built-in caption line.  Written the glibc way - %-I for a
-# leading zero dropped - and converted for Windows here.  A list of your
-# own carries its own formats inside its braces and ignores this.
+# written the glibc way - %-I for a leading zero dropped - and converted
+# for Windows here.  A list of your own carries its own formats inside its
+# braces and ignores this.
 caption-time-format: '%H:%M'
 
-# a base map arrives with the provider's own logo and credit drawn into it,
-# and they are lifted back over the radar so the weather cannot bury them.
-# Turn that off and the radar covers them - which is the provider's terms to
-# read, not ours, and is also the way out if a provider's mark is somewhere
+# false, because Mapbox and Google say their attribution must not be
+# obscured.  true is also the way out if a provider's mark is somewhere
 # this does not expect and the restored band covers weather for nothing.
 ignore-attribution-mask: false

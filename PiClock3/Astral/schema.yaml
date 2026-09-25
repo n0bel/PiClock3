@@ -5,9 +5,17 @@ description: >
 
 settings:
 
-  format:       {is: string}
-  polar-format: {is: string}
-  # drawn instead on a day the sun neither rises nor sets, where the usual
-  # line has no time to put in and would print its own braces
+  format:
+    is: string
+    help: The line drawn.  {plugin-data.sunrise}, {plugin-data.sunset}
+      and {plugin-data.moonphase} are filled in, and the two times take a
+      format such as {plugin-data.sunrise:%H:%M}.
+  polar-format:
+    is: string
+    help: The line drawn instead on a day the sun neither rises nor
+      sets.  {plugin-data.sun} names it, polar day or polar night.
 
-  location: {is: location}
+  location:
+    is: location
+    help: The place the sun and moon are worked out for.  Unset, the
+      clock's location.

@@ -5,26 +5,51 @@ description: >
 
 settings:
 
-  forecast-provider: {is: provider, provides: [hourly, daily], required: true}
+  forecast-provider:
+    is: provider
+    provides: [hourly, daily]
+    required: true
+    help: The provider the forecast comes from.
   # either answer is a forecast: hourly: 0 or daily: 0 asks for only one
 
-  hourly:      {is: number}
-  daily:       {is: number}
-  hourly-step: {is: number}
-  # hourly and daily should add up to the cells the region has
+  hourly:
+    is: number
+    help: How many cells show the hours ahead.  With daily, it should add
+      up to the cells the region has.
+  daily:
+    is: number
+    help: How many cells show the days ahead, after the hours.
+  hourly-step:
+    is: number
+    help: How many hours apart the hourly cells are.
 
-  hour-format: {is: strftime}
-  day-format:  {is: strftime}
+  hour-format:
+    is: strftime
+    help: How an hourly cell's time is written.
+  day-format:
+    is: strftime
+    help: How a daily cell's day is written.
 
   layout:
     is: block
-    # the parts this plugin draws.  The names are its own and fixed - it
-    # asks for each by name - so a layout naming anything else is ignored.
-    # attribution is drawn in the last cell only.
+    help: Where each part sits inside one cell, as fractions of it.
+    # the names are this plugin's own and fixed - it asks for each by
+    # name - so a layout naming anything else is ignored.
     of:
-      icon:        {is: part}
-      wx:          {is: part}
-      day:         {is: part}
-      attribution: {is: part}
+      icon:
+        is: part
+        help: The picture of the sky.
+      wx:
+        is: part
+        help: The sky in words, the chance of rain or snow, and the
+          temperature.
+      day:
+        is: part
+        help: The hour or the day the cell is for.
+      attribution:
+        is: part
+        help: The forecast's source, drawn in the last cell only.
 
-  icons-folder: {is: string}
+  icons-folder:
+    is: string
+    help: The set of weather pictures drawn.

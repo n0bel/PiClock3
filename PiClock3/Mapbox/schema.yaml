@@ -7,7 +7,13 @@ provides: [map]
 
 settings:
 
-  apikey: {is: apikey, required: true}
-  style:  {is: string}
-  # a style id - 'mapbox/satellite-streets-v10', or one of your own from
-  # Mapbox Studio.  Free-form, unlike Google's four names.
+  apikey:
+    is: apikey
+    required: true
+    help: Your Mapbox access token, usually {apikeys.mbapi} to take it
+      from ApiKeys.yaml.
+  style:
+    is: string
+    help: The Mapbox style drawn, such as mapbox/satellite-streets-v10 or
+      one of your own from Mapbox Studio.  A radar's own style wins over
+      this.

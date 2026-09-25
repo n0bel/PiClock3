@@ -20,7 +20,7 @@ SUITES = ('importtest.py', 'checktest.py', 'logtest.py', 'linetest.py',
           'tiletest.py', 'satellitetest.py', 'frametest.py',
           'timetest.py', 'compasstest.py', 'unitsettest.py',
           'systemlangtest.py', 'backgroundtest.py', 'folderstest.py',
-          'pagetest.py')
+          'pagetest.py', 'helptest.py')
 
 
 def run(name):

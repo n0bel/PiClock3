@@ -5,7 +5,14 @@ description: >
 
 settings:
 
-  format: {is: string}
-  # expanded, then run through strftime.  Beside strftime's codes it takes
-  # {day}, the day with no leading zero, and {sup}, the ordinal after it.
-  timezone: {is: string, names: timezones}
+  format:
+    is: string
+    help: How the date is written, in strftime's codes.  {day} is the day
+      with no leading zero, and {sup} the ordinal after it, such as st in
+      1st.
+
+  timezone:
+    is: string
+    names: timezones
+    help: The zone whose date this shows, such as Europe/London.  Blank is
+      the clock's own.

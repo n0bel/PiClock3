@@ -65,6 +65,12 @@
 #                         tells a radar's frame-provider: from its
 #                         base-provider:, which names: providers cannot.
 #
+# and must add:
+#
+#     help: <text>        what an editor shows beside it: whole sentences
+#                         saying what it is, for somebody writing a config.
+#                         Every type, setting and field in a block has one.
+#
 # of: is always type names and one-of: is always values, so neither has to
 # be read in context.
 #
@@ -79,53 +85,61 @@ types:
   measure:
     is: scalar
     of: [string]
-    # a number carrying its own unit, '20px' or '5280ft'.  Which units are
-    # legal comes from the setting's quantity:, or from Qt where it has
-    # none.  Beside a bare number, a fraction of whatever holds it.
+    help: A number with its unit written after it, such as 20px or 5280ft.
+    # which units are legal comes from the setting's quantity:, or from Qt
+    # where it has none.  Beside a bare number, a fraction of whatever
+    # holds it.
 
   size:
     is: scalar
     of: [number, measure]
-    # a bare number is a fraction of the height it sits in; above 1 it was
-    # almost certainly meant as pixels, and the plugin says so in the log
+    help: How tall, as a fraction of the height of what it sits in, or as
+      a measure such as 20px.
+    # above 1 it was almost certainly meant as pixels, and the plugin says
+    # so in the log
 
   font-size:
     is: scalar
     of: [number, measure]
-    # size, and 0 besides: text as large as fits across, which is what
-    # FitLabel is for
+    help: How tall the text is, as a fraction of the height of what it
+      sits in, or as a measure such as 20px.  0 is as large as fits
+      across.
+    # 0 is what FitLabel is for
 
   color:
     is: scalar
     of: [string]
-    # anything Qt reads: a name, #rgb, #rrggbb, rgba()
+    help: A color name such as white, a hex color, or rgba().
 
   strftime:
     is: scalar
     of: [string]
     portable: true
-    # written the glibc way - %-d drops a leading zero - and converted for
-    # Windows by strftimePortableFormat
+    help: A time written in strftime's codes, such as %H:%M.  %-d drops a
+      leading zero, on Windows too.
+    # converted for Windows by strftimePortableFormat
 
   apikey:
     is: scalar
     of: [string]
-    # a service credential: the key itself, or '{apikeys.mbapi}' naming an
-    # entry of the config's apikeys:.  Nothing can say whether a key is
-    # accepted without asking the service, so what is checked is only that
-    # it is not plainly nothing - blank, a name apikeys: does not have, or
-    # still the placeholder examples/ApiKeys.yaml ships.
+    help: A service's key, or {apikeys.name} to take the one of that name
+      from ApiKeys.yaml.
+    # nothing can say whether a key is accepted without asking the
+    # service, so what is checked is only that it is not plainly nothing -
+    # blank, a name apikeys: does not have, or still the placeholder
+    # examples/ApiKeys.yaml ships.
 
   provider:
     is: scalar
     of: [string]
     names: providers
-    # one of the config's own providers:.  A widget naming something else
-    # is a config that cannot work
+    help: The name of one of the config's own providers.
+    # a widget naming something else is a config that cannot work
 
   effects:
     is: scalar
     one-of: [glow, shadow, none]
+    help: A glow, a drop shadow, or none.
 
   effect:
     # a glow or a drop shadow, which are one Qt effect with only the offset
@@ -137,68 +151,130 @@ types:
     # glow and cannot carry a color, because yaml reads a space then # as
     # a comment.
     is: block
+    help: A glow or a drop shadow behind what a widget draws.  The short
+      form, glow <blur> <lighten>, cannot name a color.
     of:
-      type:    {is: effects}
-      blur:    {is: number}
-      color:   {is: color}
-      offset:  {is: number}
-      lighten: {is: number}
+      type:
+        is: effects
+        help: Which effect, glow, shadow or none.
+      blur:
+        is: number
+        help: How far the glow spreads, as a fraction of the region's
+          height.
+      color:
+        is: color
+        help: The glow's color.  Unset, it is the widget's own color,
+          brightened.
+      offset:
+        is: number
+        help: How far the glow is moved down and to the right, as a
+          fraction of the region's height, which makes it a drop shadow.
+      lighten:
+        is: number
+        help: How much the widget's own color is brightened for the glow,
+          as a percentage.  100 leaves it as it is.
 
   location:
     is: block
+    help: A place on the earth.
     of:
-      latitude:  {is: number, range: [-90, 90], required: true}
-      longitude: {is: number, range: [-180, 180], required: true}
-      timezone:  {is: string, names: timezones}
-      elevation: {of: [number, measure], quantity: altitude}
-    # an IANA name - Europe/Oslo - and how high, as 1600 for meters or
-    # '5280ft' to say otherwise.  Blank takes the machine's zone, and
-    # lets a service work the elevation out from the coordinates, which
-    # it does better than a guess.  A plugin reads what it has a use for.
+      latitude:
+        is: number
+        range: [-90, 90]
+        required: true
+        help: Degrees north of the equator, negative for south.
+      longitude:
+        is: number
+        range: [-180, 180]
+        required: true
+        help: Degrees east of Greenwich, negative for west.
+      timezone:
+        is: string
+        names: timezones
+        help: The place's time zone, such as Europe/Oslo.  Blank is the
+          machine's own.
+      elevation:
+        of: [number, measure]
+        quantity: altitude
+        help: How high the place is, in meters, or with a unit such as
+          5280ft.  Blank lets a weather service work it out.
+    # blank elevation is better than a guess, since a service works it out
+    # from the coordinates.  A plugin reads what it has a use for.
 
   placement:
-    # where a box sits inside the box holding it, each value a fraction of
-    # that one.  Signed: a center is an offset from the middle, and a part
-    # may hang above its region.  A side that would run past an edge is
-    # held at it.
+    # signed: a center is an offset from the middle, and a part may hang
+    # above its region.  A side that would run past an edge is held at it.
     is: block
+    help: Where a box sits inside the box holding it, each value a
+      fraction of that one.
     of:
-      left:              {is: number}
-      right:             {is: number}
-      top:               {is: number}
-      bottom:            {is: number}
-      horizontal-center: {is: number}
-      vertical-center:   {is: number}
+      left:
+        is: number
+        help: How far the left edge is from the left.
+      right:
+        is: number
+        help: How far the right edge is from the right.
+      top:
+        is: number
+        help: How far the top edge is from the top.
+      bottom:
+        is: number
+        help: How far the bottom edge is from the bottom.
+      horizontal-center:
+        is: number
+        help: How far the middle is from the middle, across.  Negative is
+          to the left.
+      vertical-center:
+        is: number
+        help: How far the middle is from the middle, down.  Negative is
+          higher.
 
   geometry:
-    # placement, and how big.  Two of left/right/width give the third, and
-    # the same downward.  PiClock3._regionRect reads all of it, for a page's
-    # regions and a widget's own parts alike - but something sized by its
-    # own contents, a caption by its text, takes placement instead.
+    # two of left/right/width give the third, and the same downward.
+    # PiClock3._regionRect reads all of it, for a page's regions and a
+    # widget's own parts alike - but something sized by its own contents,
+    # a caption by its text, takes placement instead.
     is: block
     with: placement
+    help: Where a box sits inside the box holding it, and how big it is,
+      each value a fraction of that one.
     of:
-      width:  {is: number}
-      height: {is: number}
-      aspect: {is: number}
+      width:
+        is: number
+        help: How wide.
+      height:
+        is: number
+        help: How tall.
+      aspect:
+        is: number
+        range: [0.01, 100]
+        help: The height as a multiple of the width, so 1.0 is square and
+          2.0 twice as tall as wide.  It sets the height from the width,
+          or the width from the height when no width is given.
 
   alignments:
-    # where the words sit in a part once the part itself has been placed.
-    # Left out, a part keeps Qt's own - left, centered down the height.
     is: scalar
     one-of: [left-top, center-top, right-bottom, center]
+    help: Where the words sit inside their box.  Unset, at the left and
+      centered down the height.
 
   part:
-    # one labeled box a widget draws inside its region, placed the way a
-    # layout places a region but as a fraction of the region rather than
-    # of the page.  A plugin names its own parts in a layout: block and
-    # says {is: part} against each; Widget.part() builds them.
+    # a plugin names its own parts in a layout: block and says {is: part}
+    # against each; Widget.part() builds them.
     #
     # Only the size: color and family arrive on the region and Qt inherits
     # them into whatever is drawn there.
     is: block
     with: geometry
+    help: One box a widget draws inside its region, placed the way a
+      layout places a region, but as fractions of the region.
     of:
-      font-size: {is: font-size}
-      align:     {is: alignments}
-      wrap:      {is: boolean}
+      font-size:
+        is: font-size
+        help: How tall the text is, as a fraction of this box's height.
+      align:
+        is: alignments
+        help: Where the words sit inside the box.
+      wrap:
+        is: boolean
+        help: When true, a long line breaks onto the next.

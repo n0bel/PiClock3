@@ -215,6 +215,17 @@ CASES = [
          wants=['problem widgets.radar1.zoom: 47 is not in the allowed'
                 ' range of 0 to 20'],
          forbids=['warning widgets.radar1.zoom']),
+    # and what the setting is, from its help:, after the problem
+    dict(name='a wrong value is followed by what the setting is',
+         config=config(a=put('widgets', 'radar1', 'interval', 'soon')),
+         wants=["'soon' is a word, and this takes number.  How often the"
+                ' frame provider is asked which frames it has.'],
+         forbids=[]),
+    dict(name='a block field says its own help, not its block',
+         config=config(a=put('location', 'latitude', 200)),
+         wants=['allowed range of -90 to 90.  Degrees north of the'
+                ' equator'],
+         forbids=['A place on the earth']),
     dict(name='a page dwell and the default for the rest',
          config=config(a=put('pages', 'clock-page', 'dwell', 60),
                        b=put('page-dwell', 30)),
@@ -309,6 +320,19 @@ CASES = [
                              {'plugin': 'plugins._selftest'})),
          wants=['has no schema.yaml, which is required'],
          forbids=[], needs='NoSchema'),
+    # help: is required of every type, setting and field, and a plugin
+    # missing some is still loaded
+    dict(name='a plugin schema missing help:',
+         config=config(a=put('providers', 'bare',
+                             {'plugin': 'plugins._selftest'})),
+         wants=['warning plugins._selftest schema.yaml: no help: for'
+                ' finish, shine.finish, and'],
+         forbids=['problem plugins._selftest', 'style,'],
+         needs='Helpless'),
+    dict(name='a plugin schema with all its help:',
+         config=config(a=put('providers', 'bare',
+                             {'plugin': 'plugins._selftest'})),
+         wants=[], forbids=['no help:'], needs='TwinTyped'),
 
     # a plugin schema that will not read is a finding, not the end of the
     # run - it says which file and which line, and the config is still read
@@ -897,9 +921,10 @@ FIXTURES = {
                   'schema.yaml': 'description: >\n  Invents a type.\n\n'
                                  'provides: [map]\n\ntypes:\n'
                                  '  finish:\n    is: scalar\n'
-                                 '    one-of: [matte, gloss]\n\n'
+                                 '    one-of: [matte, gloss]\n'
+                                 '    help: A finish.\n\n'
                                  'settings:\n'
-                                 '  style: {is: finish}\n'},
+                                 '  style: {is: finish, help: A style.}\n'},
     # a theme supplying pins of its own, for the rule that its set adds to
     # the shipped one rather than replacing it
     'PinSet': {'theme.yaml': 'name: Selftest\ndescription: its own pins\n'
@@ -929,8 +954,21 @@ FIXTURES = {
                 'schema.yaml': 'description: >\n  Serves less than it is'
                                ' offered.\n\nprovides: [frames]\n\n'
                                'settings:\n'
-                               '  zoom:     {is: number, range: [0, 7]}\n'
-                               '  interval: {is: number, range: [5, 60]}\n'},
+                               '  zoom:     {is: number, range: [0, 7],'
+                               ' help: A zoom.}\n'
+                               '  interval: {is: number, range: [5, 60],'
+                               ' help: An interval.}\n'},
+    # a provider whose schema says what nothing is
+    'Helpless': {'config.yaml': 'kind: basemap\nstyle: a\n',
+                 'schema.yaml': 'description: >\n  Says nothing.\n\n'
+                                'provides: [map]\n\ntypes:\n'
+                                '  finish:\n    is: scalar\n'
+                                '    one-of: [matte, gloss]\n\n'
+                                'settings:\n'
+                                '  style: {is: string, help: A style.}\n'
+                                '  shine:\n    is: block\n'
+                                '    help: How it shines.\n    of:\n'
+                                '      finish: {is: finish}\n'},
     # a theme that sets a radar's zoom, which reaches the widget as tier
     # three of the merge and so is only visible in what it will be handed
     'NarrowTheme': {'theme.yaml': 'name: Selftest\ndescription: sets a'

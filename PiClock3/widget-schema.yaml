@@ -8,22 +8,47 @@
 
 settings:
 
-  color:            {is: color}
-  background-color: {is: color}
-  font-family:      {is: string}
-  font-style:       {is: string}
-  font-weight:      {of: [string, number]}   # 100 to 900, normal, bold
+  color:
+    is: color
+    help: The text's color, for this widget alone.
+  background-color:
+    is: color
+    help: The color behind this widget.
+  font-family:
+    is: string
+    help: The face this widget's text is drawn in.
+  font-style:
+    is: string
+    help: Whether this widget's text is normal, italic or oblique.
+  font-weight:
+    of: [string, number]
+    help: How heavy this widget's text is, normal, bold, or a number from
+      100 to 900.
   # the five names Qt owns.  A theme's default: cascades them onto the
   # region and Qt carries them into whatever a widget draws there, so
   # saying one here is overruling the page for this widget alone.
 
-  effect: {of: [string, effect]}
+  effect:
+    of: [string, effect]
+    help: A glow or a drop shadow behind what this widget draws, as glow
+      <blur> <lighten> or as a block.  Set to none for no effect.
   # core applies it to the regions a layout named, before start() runs, and
   # the glow takes its color from the one above
 
-  icons-folder: {is: string}
-  units:        {is: string, names: unit-sets, inherits: clock}
-  precision:    {is: block, of: {}}
+  icons-folder:
+    is: string
+    help: The set of weather pictures drawn, for a widget that draws them.
+  units:
+    is: string
+    names: unit-sets
+    inherits: clock
+    help: The set of units numbers are shown in, such as metric.  Unset,
+      the clock's own.
+  precision:
+    is: block
+    of: {}
+    help: How many decimal places a quantity is shown with, by name, such
+      as temperature.
   # and these three only mean anything to a plugin that asks - icon(),
   # units() and precision() are helpers rather than something core calls.
   # precision is keyed by quantity: temperature, pressure, and the rest of

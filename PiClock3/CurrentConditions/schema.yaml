@@ -6,21 +6,46 @@ description: >
 
 settings:
 
-  conditions-provider: {is: provider, provides: [conditions], required: true}
+  conditions-provider:
+    is: provider
+    provides: [conditions]
+    required: true
+    help: The provider the current conditions come from.
 
   layout:
     is: block
-    # the parts this plugin draws.  The names are its own and fixed - it
-    # asks for each by name - so a layout naming anything else is ignored.
+    help: Where each part sits inside the region, as fractions of it.
+    # the names are this plugin's own and fixed - it asks for each by
+    # name - so a layout naming anything else is ignored.
     of:
-      wxicon:    {is: part}
-      wxdesc:    {is: part}
-      temper:    {is: part}
-      pressure:  {is: part}
-      humidity:  {is: part}
-      wind:      {is: part}
-      feelslike: {is: part}
-      wdate:     {is: part}
+      wxicon:
+        is: part
+        help: The picture of the sky.
+      wxdesc:
+        is: part
+        help: The sky in words.
+      temper:
+        is: part
+        help: The temperature.
+      pressure:
+        is: part
+        help: The air pressure.
+      humidity:
+        is: part
+        help: The relative humidity.
+      wind:
+        is: part
+        help: The wind's direction and speed, and any gusts.
+      feelslike:
+        is: part
+        help: What the temperature feels like, with wind chill or heat.
+      wdate:
+        is: part
+        help: When the observation was made, and the source's name.
 
-  observed-format: {is: strftime}
-  icons-folder:    {is: string}
+  observed-format:
+    is: strftime
+    help: How the time of the observation is written.
+  icons-folder:
+    is: string
+    help: The set of weather pictures drawn.

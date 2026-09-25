@@ -368,11 +368,12 @@ class PiClock3(QWidget):
                 room = pw - pw * r['right']
             if want <= room:
                 width = want
+        # height over width, whichever side it is measured from
         if 'aspect' in r:
             if 'width' in r:
                 height = width * r['aspect']
             else:
-                width = height * r['aspect']
+                width = height / r['aspect']
         left = top = 0
         if 'horizontal-center' in r:
             left = pw / 2.0 + pw * r['horizontal-center'] - width / 2.0

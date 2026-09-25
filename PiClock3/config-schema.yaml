@@ -10,133 +10,243 @@ types:
 
   page:
     is: block
+    help: One page of the clock, and the layout and theme it wears.
     of:
-      order:  {is: number, required: true}
-      layout: {is: string, names: layouts, required: true}
-      theme:  {is: string, names: themes, required: true}
-      dwell:  {is: number, unit: seconds, range: [0, 3600]}
-    # order is what the pages step through, not what the file lists.  A
-    # dwell of 0 waits to be turned, and the hour cap catches a MapLoop's
-    # milliseconds written here by habit
+      order:
+        is: number
+        required: true
+        help: Where this page comes as the pages turn, lowest first.
+      layout:
+        is: string
+        names: layouts
+        required: true
+        help: The layout that says where this page's regions are.
+      theme:
+        is: string
+        names: themes
+        required: true
+        help: The theme that says what this page looks like.
+      dwell:
+        is: number
+        unit: seconds
+        range: [0, 3600]
+        help: How long this page stays before the next one turns in by
+          itself.  0 waits to be turned, and unset is page-dwell.
+    # order is what the pages step through, not what the file lists.  The
+    # hour cap catches a MapLoop's milliseconds written here by habit
 
   provider-entry:
     is: block
+    help: A plugin that fetches data and draws nothing, with its settings.
     of:
-      plugin: {is: string, required: true}
+      plugin:
+        is: string
+        required: true
+        help: Which plugin, such as PiClock3.OpenMeteo.
     # and whatever that plugin's schema.yaml declares, over its defaults
 
   widget-entry:
     is: block
+    help: A plugin that draws in a region, with its settings.
     of:
-      plugin: {is: string, required: true}
-      region: {of: [region-name, region-names], required: true}
+      plugin:
+        is: string
+        required: true
+        help: Which plugin, such as PiClock3.AnalogClock.
+      region:
+        of: [region-name, region-names]
+        required: true
+        help: The region it draws in, or a list of them.
     # and whatever that plugin's schema.yaml declares, plus everything in
-    # widget-schema.yaml.  region names one of the layout's, or several
+    # widget-schema.yaml
 
   region-name:
     is: scalar
     of: [string]
     names: regions
-    # a region some page's layout declares, including a repeat's cells -
-    # maps.1 and maps.2 exist, the bare maps gathers both
+    help: A region some page's layout declares.  A divided region's cells
+      are maps.1, maps.2 and on, and the bare name reaches them all.
 
   region-names:
     is: list
     of: region-name
+    help: Several regions, drawn in one after another.
 
   levels:
     is: scalar
     one-of: [debug, info, warning]
+    help: How much the log says, from debug for everything to warning for
+      trouble only.
 
   folder-list:
     is: list
     of: string
+    help: Folders, looked in first to last.
 
   named-paths-block:
     is: block
+    help: Folders of your own to look in, ahead of the PiClock3 folder's.
     of:
-      base:      {of: [string, folder-list]}
-      layouts:   {of: [string, folder-list]}
-      themes:    {of: [string, folder-list]}
-      plugins:   {of: [string, folder-list]}
-      languages: {of: [string, folder-list]}
-      units:     {of: [string, folder-list]}
-      icons:     {of: [string, folder-list]}
-    # base: holds layouts/, themes/, plugins/ and the rest, so it is one
-    # folder shaped like the PiClock3 folder itself.  The others name a
-    # folder for that one kind, and are looked in before base:
+      base:
+        of: [string, folder-list]
+        help: A folder shaped like the PiClock3 folder, holding layouts,
+          themes, plugins and the rest.
+      layouts:
+        of: [string, folder-list]
+        help: A folder of layouts.
+      themes:
+        of: [string, folder-list]
+        help: A folder of themes.
+      plugins:
+        of: [string, folder-list]
+        help: A folder of plugins.  One found there is named by itself,
+          such as Aurora rather than plugins.Aurora.
+      languages:
+        of: [string, folder-list]
+        help: A folder of language files.
+      units:
+        of: [string, folder-list]
+        help: A folder of units files.
+      icons:
+        of: [string, folder-list]
+        help: A folder of icon sets.
+    # the ones for one kind are looked in before base:
 
 settings:
 
-  pages:     {is: table, of: page, required: true}
-  providers: {is: table, of: provider-entry}
-  widgets:   {is: table, of: widget-entry, required: true}
-  apikeys:   {is: table, of: string}
-  # apikeys: !include ApiKeys.yaml is the usual shape, so a key never sits
-  # in the file you would show somebody
+  pages:
+    is: table
+    of: page
+    required: true
+    help: The pages the clock has, by name.
+  providers:
+    is: table
+    of: provider-entry
+    help: Plugins that fetch data and draw nothing, by name.
+  widgets:
+    is: table
+    of: widget-entry
+    required: true
+    help: Plugins that draw, each in a region, by name.
+  apikeys:
+    is: table
+    of: string
+    help: Your keys for the services that need one, usually
+      !include ApiKeys.yaml.
+  # so a key never sits in the file you would show somebody
 
-  page-dwell: {is: number, unit: seconds, range: [0, 3600]}
-  # the dwell of a page that gives none.  Unset, pages wait to be turned
+  page-dwell:
+    is: number
+    unit: seconds
+    range: [0, 3600]
+    help: How long a page stays before the next one turns in by itself,
+      for a page with no dwell of its own.  Unset or 0, pages wait to be
+      turned.
 
-  location: {is: location, required: true}
-  # where the clock is pointed, and what a plugin's own location: defaults
-  # from
-  language: {is: string, names: languages}
-  locale:   {is: string}
-  # a code the language file answers to, or system for the machine's own,
-  # which is also what saying nothing means.  locale is what strftime is
-  # asked to use for day and month names; empty takes the machine's.
+  location:
+    is: location
+    required: true
+    help: Where the clock is.  A plugin's own location defaults to this.
+  language:
+    is: string
+    names: languages
+    help: The language the clock speaks, such as fr.  Unset or system, the
+      machine's own.
+  locale:
+    is: string
+    help: The locale day and month names are taken from, over the one the
+      language asks for.  Empty, the machine's.
 
-  units: {is: string, names: unit-sets}
-  # a set in units/sets.yaml, or one a plugin or you added
+  units:
+    is: string
+    names: unit-sets
+    help: The set of units numbers are shown in, such as metric.  Unset,
+      the language's own.
 
-  logging-level: {is: levels}
-  # info when nothing says, so a clock that is behaving oddly rather than
-  # raising still has a log to attach to a bug report
+  logging-level:
+    is: levels
+    help: How much the log says.  Unset, info.
+  # info, so a clock that is behaving oddly rather than raising still has
+  # a log to attach to a bug report
 
-  logging-to: {is: string}
-  # where the log goes, folder and name at once: PyQtPiClock3.log beside
-  # the program when nothing says.  A folder that is not there is made,
-  # and none is no log file at all, with stderr still getting every line
+  logging-to:
+    is: string
+    help: Where the log is written, folder and file name.  none writes no
+      file, and unset is PyQtPiClock3.log in the PiClock3 folder.
+  # a folder that is not there is made, and none still sends every line to
+  # stderr
 
-  logging-rotate:   {is: scalar, one-of: [per-run, daily]}
-  logging-max-size: {is: number, unit: megabytes, range: [0, 1000]}
-  logging-keep:     {is: number, range: [0, 100]}
-  # per-run rolls at every start and at logging-max-size; daily rolls at
-  # midnight and not on a restart, so a day's runs share a file.  0 is no
-  # size limit, and max-size means nothing under daily.
-  geometry:      {is: string, pattern: geometry}
-  # WIDTHxHEIGHT, or WIDTHxHEIGHT+X+Y: a window rather than full screen,
+  logging-rotate:
+    is: scalar
+    one-of: [per-run, daily]
+    help: When the log is started afresh, at every start of the clock or
+      at midnight.
+  logging-max-size:
+    is: number
+    unit: megabytes
+    range: [0, 1000]
+    help: How big the log grows before it is started afresh, under
+      per-run.  0 is no limit.
+  logging-keep:
+    is: number
+    range: [0, 100]
+    help: How many old logs are kept.
+  # daily does not roll on a restart, so a day's runs share a file
+
+  geometry:
+    is: string
+    pattern: geometry
+    help: A window of this size in place of the full screen, as 800x480,
+      or 800x480+0+0 to place it too.
   # for looking at a clock built for a screen you do not have here
 
-  start-at: {is: string}
-  # a date and time the clock pretends it is, for seeing a page as it will
-  # look later.  Only the clock moves; a radar still asks for now.
+  start-at:
+    is: string
+    help: A date and time the clock starts at and runs on from, such as
+      2026-12-21 13:45.  A radar still shows the current weather.
 
-  kind-settings:   {is: table, of: block}
-  plugin-settings: {is: table, of: block}
-  # the same two blocks a theme has, keyed by kind and by plugin name, so a
-  # config has the last word over one
+  kind-settings:
+    is: table
+    of: block
+    help: Settings for every plugin of a kind, such as radar, over what a
+      theme says.
+  plugin-settings:
+    is: table
+    of: block
+    help: Settings for one plugin by name, such as PiClock3.MapLoop, over
+      what a theme says.
 
-  layout: {is: block}
-  theme:  {is: block}
-  # laid over whichever layout or theme a page names, so either can be
-  # tried without editing the file it belongs to.  What is written here is
-  # read against that layout's or theme's schema where it lands, so it is
-  # not restated here
+  layout:
+    is: block
+    help: Laid over the layout every page names, to try a change without
+      editing the layout's file.
+  theme:
+    is: block
+    help: Laid over the theme every page names, to try a change without
+      editing the theme's file.
+  # what is written here is read against that layout's or theme's schema
+  # where it lands, so it is not restated here
 
-  styles:    {is: table, of: block}
-  unit-sets: {is: table, of: block}
-  # raw Qt properties by name, and unit sets of your own.  A theme's
-  # styles: of the same name wins over the config's.
+  styles:
+    is: table
+    of: block
+    help: Qt properties by name, for a layout region's style to name.  A
+      theme's style of the same name wins.
+  unit-sets:
+    is: table
+    of: block
+    help: Sets of units of your own, by name.
 
-  named-paths: {is: named-paths-block}
-  # folders of your own to look in for layouts, themes, plugins,
-  # languages, units and icons, before the PiClock3 folder's own.  All
-  # of it is optional, and a folder that is not there is a warning
+  named-paths:
+    is: named-paths-block
+    help: Folders of your own to look in for layouts, themes, plugins,
+      languages, units and icons.
+  # all of it is optional, and a folder that is not there is a warning
   # rather than a stop
 
-  folders: {is: table, of: string}
-  # named paths a setting can expand.  Only a marker's image: ever read
-  # one - see WRITING-A-CONFIG.md, which says not to write it in anything
-  # new
+  folders:
+    is: table
+    of: string
+    help: Deprecated, and still read.  A marker's image is looked for in
+      folders.marker first.  Use a marker set, or a path in the image.
+  # only a marker's image: ever read one - see WRITING-A-CONFIG.md

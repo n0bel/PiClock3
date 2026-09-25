@@ -172,10 +172,16 @@ editor can offer and no check can validate, so `self.config.get('format')`
 against a `config.yaml` that never mentions `format` is a setting that does
 not exist as far as anything outside your code can tell.
 
-Comment the ones whose *value* means something a reader cannot infer -
-`font-family: ''  # empty takes the page's`.  Not what the setting is for;
-its name does that, and how to choose a value belongs in a document rather
-than beside a default.
+What a setting is, and what a value like empty means, goes in the
+`help:` beside it in `schema.yaml` - see
+[WRITING-A-SCHEMA.md](WRITING-A-SCHEMA.md#help-says-what-it-is).  A comment
+here says only why the default is that value, where somebody might ask:
+
+```yaml
+# stations report about hourly, so asking more often than this mostly
+# re-reads the same line
+refresh: 10
+```
 
 **A default can be a name rather than a value.**  Anything in braces is
 looked up when the setting is used, so a plugin declares where its answer
@@ -243,8 +249,9 @@ user's own keys.
 
 A `schema.yaml` is required.  Without one, `--check` says
 `plugins.Aurora has no schema.yaml, which is required` and counts it a
-problem rather than a warning.  Inside it, `description:` is the only part
-that is required in turn - see [WRITING-A-SCHEMA.md](WRITING-A-SCHEMA.md).
+problem rather than a warning.  Inside it, `description:` is required, and
+so is a `help:` on every setting - see
+[WRITING-A-SCHEMA.md](WRITING-A-SCHEMA.md).
 
 ### Publishing one
 
@@ -439,10 +446,17 @@ layout:
 settings:
   layout:
     is: block
+    help: Where each part sits inside one cell, as fractions of it.
     of:
-      icon: {is: part}
-      wx:   {is: part}
-      day:  {is: part}
+      icon:
+        is: part
+        help: The picture of the sky.
+      wx:
+        is: part
+        help: The sky in words, and the temperature.
+      day:
+        is: part
+        help: The day the cell is for.
 ```
 
 `part` is a core type: you do not declare it, and you may not redefine it.

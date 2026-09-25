@@ -6,6 +6,13 @@ provides: [conditions]
 
 settings:
 
-  METAR:   {is: string, required: true}
-  refresh: {is: number, unit: minutes}
-  # a station reports about hourly, so asking oftener re-reads one line
+  METAR:
+    is: string
+    required: true
+    help: The airfield's four-letter ICAO code, such as KMSP for
+      Minneapolis.
+
+  refresh:
+    is: number
+    unit: minutes
+    help: How often the station's latest report is fetched.

@@ -8,8 +8,20 @@ provides: [conditions, hourly, daily]
 
 settings:
 
-  apikey:        {is: apikey, required: true}
-  refresh:       {is: number, unit: minutes}
-  forecast-days: {is: number, range: [1, 6]}
-  # 120 hours reaches six local dates, part days at both ends
-  location:      {is: location}
+  apikey:
+    is: apikey
+    required: true
+    help: Your OpenWeather key, usually {apikeys.owmapi} to take it from
+      ApiKeys.yaml.
+  refresh:
+    is: number
+    unit: minutes
+    help: How often the conditions and forecast are fetched.
+  forecast-days:
+    is: number
+    range: [1, 6]
+    help: How many days to answer with, up to the 6 the free tier's 120
+      hours reach.
+  location:
+    is: location
+    help: Where the forecast is for.  Unset, the clock's location.

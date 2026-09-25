@@ -119,6 +119,30 @@ def suggest(known, value):
     return 'There are %d to choose from' % len(known)
 
 
+def unexplained(schema):
+    """the types, settings and fields a schema gives no help: for.
+
+    help: is what an editor shows beside a setting, so a field inside a
+    block needs one as much as the setting holding it does.
+    """
+    missing = []
+
+    def walk(where, spec):
+        if not isinstance(spec, dict):
+            return
+        if not spec.get('help'):
+            missing.append(where)
+        fields = spec.get('of')
+        if isinstance(fields, dict):
+            for name, field in fields.items():
+                walk('%s.%s' % (where, name), field)
+
+    for section in ('types', 'settings'):
+        for name, spec in mapping(schema.get(section)).items():
+            walk(name, spec)
+    return missing
+
+
 def readYaml(path):
     """a yaml file, or None where there is none.
 
@@ -148,6 +172,7 @@ class Check():
         self.found = []
         self.types = {}
         self.described = set()     # plugins read against their own schema
+        self.explained = set()     # plugins whose help: has been looked at
         self.folders = None        # every plugin installed, found once
         self.redefined = set()     # plugins redefining a core type
         self.units = None          # the units table, read once
@@ -533,6 +558,25 @@ class Check():
         self.problem(where, 'is a list and this setting does not take one')
 
     def checkValue(self, where, value, spec):
+        """one value against one setting's declaration, and what the
+        setting is, after anything wrong with the value.
+
+        Only a finding about this path gets it: a block's fields are
+        checked from here too, and say what they are themselves.
+        """
+        mark = len(self.found)
+        self.checkOne(where, value, spec)
+        text = self.resolve(spec).get('help')
+        if not text:
+            return
+        here = self.placed(where)
+        for n in range(mark, len(self.found)):
+            severity, place, message = self.found[n]
+            if severity == PROBLEM and place == here:
+                self.found[n] = (severity, place,
+                                 '%s.  %s' % (message, text.strip()))
+
+    def checkOne(self, where, value, spec):
         """one value against one setting's declaration"""
         if isTemplate(value):
             return
@@ -1145,6 +1189,16 @@ class Check():
             self.problem(where, '%s has no schema.yaml, which is required'
                          % module)
             return
+
+        # a warning rather than a problem, so a plugin missing a help:
+        # still starts
+        if module not in self.explained:
+            self.explained.add(module)
+            missing = unexplained(schema)
+            if missing:
+                self.warning('%s schema.yaml' % module,
+                             'no help: for %s, and every setting and type'
+                             ' needs one' % ', '.join(missing))
 
         # provides: is what a provider has and a widget has not, so it
         # answers both halves of "is this in the right section" without
