@@ -280,7 +280,22 @@ A language file is worth knowing about here even if you speak the one the
 clock ships: a plugin uses one to name what it draws, and a theme can use
 one to rename what the clock already draws.
 
-### Plugins by other people
+### Contributing
+
+[CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository
+rather than building on it.
+
+The issues marked
+[help wanted](https://github.com/n0bel/PiClock3/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+are the ones where somebody else's hardware or a spare evening would move
+things: a weather station on a network I do not own, an ambilight, buttons
+and a remote.  Several are a plugin of their own, which is the easiest
+place to start - [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md)
+covers it.
+
+I'll welcome any contributions.
+
+## Plugins by other people
 
 Plugins published by other people are theirs: they look after them, and
 this project does not.  Each one's README says how to install it and
@@ -296,20 +311,5 @@ layouts have topics of their own,
 | plugin | what it does |
 |---|---|
 | [piclock3-tides](https://github.com/ShawnPGHPublic/piclock3-tides) | a 24-hour tide curve for a US coast, with the day's highs and lows, from NOAA.  No key needed |
-
-### Contributing
-
-[CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository
-rather than building on it.
-
-The issues marked
-[help wanted](https://github.com/n0bel/PiClock3/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-are the ones where somebody else's hardware or a spare evening would move
-things: a weather station on a network I do not own, an ambilight, buttons
-and a remote.  Several are a plugin of their own, which is the easiest
-place to start - [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md)
-covers it.
-
-I'll welcome any contributions.
 
 
