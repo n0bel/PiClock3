@@ -131,7 +131,7 @@ class Metar(Weather):
             # a station reports temperature and dew point and leaves the rest
             # to the reader; the reader should not have to be a widget
             'humidity': self.humidity(temp, dew),
-            'feels-like': self.feelsLike(temp, dew, wind),
+            'feels-like': self.feelsLikeFromDewpoint(temp, dew, wind),
             'raw': line,
         }
         for fn in self.listeners:

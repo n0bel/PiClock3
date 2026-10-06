@@ -42,6 +42,7 @@ path.
 | `folderstest.py` | which folders each kind is looked for in, and in what order | yaml |
 | `pagetest.py` | that pages turn by themselves, each for its own dwell | PyQt5 |
 | `helptest.py` | that every shipped type, setting and field has a `help:`, written as sentences | yaml |
+| `feelstest.py` | that "feels like" matches the weather service's tables, from a dew point or a humidity, and that the dew point and humidity calculations undo each other | PyQt5 |
 
 `importtest.py` is the shallowest and the widest. The clock imports a plugin
 only when a config names one, so loading `PyQtPiClock3.py` reaches eleven of

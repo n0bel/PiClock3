@@ -444,9 +444,15 @@ Showers" even though 4678 has no such code.
     snow          thunderstorm   wind
 
 `self.variant()` swaps a `-day` name for its `-night` one - it comes with
-the `Weather` class, along with `self.humidity()` and `self.feelsLike()`.
-Which one applies is `Sun.daytime()`, from `PiClock3.Sun`, which answers
-from the sun rather than from the hour.
+the `Weather` class.  Which one applies is `Sun.daytime()`, from
+`PiClock3.Sun`, which answers from the sun rather than from the hour.
+
+The `Weather` class also brings `self.humidity()`, from a temperature and
+a dew point, `self.dewPoint()`, from a temperature and a humidity, and two
+ways to work out "feels like":
+`self.feelsLikeFromHumidity()` and `self.feelsLikeFromDewpoint()`.  Use
+whichever matches what your source reports.  `self.feelsLike()` is the dew
+point one under its first name.
 
 `raw` is the service's own record for that entry, in whatever shape the
 service uses.  It is deliberately not normalized — it exists so that anything

@@ -54,16 +54,38 @@ class Weather(Provider):
                         math.exp((17.625 * temp) / (243.04 + temp)))
 
     @staticmethod
-    def feelsLike(temp, dew, wind):
+    def dewPoint(temp, humidity):
+        """dew point, Celsius, from temperature and relative humidity"""
+        if temp is None or humidity is None or humidity <= 0:
+            return None
+        g = ((17.625 * temp) / (243.04 + temp)
+             + math.log(min(humidity, 100.0) / 100.0))
+        return (243.04 * g) / (17.625 - g)
+
+    @staticmethod
+    def feelsLikeFromDewpoint(temp, dew, wind):
+        """what the air feels like, from the dew point.  Returns Celsius.
+
+        For a source that reports the dew point and not the humidity, the
+        way a METAR does.
+        """
+        return Weather.feelsLikeFromHumidity(
+            temp, Weather.humidity(temp, dew), wind)
+
+    # kept so a plugin that calls feelsLike() goes on working
+    feelsLike = feelsLikeFromDewpoint
+
+    @staticmethod
+    def feelsLikeFromHumidity(temp, humidity, wind):
         """what the air feels like: heat index when hot, wind chill when cold.
 
         Both formulae are the US National Weather Service ones and are defined
         in Fahrenheit and mph, so the conversion in and out is theirs, not a
-        display choice.  Returns Celsius.
+        display choice.  Celsius, percent and km/h in, Celsius out.
         """
-        if temp is None or dew is None or wind is None:
+        if temp is None or humidity is None or wind is None:
             return None
-        h = Weather.humidity(temp, dew) / 100.0
+        h = humidity / 100.0
         t = temp * 1.8 + 32.0
         w = wind / 1.609344
 

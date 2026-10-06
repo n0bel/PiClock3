@@ -23,7 +23,6 @@ learns which service it came from.
 import collections
 import json
 import logging
-import math
 
 from PyQt5.QtCore import QTimer
 from PyQt5.QtNetwork import QNetworkReply
@@ -132,20 +131,6 @@ REFUSED = {
     QNetworkReply.ContentAccessDenied:
         'the key was refused, or the free plan does not have this',
 }
-
-
-def dewPoint(temp, humidity):
-    """dew point from temperature and relative humidity, Celsius.
-
-    The inverse of Weather.humidity(), and here rather than beside it
-    because this is the only source that reports one and not the other -
-    every other provider either sends a dew point or has none to send.
-    """
-    if temp is None or humidity is None or humidity <= 0:
-        return None
-    g = ((17.625 * temp) / (243.04 + temp)
-         + math.log(min(humidity, 100.0) / 100.0))
-    return (243.04 * g) / (17.625 - g)
 
 
 class OpenWeatherMap(Weather):
@@ -278,7 +263,7 @@ class OpenWeatherMap(Weather):
             'icon': self.variant(icon, self.daylight(index.get('dt'), sun)),
             'condition': notation,
             'temp': temp,
-            'dew': dewPoint(temp, humidity),
+            'dew': self.dewPoint(temp, humidity),
             'humidity': humidity,
             'feels-like': main.get('feels_like'),
             'pressure': main.get('pressure'),
