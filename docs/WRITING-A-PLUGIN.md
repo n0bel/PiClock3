@@ -301,6 +301,77 @@ Ship a `README` that says which service it talks to and whether that needs an
 account.  A key belongs in the user's `ApiKeys.yaml`, never in your
 `config.yaml` - see [Two rules](#two-rules-worth-reading-before-you-publish).
 
+**Say what else it needs installed, and how.**  If your plugin needs a
+package PiClock3 does not install, your README says how to install it,
+the way [INSTALL.md](INSTALL.md) installs PiClock3's own:
+
+- **apt for anything compiled** - a package with C in it, the way PyQt5
+  and PyYAML have:
+
+  ```
+  sudo apt install python3-ephem
+  ```
+
+  apt's builds are made for every Pi, the Zero included, so nothing
+  compiles on the clock.  pip would build it from source, which is slow
+  on a Pi 4 and on a Zero can fail outright.
+  [packages.debian.org](https://packages.debian.org/) lists a package by
+  release and architecture - check Bullseye, Bookworm and Trixie.
+- **pip for pure Python**, with the same two lines INSTALL.md uses and no
+  `sudo`:
+
+  ```
+  export PIP_BREAK_SYSTEM_PACKAGES=1
+  python3 -m pip install paho-mqtt
+  ```
+
+  The first line is for Bookworm and Trixie, whose pip will not install
+  anything without it.  Run without `sudo`, pip puts the package in the
+  user's home folder and leaves the system's own packages alone -
+  [INSTALL.md](INSTALL.md#install) says more.
+
+  pip installs a pure Python package anywhere in seconds, and gets the
+  same version on every release - which is why PiClock3 takes `astral`
+  and `metar` from pip.
+  apt gives each release whatever version that release shipped:
+  `python3-paho-mqtt` is 1.5.1 on Bullseye and 2.1.0 on Trixie, and 2.0
+  changed how a client is made.  PyPI marks a pure Python package with a
+  wheel ending in `py3-none-any.whl`.
+- **Never a venv.**  The clock runs on the system's Python, and a package
+  in a venv is one it cannot import.
+
+An install section to copy into your README, keeping the lines it needs:
+
+````markdown
+## Install
+
+On the Pi, from the PiClock3 folder:
+
+```
+cd ~/PiClock3
+sudo apt install python3-ephem
+export PIP_BREAK_SYSTEM_PACKAGES=1
+python3 -m pip install paho-mqtt
+git clone https://github.com/you/piclock3-aurora plugins/Aurora
+```
+
+The apt line installs what it needs that is compiled, and the two lines
+after it the pure Python.  Run them as the user the clock runs as.
+
+Try it with the example it brings:
+
+```
+python3 PyQtPiClock3.py plugins/Aurora/examples/aurora.yaml
+```
+
+and name it in a config as `plugin: plugins.Aurora`.
+````
+
+The folder in the clone line and the name after `plugins.` are the same
+word, spelled the same way: Linux treats `Aurora` and `aurora` as two
+different folders, so a README that clones into one and names the other
+gives a clock that cannot find the plugin.
+
 ## Trying it, without writing a config first
 
 A widget has nowhere to draw except inside a whole config - a page, a
