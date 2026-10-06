@@ -280,7 +280,7 @@ A language file is worth knowing about here even if you speak the one the
 clock ships: a plugin uses one to name what it draws, and a theme can use
 one to rename what the clock already draws.
 
-### Contributing
+## Contributing
 
 [CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository
 rather than building on it.
