@@ -280,6 +280,23 @@ A language file is worth knowing about here even if you speak the one the
 clock ships: a plugin uses one to name what it draws, and a theme can use
 one to rename what the clock already draws.
 
+### Plugins by other people
+
+Plugins published by other people are theirs: they look after them, and
+this project does not.  Each one's README says how to install it and
+whether it needs anything else.
+
+To find them, search GitHub for the topic
+[piclock3-plugin](https://github.com/topics/piclock3-plugin).  Authors
+add it to their repositories so they can be found there.  Themes and
+layouts have topics of their own,
+[piclock3-theme](https://github.com/topics/piclock3-theme) and
+[piclock3-layout](https://github.com/topics/piclock3-layout).
+
+| plugin | what it does |
+|---|---|
+| [piclock3-tides](https://github.com/ShawnPGHPublic/piclock3-tides) | a 24-hour tide curve for a US coast, with the day's highs and lows, from NOAA.  No key needed |
+
 ### Contributing
 
 [CONTRIBUTING.md](CONTRIBUTING.md) is about contributing to this repository

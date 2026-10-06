@@ -279,6 +279,10 @@ cd PiClock3
 git clone https://github.com/someone/piclock3-aurora plugins/Aurora
 ```
 
+Then give it the topic `piclock3-plugin`, from the gear beside About on its
+GitHub page.  [That topic](https://github.com/topics/piclock3-plugin) is
+where people look for plugins.
+
 **Everything it needs travels with it** - the theme it wants, the layout
 that declares its region, its examples, its words, its units and its art.
 The search path looks inside a plugin's own folder for all of them, so

@@ -104,6 +104,11 @@ git commit -m "a tall layout"   # the first version, saved
 Push it to GitHub under a name that says what it is -
 `piclock3-layout-tall` rather than `PiClock3` - and somebody else clones it
 into a folder they name, as above.
+
+Then give it the topic `piclock3-layout`, from the gear beside About on its
+GitHub page.  [That topic](https://github.com/topics/piclock3-layout) is
+where people look for layouts.
+
 Nothing of yours belongs in `PiClock3/layouts/`, which is this project's
 and is what `git pull` replaces.
 
