@@ -37,6 +37,7 @@ defaults, or do nothing until you want them.
 | `units:` | which set of units - `metric` for one, and the rest in [WRITING-UNITS.md](WRITING-UNITS.md).  Unset, the language's own: `language: fr` is metric |
 | `providers:` | plugins that fetch data and draw nothing |
 | `widgets:` | plugins that draw, each in a region its page's layout named |
+| `services:` | plugins that run on their own, such as buttons on the gpio pins |
 | `kind-settings:` / `plugin-settings:` | settings for every widget of a kind, or of a plugin |
 | `named-paths:` | folders of your own to look in for layouts, themes, plugins, languages, units and icons |
 | `folders:` | named paths a setting can expand |
@@ -180,6 +181,20 @@ series of them.  `--check` catches that before the clock does.
 A repeat gives a layout several regions from one entry, named `maps.1`,
 `maps.2` and so on.  A widget takes one cell, or the whole set - `Forecast`
 fills one cell per hour or day.
+
+### `services:`
+
+A **service** draws nothing and nobody asks it anything; it runs on its
+own.  Buttons on the gpio pins are one: what they do is turn the page.  A
+service takes no region, and it is loaded after every widget.
+
+```yaml
+services:
+  buttons: {plugin: plugins.Controls}
+```
+
+None ships with PiClock3.  They come from other people, and `--check` says
+when a widget or a provider has been written here, or a service elsewhere.
 
 ## Settings, and which one wins
 

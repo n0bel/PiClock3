@@ -616,6 +616,31 @@ CASES = [
                              {'plugin': 'PiClock3.Date'})),
          wants=['problem providers.oddity', 'A widget belongs in widgets:'],
          forbids=[]),
+    dict(name='a service under services:',
+         config=config(a=put('services', 'buttons',
+                             {'plugin': 'plugins._selftest'})),
+         wants=[], forbids=['services.buttons', 'must be set'],
+         needs='Service'),
+    dict(name='a service written under widgets:',
+         config=config(a=put('widgets', 'buttons',
+                             {'plugin': 'plugins._selftest'})),
+         wants=['problem widgets.buttons', 'Move it to services:'],
+         forbids=[], needs='Service'),
+    dict(name='a service written under providers:',
+         config=config(a=put('providers', 'buttons',
+                             {'plugin': 'plugins._selftest'})),
+         wants=['problem providers.buttons', 'Move it to services:'],
+         forbids=['A widget belongs'], needs='Service'),
+    dict(name='a widget written under services:',
+         config=config(a=put('services', 'oddity',
+                             {'plugin': 'PiClock3.Date'})),
+         wants=['problem services.oddity', 'Move it to widgets:'],
+         forbids=['region']),
+    dict(name='a service with a region it has no use for',
+         config=config(a=put('services', 'buttons',
+                             {'plugin': 'plugins._selftest',
+                              'region': 'date'})),
+         wants=['services.buttons.region'], forbids=[], needs='Service'),
     # a kind is what a plugin is interchangeable with, so two plugins
     # wearing one kind and disagreeing about their role is a contradiction
     # nothing can act on
@@ -958,6 +983,11 @@ FIXTURES = {
                                ' help: A zoom.}\n'
                                '  interval: {is: number, range: [5, 60],'
                                ' help: An interval.}\n'},
+    # buttons on the gpio pins, which draw nothing and answer nobody
+    'Service': {'config.yaml': 'kind: controls\npins: {}\n',
+                'schema.yaml': 'description: >\n  Runs on its own.\n\n'
+                               'service: true\n\nsettings:\n'
+                               '  pins: {is: block, help: Some pins.}\n'},
     # a provider whose schema says what nothing is
     'Helpless': {'config.yaml': 'kind: basemap\nstyle: a\n',
                  'schema.yaml': 'description: >\n  Says nothing.\n\n'

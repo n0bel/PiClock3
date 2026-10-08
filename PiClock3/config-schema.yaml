@@ -2,9 +2,9 @@
 # plugin accepts.  A plugin's own settings are in its schema.yaml; this says
 # where they go and what has to be around them.
 #
-# Types are the ones in core-types.yaml.  The three tables are tables
-# because you invent the keys: a page, a provider and a widget are all named
-# by you and referred to by that name elsewhere.
+# Types are the ones in core-types.yaml.  The four tables are tables
+# because you invent the keys: a page, a provider, a widget and a service
+# are all named by you and referred to by that name elsewhere.
 
 types:
 
@@ -59,6 +59,17 @@ types:
         help: The region it draws in, or a list of them.
     # and whatever that plugin's schema.yaml declares, plus everything in
     # widget-schema.yaml
+
+  service-entry:
+    is: block
+    help: A plugin that runs on its own, drawing nothing and answering
+      nobody, with its settings.
+    of:
+      plugin:
+        is: string
+        required: true
+        help: Which plugin, such as plugins.Controls.
+    # and whatever that plugin's schema.yaml declares, over its defaults
 
   region-name:
     is: scalar
@@ -128,6 +139,11 @@ settings:
     of: widget-entry
     required: true
     help: Plugins that draw, each in a region, by name.
+  services:
+    is: table
+    of: service-entry
+    help: Plugins that run on their own, such as buttons on the gpio pins,
+      by name.
   apikeys:
     is: table
     of: string

@@ -143,6 +143,19 @@ def unexplained(schema):
     return missing
 
 
+def roleOf(schema):
+    """widget, provider or service, from the schema alone.
+
+    provides: marks a provider and service: true a service, so a config
+    can be read without importing the class the way the loader does.
+    """
+    if schema.get('provides'):
+        return 'provider'
+    if schema.get('service'):
+        return 'service'
+    return 'widget'
+
+
 def readYaml(path):
     """a yaml file, or None where there is none.
 
@@ -897,7 +910,7 @@ class Check():
             self.problem('%s (%s)' % (where, error.where), error.message)
 
         settings = self.configSchema.get('settings') or {}
-        tables = ('pages', 'providers', 'widgets')
+        tables = ('pages', 'providers', 'widgets', 'services')
 
         for name, spec in settings.items():
             if spec.get('required') and self.blank(self.config, name):
@@ -917,10 +930,9 @@ class Check():
             if self.checkShape('pages.' + name, entry, self.resolve(page)):
                 self.checkEntry('pages.' + name, entry, page.get('of'), {})
 
-        for kind in ('providers', 'widgets'):
+        for kind in ('providers', 'widgets', 'services'):
             for name, entry in mapping(self.config.get(kind)).items():
-                self.checkPlugin('%s.%s' % (kind, name), entry,
-                                 kind == 'widgets')
+                self.checkPlugin('%s.%s' % (kind, name), entry, kind)
 
         for where, region, key, name in self.resolved.unnamed:
             self.warning('%s.%s.%s' % (where, region, key),
@@ -1033,7 +1045,7 @@ class Check():
             schema = self.reading(os.path.join(folder, 'schema.yaml')) or {}
             settings.update(schema.get('settings') or {})
             types.update(schema.get('types') or {})
-            if not schema.get('provides'):
+            if roleOf(schema) == 'widget':
                 settings.update(self.widgetSchema.get('settings') or {})
         return settings, types
 
@@ -1107,7 +1119,7 @@ class Check():
                     continue
                 schema = self.reading(
                     os.path.join(folder, 'schema.yaml')) or {}
-                role = 'provider' if schema.get('provides') else 'widget'
+                role = roleOf(schema)
                 worn.setdefault(kind, {}).setdefault(role, set()).add(module)
 
         for kind in sorted(mapping(self.config.get('kind-settings'))):
@@ -1169,8 +1181,10 @@ class Check():
             self.problem(where, 'is still %r - put your own key there'
                          % value)
 
-    def checkPlugin(self, where, entry, isWidget):
-        """one provider or widget entry, against its plugin's schema"""
+    def checkPlugin(self, where, entry, section):
+        """one provider, widget or service entry, against its plugin's
+        schema"""
+        isWidget = section == 'widgets'
         if not isinstance(entry, dict) or not entry.get('plugin'):
             self.problem(where, 'does not say which plugin it is.'
                                 '  Add plugin: <module>')
@@ -1200,29 +1214,30 @@ class Check():
                              'no help: for %s, and every setting and type'
                              ' needs one' % ', '.join(missing))
 
-        # provides: is what a provider has and a widget has not, so it
-        # answers both halves of "is this in the right section" without
-        # importing the class the way the loader does.  Asked here rather
-        # than of whoever names it, so it is said once and reaches a
-        # provider nothing points at yet.
-        if isWidget and schema.get('provides'):
+        # Asked here rather than of whoever names it, so it is said once
+        # and reaches a provider nothing points at yet.
+        role = roleOf(schema)
+        if role == 'provider' and section != 'providers':
             self.problem(where, '%s answers %s, so it is a provider.  Move'
                                 ' it to providers:'
                          % (module, ', '.join(sorted(schema['provides']))))
-        elif not isWidget and not schema.get('provides'):
+        elif role == 'service' and section != 'services':
+            self.problem(where, '%s says service: true, so it runs on its'
+                                ' own.  Move it to services:' % module)
+        elif role == 'widget' and section == 'providers':
             self.problem(where, '%s has no provides:, so it answers nothing.'
                                 '  A provider names what it can be asked:'
                                 ' map, frames, conditions, hourly, daily.'
                                 '  A widget belongs in widgets:' % module)
+        elif role == 'widget' and section == 'services':
+            self.problem(where, '%s has no service: true, so it is a widget.'
+                                '  Move it to widgets:' % module)
 
         settings = dict(schema.get('settings') or {})
         if isWidget:
             settings.update(self.widgetSchema.get('settings') or {})
-            settings.update((self.types.get('widget-entry') or {}).get('of')
-                            or {})
-        else:
-            settings.update((self.types.get('provider-entry') or {}).get('of')
-                            or {})
+        settings.update((self.types.get(section[:-1] + '-entry') or {}).get(
+            'of') or {})
 
         # a widget may also carry the settings of a provider it names -
         # MapLoop hands its own config to its providers, and a radar sets

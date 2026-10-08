@@ -17,6 +17,7 @@ from .DottedDict import DottedDict, Missing
 from .FitLabel import FitLabel
 from .Languages import Languages
 from .Plugin import Plugin
+from .Service import Service
 from .Widget import Widget
 from .Slideshow import Slideshow
 from .Units import Units
@@ -288,14 +289,13 @@ class PiClock3(QWidget):
 
         # providers first: a widget names the providers it draws with, and
         # they have to exist by the time it does
-        for section in ('providers', 'widgets'):
+        for section in ('providers', 'widgets', 'services'):
             if section not in self.config:
                 continue
             for name in self.config[section]:
                 if section == 'providers' and name not in used:
                     continue
-                self.loadModule(name, self.config[section][name],
-                                section == 'widgets')
+                self.loadModule(name, self.config[section][name], section)
 
     def _buildBackground(self, pageFrame, pageName, spec):
         """one picture behind a page, or a color, or a folder of them"""
@@ -814,7 +814,7 @@ class PiClock3(QWidget):
             region.baseStyle = region.styleSheet()
         logger.debug('region style for %s: %s', entry.get('region'), rule)
 
-    def loadModule(self, name, entry, isWidget):
+    def loadModule(self, name, entry, section):
         if 'plugin' not in entry:
             raise SystemExit("%s does not say which plugin it is.  Add"
                              " plugin: <module>\n" % name)
@@ -828,14 +828,15 @@ class PiClock3(QWidget):
         # the section an entry is written in decides its role, so a config
         # can be read without importing anything.  The class is checked
         # against that rather than asked.
-        if issubclass(cls, Widget) != isWidget:
+        role = ('widget' if issubclass(cls, Widget) else
+                'service' if issubclass(cls, Service) else 'provider')
+        if role + 's' != section:
             raise SystemExit(
                 "\n%s is under %s: and %s is a %s.\n\n"
-                "A widget draws in a region; a provider answers one.  Move\n"
-                "the entry to the other section.\n"
-                % (name, 'widgets' if isWidget else 'providers',
-                   entry['plugin'],
-                   'widget' if issubclass(cls, Widget) else 'provider'))
+                "A widget draws in a region, a provider answers one, and a\n"
+                "service runs on its own.  Move the entry to %ss:.\n"
+                % (name, section, entry['plugin'], role, role))
+        isWidget = section == 'widgets'
         # the defaults live beside the plugin's code, so they are found
         # from the imported module rather than from a path anybody has to
         # write down - which is what makes a third-party plugin work the

@@ -78,6 +78,7 @@ split belongs to #24, which is where all of this is enforced.
 |---|---|
 | `description:` | what the plugin is, in a sentence or three.  Required, and the reason a schema is |
 | `provides:` | which of its role's questions it actually answers.  Required of a provider, and meaningless on a widget |
+| `service: true` | it runs on its own, and a config names it under `services:`.  Required of a service |
 | `types:` | shapes this schema invents, if it needs any |
 | `settings:` | the settings themselves |
 
@@ -303,7 +304,8 @@ Do not declare these.  A widget takes them whether or not its author ever
 heard of them, and they merge under whatever its own `config.yaml` says - so
 naming one in your schema is giving yourself a different default, not
 claiming the setting.  A provider takes none of them, having no region for a
-theme to reach.  [WRITING-A-PLUGIN.md](WRITING-A-PLUGIN.md) says what each
+theme to reach, and neither does a service.
+[WRITING-A-PLUGIN.md](WRITING-A-PLUGIN.md) says what each
 of them does and which four Qt carries into whatever you draw.
 
 ## Inventing a type

@@ -44,12 +44,14 @@ rm -rf plugins/Aurora/.git     # its history is the template's, not yours
 
 Downloading the template as a zip does the same thing without git.
 
-## Widgets and providers
+## Widgets, providers and services
 
-A plugin is one of two kinds.  A **widget** draws in a region a layout
+A plugin is one of three kinds.  A **widget** draws in a region a layout
 named.  A **provider** supplies data to widgets and occupies no region of
 its own - which is why no theme reaches a provider, and why anything a
-theme should be able to say belongs on a widget.
+theme should be able to say belongs on a widget.  A **service** runs on its
+own: it draws nothing and nobody asks it anything.  Buttons on the gpio
+pins are one.
 
 Each kind is a class to subclass, and a provider picks the one that says
 what it supplies:
@@ -60,6 +62,7 @@ from PiClock3.BaseMap import BaseMap    # the map under the frames
 from PiClock3.Frames import Frames      # timestamped tiles, animated
 from PiClock3.Weather import Weather    # what the sky is doing, or will be
 from PiClock3.TextSource import TextSource   # words that change on their own
+from PiClock3.Service import Service    # runs on its own
 ```
 
 What each one asks of you is written beside it in that file.  Leave out
@@ -77,6 +80,20 @@ provides: [frames]        # BaseMap: [map].  Weather: any of
 Required, not optional: a provider exists to be asked something, and this
 is what lets a config be told it has named a base map where a frame source
 belongs.
+
+**A service says so** in its `schema.yaml`, with `service: true`, and a
+config names it under `services:` with no region:
+
+```yaml
+services:
+  buttons:
+    plugin: plugins.Controls
+```
+
+A provider nothing names is never loaded, and a widget needs a region, so a
+service is neither.  Services start after every widget, so what one reaches
+for is already there - `self.piclock.nextPage(1)` turns the page the way
+the space bar does.
 
 ## Where a plugin goes
 
@@ -220,7 +237,7 @@ says, and read [CONTRIBUTING.md](../CONTRIBUTING.md).
 ### What a plugin repository holds
 
     __init__.py          required, from .Aurora import *  # noqa: F401,F403
-    Aurora.py            required, your Widget or Provider subclass
+    Aurora.py            required, your Widget, Provider or Service subclass
     config.yaml          required, its defaults and what a theme may set
     schema.yaml          required, the shape of those settings
     README.md            what it does, and any key it needs
@@ -391,9 +408,10 @@ python3 tools/plugintest.py Aurora --base /home/me/clockwork --check
 
 It reads your `schema.yaml` to find out what your plugin is: `provides:`
 makes it a provider, and it is given the shipped widget that draws that
-role.  A `{is: provider, provides: [...]}` setting is a provider it
-needs, and where several shipped ones would answer, it stops and lists
-them with the flag that picks one:
+role.  `service: true` makes it a service, run beside a clock so there is
+something on the screen.  A `{is: provider, provides: [...]}` setting is a
+provider it needs, and where several shipped ones would answer, it stops
+and lists them with the flag that picks one:
 
     conditions-provider wants a provider of conditions, and 4 here
     provide it.  Say which:

@@ -278,7 +278,8 @@ class ResolvedConfig():
             return set()
         used, entries = set(), mapping(self.config.get('widgets'))
         for name, entry in list(entries.items()) + list(
-                mapping(self.config.get('providers')).items()):
+                mapping(self.config.get('providers')).items()) + list(
+                mapping(self.config.get('services')).items()):
             entry = mapping(entry)
             module = entry.get('plugin')
             folder = pluginFolder(module) if isinstance(module, str) else None

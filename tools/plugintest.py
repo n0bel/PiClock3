@@ -19,6 +19,7 @@ in is the log, and a file would roll the one the real clock keeps.
 What it reads from your schema.yaml, so it does not have to be told:
 
   provides:                  this is a provider, not a widget
+  service: true              this is a service, run beside a clock
   {is: provider, provides:}  a setting that names one, and what it must
                              answer - the tester finds the providers on
                              disk that answer it.  One, and it is used;
@@ -243,7 +244,7 @@ def region(args):
 def build(args):
     """the whole config: a page, a region, the providers, the plugin"""
     schema = schemaOf(args.plugin)
-    entries, widgets = {}, {}
+    entries, widgets, services = {}, {}, {}
     asked = dict(p.split('=', 1) for p in args.provider)
     found = providers()
 
@@ -275,6 +276,16 @@ def build(args):
                 fill(entry, want, wantRoles)
         widgets['drawn-by'] = entry
         subject = ('provider', 'under-test', entries['under-test'])
+    elif schema.get('service'):
+        # a service draws nothing, so a clock in the region shows the
+        # page is running while it does whatever it does
+        entry = {'plugin': args.plugin}
+        for want, roles in wanted(schema).items():
+            fill(entry, want, roles)
+        services['under-test'] = entry
+        widgets['clock'] = {'plugin': 'PiClock3.AnalogClock',
+                            'region': 'test'}
+        subject = ('service', 'under-test', entry)
     else:
         entry = {'plugin': args.plugin, 'region': 'test'}
         for want, roles in wanted(schema).items():
@@ -288,7 +299,8 @@ def build(args):
             # a setting on one of the providers, named by the setting
             # that points at it: frame-provider.palette=4
             where, key = key.split('.', 1)
-            named = widgets[list(widgets)[0]].get(where)
+            holder = services.get('under-test') or widgets[list(widgets)[0]]
+            named = holder.get(where)
             if named is None:
                 raise SystemExit(
                     '\n%s names no provider, so %s reaches nothing.\n'
@@ -310,6 +322,7 @@ def build(args):
         'named-paths': {'base': [SCRATCH] + list(args.base)},
         'providers': entries,
         'widgets': widgets,
+        'services': services,
         'logging-level': 'info',
         # the terminal you started this in is the log: a short run wants
         # no file, and writing one would roll the log of the clock this
