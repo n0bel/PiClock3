@@ -288,18 +288,20 @@ rather than building on it.
 The issues marked
 [help wanted](https://github.com/n0bel/PiClock3/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 are the ones where somebody else's hardware or a spare evening would move
-things: a weather station on a network I do not own, an ambilight, buttons
-and a remote.  Several are a plugin of their own, which is the easiest
-place to start - [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md)
-covers it.
+things: your own weather station, on Ambient Weather, AcuRite, Home
+Assistant, Ecowitt or another network I do not use; air quality; weather
+alerts; the NOAA weather radio stream; and a check of the French
+translation.  Most are a plugin of their own, which is the easiest place
+to start - [docs/WRITING-A-PLUGIN.md](docs/WRITING-A-PLUGIN.md) covers it,
+and the plugins listed below show what one looks like.
 
 I'll welcome any contributions.
 
-## Plugins by other people
+## Plugins in their own repositories
 
-Plugins published by other people are theirs: they look after them, and
-this project does not.  Each one's README says how to install it and
-whether it needs anything else.
+Each of these lives in a repository of its own, whose README says how to
+install it and whether it needs anything else.  The ones published by
+other people are theirs: they look after them, and this project does not.
 
 To find them, search GitHub for the topic
 [piclock3-plugin](https://github.com/topics/piclock3-plugin).  Authors
@@ -310,6 +312,9 @@ layouts have topics of their own,
 
 | plugin | what it does |
 |---|---|
+| [piclock3-controls](https://github.com/n0bel/piclock3-controls) | push buttons and an infrared remote that turn the page, step the slideshow or quit, with which button does what written in the config |
+| [piclock3-sensors](https://github.com/n0bel/piclock3-sensors) | sensors wired to the Pi - a DS18B20, an I2C sensor, the Pi's own temperature - as a line of text or in the current-conditions panel |
+| [piclock3-ambilight](https://github.com/n0bel/piclock3-ambilight) | a WS2812 LED strip behind the screen, lit with a look that can change with the page.  Driven over SPI, so it needs no root |
 | [piclock3-tides](https://github.com/ShawnPGHPublic/piclock3-tides) | a 24-hour tide curve for a US coast, with the day's highs and lows, from NOAA.  No key needed |
 
 
