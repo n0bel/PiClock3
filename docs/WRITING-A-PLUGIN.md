@@ -169,6 +169,11 @@ package, and `pluginClass` reads that package with `inspect.getmembers`, so
 the class has to be an attribute of it.  One line does that, and it is the
 only line of glue a plugin needs.
 
+A third, **E402**, that an import is not at the top of the file, comes with
+a version check above it - see [Publishing one](#publishing-one).  The
+check has to come first, so add E402 to that line's `noqa` when you have
+one.
+
 The `noqa` sits on the line rather than in a config of ours, because your
 repository is not ours: a setting in PiClock3's flake8 configuration would
 not reach a plugin you keep somewhere else.  On the line, the reason travels
@@ -392,6 +397,32 @@ The folder in the clone line and the name after `plugins.` are the same
 word, spelled the same way: Linux treats `Aurora` and `aurora` as two
 different folders, so a README that clones into one and names the other
 gives a clock that cannot find the plugin.
+
+**Say which PiClock3 it needs.**  PiClock3's version is the date of its
+release, and `python3 PyQtPiClock3.py --version` prints it.  If your plugin
+uses something PiClock3 added on a given date, the README says so: needs
+PiClock3 2026.10.09 or later.  A plugin can also check for itself, at the
+top of its `__init__.py`, before the line that imports its class:
+
+```python
+try:
+    from PiClock3 import __version__
+except ImportError:
+    __version__ = '0'      # a PiClock3 from before it had a version
+
+if __version__ < '2026.10.09':
+    raise SystemExit('Aurora needs PiClock3 2026.10.09 or later - '
+                     'git pull in the PiClock3 folder')
+
+from .Aurora import *  # noqa: E402,F401,F403
+```
+
+There, it runs before anything of yours does, and on any PiClock3 that
+can load a plugin at all.  **Stop with `SystemExit` and a sentence**, as
+above: PiClock3 shows that sentence as one line of its log and exits,
+where any other error is a traceback.  The comparison is a plain one
+between two strings, which puts dates in order because the month and day
+always have two digits.  The plugin template does all of this already.
 
 ## Trying it, without writing a config first
 

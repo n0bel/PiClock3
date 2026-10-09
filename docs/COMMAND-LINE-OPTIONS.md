@@ -2,10 +2,10 @@
 
 ```
 python3 PyQtPiClock3.py [config.yaml] [--set key=value ...] [--at when]
-                        [--geometry WIDTHxHEIGHT] [--check]
+                        [--geometry WIDTHxHEIGHT] [--check] [--version]
 ```
 
-There are five, and `--help` prints them.  This page is mostly about why they
+There are six, and `--help` prints them.  This page is mostly about why they
 exist, because that is what tells you when to reach for one.
 
 ## Why there are any
@@ -305,6 +305,17 @@ reads files.
 
 Prints the usage and exits.  Asking is not an error, so it goes to standard
 output and exits `0` - which matters if you are calling this from a script.
+
+## `--version`
+
+Prints which PiClock3 this is and exits, the same way `--help` does:
+
+    PiClock3 2026.10.09
+
+The version is the date of the release, so it also says how old a copy
+is.  The log starts with the same line every time the clock starts, which
+is what to quote in a bug report, and what a plugin's README means when it
+says which PiClock3 it needs.
 
 ## When something is wrong with the command line
 

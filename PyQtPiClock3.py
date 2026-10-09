@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFontDatabase
 from PyQt5.QtWidgets import QMessageBox, QApplication
 
+from PiClock3 import __version__
 from PiClock3.Check import Check
 from PiClock3.Config import Config, ConfigError
 from PiClock3.PiClock3 import PiClock3
@@ -56,6 +57,8 @@ USAGE = """
              Every size in a layout or a theme is a fraction of this, so
              what comes out is what that screen would show.
 
+      --version  say which PiClock3 this is, the date of its release.
+
     Values are read as yaml, so 4 is a number and true is a boolean.  A word
     starting with # is a color rather than a comment.
 """
@@ -70,6 +73,9 @@ def readArgs(args):
         if a in ('-h', '--help'):
             # asking is not an error: it goes to stdout and exits happy
             print(USAGE)
+            sys.exit(0)
+        elif a == '--version':
+            print('PiClock3 %s' % __version__)
             sys.exit(0)
         elif a == '--check':
             checking = True
@@ -362,6 +368,8 @@ if __name__ == '__main__':
     if fileh is not None:
         fileh.setFormatter(fmt)
         logger.addHandler(fileh)
+    # first, so a log attached to a bug report says which PiClock3 wrote it
+    logging.info('PiClock3 %s', __version__)
 
     try:
         app = QApplication(sys.argv)

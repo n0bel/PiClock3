@@ -52,6 +52,15 @@ request and say what it fixes.
 Security advisories are a different thing and we do watch those.  They tell us
 something and leave the decision with us, which is the point.
 
+## Versions
+
+PiClock3's version is the date of the release, `2026.10.09`, kept in
+`PiClock3/__init__.py` and tagged in git as `v2026.10.09`.  A second release
+on the same day is `2026.10.09.1`.  A new one is made when something a
+config or a plugin can use arrives, so a plugin can say which PiClock3 it
+needs.  Please leave the version alone in a pull request; it is set when the
+release is made.
+
 ## Style
 
 PEP8, and flake8-clean.
