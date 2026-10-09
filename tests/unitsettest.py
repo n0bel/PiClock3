@@ -38,12 +38,27 @@ def cases():
         found = units({'language': code})
         yield ('%s measures in %s' % (code, set_),
                found.setName() == set_, found.setName())
-        # 4.4704 m/s is 10 mph, and the set decides which of the two shows.
-        # Named the way Widget.unitSet() names it, since format() falls back
-        # to the default set rather than to the clock's when asked for none
+        # 4.4704 m/s is 10 mph, and the set decides which of the two shows
         got = found.format('speed', 'mps', 4.4704, setName=found.setName())
         yield ('%s shows a wind speed as %s' % (code, speed),
                got == speed, got)
+        # the way a provider calls it, with no set: the clock's, not the
+        # default set's
+        got = found.format('speed', 'mps', 4.4704)
+        yield ('%s with no set named still shows %s' % (code, speed),
+               got == speed, got)
+
+    found = units({'units': 'metric'})
+    got = found.format('temperature', 'C', 22.5)
+    yield ("no set named follows the config's units:",
+           got.endswith('°C'), got)
+    got = found.format('altimeter', 'mb', 1013.2)
+    yield ('and its pressure too', got.endswith('hPa'), got)
+
+    found = units({'units': 'metric'})
+    got = found.format('temperature', 'C', 22.5, setName='default')
+    yield ('a set named outright still wins over the clock',
+           got.endswith('°F'), got)
 
     found = units({'language': 'en-GB'})
     got = found.format('temperature', 'C', 20, setName=found.setName())

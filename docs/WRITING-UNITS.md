@@ -12,7 +12,15 @@ widget knows which one that is.  That is the whole design: a provider reports
 in whatever it reports in, a widget draws whatever it is given, and the
 choice lives in one place a reader controls.
 
-Two files hold it, in `PiClock3/units`:
+A provider that builds a line of text itself, such as a reading for the Text
+widget, has no `self.units` of its own.  It asks the clock with the same
+arguments, and gets the clock's set:
+
+```python
+self.piclock.units.format('temperature', 'C', 12.0)
+```
+
+Two files hold the units and the sets, in `PiClock3/units`:
 
     quantities.yaml     what a unit is, and how to convert it
     sets.yaml           which unit to show for each quantity

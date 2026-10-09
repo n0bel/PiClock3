@@ -128,17 +128,21 @@ class Units():
 
     # ------------------------------------------------------------ using
 
-    def unit(self, quantity, setName):
+    def unit(self, quantity, setName=None):
         """which unit of `quantity` the named set asks for.
 
-        A set that does not mention it gets the quantity's own base, which
-        is the only answer available when a plugin has added a quantity no
-        set has heard of.
+        No name is the clock's own set, so a provider formatting a line of
+        text measures the way the widgets beside it do.  A set that does
+        not mention the quantity gets its own base, which is the only
+        answer available when a plugin has added a quantity no set has
+        heard of.
         """
         q = self.quantities.get(quantity)
         if q is None:
             raise SystemExit('\nunknown quantity %r.  Known: %s\n'
                              % (quantity, ', '.join(sorted(self.quantities))))
+        if not setName:
+            setName = self.setName()
         chosen = (self.sets.get(setName) or self.sets.get('default') or {})
         return chosen.get(quantity, q['base'])
 
@@ -195,7 +199,8 @@ class Units():
         return self.convert(quantity, unit, q['base'], number)
 
     def format(self, quantity, frm, value, setName=None, precision=None):
-        """a value in `frm`, shown the way the set asks for it"""
+        """a value in `frm`, shown the way the set asks for it.  No set is
+        the clock's own."""
         if value is None:
             return ''
         to = self.unit(quantity, setName)
