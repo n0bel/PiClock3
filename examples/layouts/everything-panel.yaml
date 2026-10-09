@@ -1,0 +1,20 @@
+name: Everything panel
+description: The panel page of examples/everything.yaml - a clock in the center and a line of text below it
+
+designed-for: '4:3'
+
+# Region names are shared by every page, so these are named differently
+# from any other layout everything.yaml wears.  A widget naming clock or
+# bottom would draw on the page listed last that has one.
+regions:
+
+  digital:  {width: 0.44, aspect: 1.0, horizontal-center: 0.0,
+             vertical-center: 0.0}
+
+  words:    {left: 0.26, right: 0.26, bottom: 0.0, height: 0.10,
+             style: words}
+
+layout-style-settings:
+  words:
+    font-size: 0
+    qproperty-alignment: AlignCenter
