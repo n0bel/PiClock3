@@ -397,6 +397,7 @@ type at:
 | | |
 |---|---|
 | `Space`, or a left click | next page |
+| `Backspace`, or `Shift`+`Space` | previous page |
 | `F4` | quit |
 | `F6` / `F7` | previous / next slideshow image |
 | `F8` | hold the slideshow, or let it run |
@@ -405,6 +406,11 @@ A tap on a touchscreen arrives as a left click, which is the point of
 having one: the clock on the wall has no keyboard in front of it.  Pages
 can also turn by themselves - `dwell` in
 [WRITING-A-CONFIG.md](WRITING-A-CONFIG.md#pages).
+
+For buttons beside the screen, or an IR remote,
+[piclock3-controls](https://github.com/n0bel/piclock3-controls) is a
+plugin that does what these keys do, with which button does what written
+in the config.
 
 F6, F7 and F8 are the keys PiClock v1 used for these, and act on the
 slideshow of the page being looked at.

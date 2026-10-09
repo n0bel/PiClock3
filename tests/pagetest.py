@@ -1,4 +1,5 @@
-"""Do pages turn by themselves, for as long as each one says?
+"""Do pages turn by themselves, for as long as each one says, and back and
+on from the keys?
 
     python3 tests/pagetest.py
 
@@ -18,7 +19,8 @@ os.chdir(ROOT)
 sys.path.insert(0, ROOT)
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 
-from PyQt5.QtCore import QTimer  # noqa: E402
+from PyQt5.QtCore import QEvent, Qt, QTimer  # noqa: E402
+from PyQt5.QtGui import QKeyEvent  # noqa: E402
 from PyQt5.QtWidgets import QApplication  # noqa: E402
 
 from PiClock3.PiClock3 import PiClock3  # noqa: E402
@@ -85,6 +87,13 @@ CASES = [
     ('a fraction of a second is kept', {'a': 2.5}, None, 0, ['a'], 2500),
 ]
 
+# (name, key, modifiers, what shows after it), from the first of three pages
+KEYS = [
+    ('Space turns the page on', Qt.Key_Space, Qt.NoModifier, ['b']),
+    ('Backspace turns it back', Qt.Key_Backspace, Qt.NoModifier, ['c']),
+    ('so does Shift and Space', Qt.Key_Space, Qt.ShiftModifier, ['c']),
+]
+
 
 def main():
     failed = 0
@@ -108,7 +117,20 @@ def main():
         failed += 1
         print('FAIL turning to a page that waits: got %s for %s ms' % got)
 
-    print('%d cases, %d failed' % (len(CASES) + 1, failed))
+    for name, key, modifiers, shows in KEYS:
+        stub = clock({'a': 0, 'b': 0, 'c': 0})
+        stub.nextPage = lambda n, stub=stub: PiClock3.nextPage(stub, n)
+        stub.showing = lambda: None
+        PiClock3.keyPressEvent(stub, QKeyEvent(QEvent.KeyPress, key,
+                                               modifiers))
+        got = [page for page, frame in stub.pages.items() if frame.visible]
+        if got == shows:
+            print('ok   %s' % name)
+        else:
+            failed += 1
+            print('FAIL %s: wanted %s, got %s' % (name, shows, got))
+
+    print('%d cases, %d failed' % (len(CASES) + len(KEYS) + 1, failed))
     return 1 if failed else 0
 
 

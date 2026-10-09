@@ -226,6 +226,20 @@ CASES = [
          wants=['allowed range of -90 to 90.  Degrees north of the'
                 ' equator'],
          forbids=['A place on the earth']),
+    # a region is one box on one page, and the page listed last takes the
+    # name - so the earlier page draws nothing where its widgets were
+    dict(name='two pages wearing one layout',
+         config=config(a=put('pages', 'other-page',
+                             {'order': 1, 'layout': 'classic',
+                              'theme': 'archer'})),
+         wants=['warning pages.clock-page:', 'also on other-page, which is'
+                ' listed later and takes them'],
+         forbids=['warning pages.other-page']),
+    dict(name='pages whose layouts share no names',
+         config=config(a=put('pages', 'maps-page',
+                             {'order': 1, 'layout': 'bigmaps',
+                              'theme': 'circuit'})),
+         wants=[], forbids=['listed later']),
     dict(name='a page dwell and the default for the rest',
          config=config(a=put('pages', 'clock-page', 'dwell', 60),
                        b=put('page-dwell', 30)),

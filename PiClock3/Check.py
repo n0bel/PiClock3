@@ -940,6 +940,7 @@ class Check():
                          ' default' % (key, name))
 
         self.checkNamedPaths()
+        self.checkSharedRegions()
         self.checkParts()
         self.checkClashes()
         self.checkKinds()
@@ -948,6 +949,30 @@ class Check():
         # that is not known until every widget has been read
         self.checkKeys()
         return self.found
+
+    def checkSharedRegions(self):
+        """a region name more than one page declares.
+
+        A region is one box on one page, and the page listed last takes
+        the name, so a widget naming it draws there and the earlier page
+        is left empty where it was meant to be.  Two pages wearing one
+        layout is the usual way to get here.  A warning, since the clock
+        runs; it is not what the config says.
+        """
+        lost = {}
+        for name, pages in self.resolved.regionPages.items():
+            for page in pages[:-1]:
+                lost.setdefault((page, pages[-1]), []).append(name)
+        for (page, winner), names in lost.items():
+            self.warning('pages.' + page,
+                         '%s %s also on %s, which is listed later and takes'
+                         ' %s, so a widget naming %s draws on %s only.  Give'
+                         ' one page a layout of its own, or name the regions'
+                         ' differently'
+                         % (', '.join(names),
+                            'is' if len(names) == 1 else 'are', winner,
+                            'it' if len(names) == 1 else 'them',
+                            'it' if len(names) == 1 else 'them', winner))
 
     def checkNamedPaths(self):
         """a folder named-paths: names and nobody has.

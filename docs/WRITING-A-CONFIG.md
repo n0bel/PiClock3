@@ -68,6 +68,7 @@ pages:
 Each page names a **layout**, which says where the regions are, and a
 **theme**, which says what they look like.  `order` is the sequence they
 rotate in; the space bar steps through them, and so does a click or a tap.
+Backspace, or Shift and the space bar, steps back.
 
 To have them turn by themselves, give each page a `dwell`, the seconds it
 stays before the next one comes in, and `page-dwell` for the pages that do

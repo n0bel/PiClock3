@@ -93,7 +93,9 @@ services:
 A provider nothing names is never loaded, and a widget needs a region, so a
 service is neither.  Services start after every widget, so what one reaches
 for is already there - `self.piclock.nextPage(1)` turns the page the way
-the space bar does.
+the space bar does, and `nextPage(-1)` turns it back.
+`self.piclock.showing()` is the slideshow on the page being looked at, or
+None: `step(-1)`, `step(1)` and `hold()` on it do what F6, F7 and F8 do.
 
 ## Where a plugin goes
 

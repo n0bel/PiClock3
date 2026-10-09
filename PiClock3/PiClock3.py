@@ -195,7 +195,12 @@ class PiClock3(QWidget):
         if event.key() == Qt.Key_F4:
             logging.info("F4 Quit")
             self.close()
-        if event.key() == Qt.Key_Space:
+        back = (event.key() == Qt.Key_Backspace or
+                (event.key() == Qt.Key_Space and
+                 event.modifiers() & Qt.ShiftModifier))
+        if back:
+            self.nextPage(-1)
+        elif event.key() == Qt.Key_Space:
             self.nextPage(1)
         # F6, F7 and F8 are the keys PiClock v1 used for these
         show = self.showing()
@@ -209,7 +214,12 @@ class PiClock3(QWidget):
             logging.info('slideshow %s', 'held' if show.hold() else 'running')
 
     def showing(self):
-        """the slideshow on the page being looked at, if there is one"""
+        """the slideshow on the page being looked at, if there is one.
+
+        A plugin may call this, the way the keys use it: step(-1) and
+        step(1) on what it returns move a picture back and on, and hold()
+        stops or starts the slideshow.
+        """
         for show in self.slideshows:
             if show.isVisible():
                 return show

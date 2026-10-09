@@ -204,6 +204,9 @@ class ResolvedConfig():
         self.pages = {}
         # region name -> the theme of the page it sits on
         self.regionTheme = {}
+        # region name as its layout writes it -> every page declaring it,
+        # in order.  More than one is a page whose widgets draw elsewhere.
+        self.regionPages = {}
         # each repeat's name, which is not a region itself but is what a
         # widget writes to mean all of its cells
         self.repeats = set()
@@ -244,6 +247,7 @@ class ResolvedConfig():
             self.namesNobodyDefines(pageName, layout, theme)
             self.pages[pageName] = (layout, theme)
             for name, spec in mapping(layout.get('regions')).items():
+                self.regionPages.setdefault(name, []).append(pageName)
                 cells = cellNames(name, spec)
                 if cells != [name]:
                     self.repeats.add(name)
