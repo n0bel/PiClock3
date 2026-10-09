@@ -11,6 +11,7 @@ are the same on every release it runs on.
   |---|---|---|---|
   | Pi 4, 64-bit | yes | yes | yes |
   | Pi 4, 32-bit | yes | yes | yes |
+  | Pi 3, 64-bit | not tried | not tried | yes |
   | Pi Zero W, 32-bit | yes | yes | yes |
 
   The Zero takes a few minutes to start the clock.  Python 3.9, which
@@ -181,6 +182,7 @@ otherwise.  `Config.yaml` and `ApiKeys.yaml` are untouched by a pull.
 |---|---|
 | `server certificate verification failed`, or `apt update` failing, on a Pi that just booted | the clock is not set yet - `timedatectl` says when the network has set it, and the same commands then work |
 | `could not connect to display` | started over ssh - see [First run](#first-run) |
+| a black screen once the rainbow at power-on is gone | Linux did not see the screen at boot, which some older TVs cause.  On Bookworm and Trixie, add ` video=HDMI-A-1:1280x720@60D` to the end of the line in `/boot/firmware/cmdline.txt` and reboot - the `D` turns the output on regardless, and the desktop then finds the screen's own size |
 | `ModuleNotFoundError` | the requirements are not installed for this user - rerun the pip line as them |
 | an empty desktop after boot | the clock stopped at startup - the reason is in `~/.xsession-errors` and `PyQtPiClock3.log` |
 | day and month names in English | the language's locale is not installed - `sudo dpkg-reconfigure locales` |
