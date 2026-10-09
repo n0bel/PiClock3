@@ -1,5 +1,7 @@
 import math
 
+from PyQt5.QtCore import QTimer
+
 from .Provider import Provider
 
 
@@ -44,6 +46,34 @@ class Weather(Provider):
     def daily(self, count):
         """`count` days ahead, today first, or empty."""
         return []
+
+    # how soon a failed request is made again, rather than at the next
+    # refresh: a clock that starts while a service is slow would otherwise
+    # show nothing for half an hour.  A plan that allows few requests an
+    # hour wants longer.
+    retrySeconds = 60
+
+    def askAgain(self, getter):
+        """call getter again in retrySeconds, once.
+
+        For a request that failed in a way that may not happen next time -
+        a timeout, an answer cut short.  Asking again while one is waiting
+        restarts the wait rather than adding a second one.
+        """
+        timers = self.__dict__.setdefault('retryTimers', {})
+        timer = timers.get(getter)
+        if timer is None:
+            timer = QTimer()
+            timer.setSingleShot(True)
+            timer.timeout.connect(getter)
+            timers[getter] = timer
+        timer.start(int(1000 * self.retrySeconds))
+
+    def answered(self, getter):
+        """getter's request has come back: no need to ask again"""
+        timer = self.__dict__.get('retryTimers', {}).get(getter)
+        if timer is not None:
+            timer.stop()
 
     @staticmethod
     def humidity(temp, dew):

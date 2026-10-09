@@ -95,8 +95,11 @@ class Metar(Weather):
 
     def gotMetar(self, error, data, params):
         if error:
-            logger.warning('metar %s failed: %s', self.config.METAR, error)
+            logger.warning('metar %s failed: %s - asking again in %ds',
+                           self.config.METAR, error, self.retrySeconds)
+            self.askAgain(self.getMetar)
             return
+        self.answered(self.getMetar)
         text = bytes(data).decode('utf-8', 'replace')
         line = ''
         for candidate in text.splitlines():

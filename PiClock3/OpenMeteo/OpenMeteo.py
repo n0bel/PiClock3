@@ -149,13 +149,18 @@ class OpenMeteo(Weather):
 
     def gotForecast(self, error, data, params):
         if error:
-            logger.warning('%s failed: %s', self.attribution, error)
+            logger.warning('%s failed: %s - asking again in %ds',
+                           self.attribution, error, self.retrySeconds)
+            self.askAgain(self.getForecast)
             return
         try:
             index = json.loads(bytes(data).decode('utf-8'))
         except ValueError:
-            logger.warning('%s did not answer with json', self.attribution)
+            logger.warning('%s did not answer with json - asking again in'
+                           ' %ds', self.attribution, self.retrySeconds)
+            self.askAgain(self.getForecast)
             return
+        self.answered(self.getForecast)
 
         # Celsius, percent and millimeters throughout; converting is the
         # drawing side's business

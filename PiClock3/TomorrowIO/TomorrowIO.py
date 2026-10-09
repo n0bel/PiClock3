@@ -95,6 +95,10 @@ class TomorrowIO(Weather):
 
     attribution = 'Tomorrow.io'
 
+    # the free plan allows 25 requests an hour, and asking every minute
+    # would use them up and leave the clock blank for longer
+    retrySeconds = 300
+
     def __init__(self, piclock, name, config):
         super().__init__(piclock, name, config)
         self.days = []
@@ -170,30 +174,46 @@ class TomorrowIO(Weather):
     def getWeather(self):
         # the forecast carries both grids, so two requests answer all
         # three questions - which is what keeps a clock inside 25 an hour
-        for u, done in ((self.url(REALTIME), self.gotCurrent),
-                        (self.url(FORECAST, '&timesteps=1h&timesteps=1d'),
-                         self.gotForecast)):
-            logger.info('%s url %s', self.attribution, safeurl(u))
-            WebGet(u, done)
+        self.getCurrent()
+        self.getForecast()
 
-    def answer(self, error, data):
+    def getCurrent(self):
+        u = self.url(REALTIME)
+        logger.info('%s url %s', self.attribution, safeurl(u))
+        WebGet(u, self.gotCurrent)
+
+    def getForecast(self):
+        u = self.url(FORECAST, '&timesteps=1h&timesteps=1d')
+        logger.info('%s url %s', self.attribution, safeurl(u))
+        WebGet(u, self.gotForecast)
+
+    def answer(self, error, data, getter):
         """the json a reply carried, or None having said why not.
 
         Two ways to be told no.  An HTTP error arrives as a transport
         error with the body already thrown away, so REFUSED is what
         stands in for the sentence the service sent; anything the service
         reports with a 200 arrives as a code and a message in the json.
+        Neither is asked again before the refresh, since a refused key or
+        a request the service turned down will be turned down again.
         """
+        if error and error in REFUSED:
+            logger.warning('%s failed: %s - %s', self.attribution, error,
+                           REFUSED[error])
+            return None
         if error:
-            logger.warning('%s failed: %s%s', self.attribution, error,
-                           ' - %s' % REFUSED[error]
-                           if error in REFUSED else '')
+            logger.warning('%s failed: %s - asking again in %ds',
+                           self.attribution, error, self.retrySeconds)
+            self.askAgain(getter)
             return None
         try:
             index = json.loads(bytes(data).decode('utf-8'))
         except ValueError:
-            logger.warning('%s did not answer with json', self.attribution)
+            logger.warning('%s did not answer with json - asking again in'
+                           ' %ds', self.attribution, self.retrySeconds)
+            self.askAgain(getter)
             return None
+        self.answered(getter)
         if index.get('code'):
             logger.warning('%s said %s: %s %s', self.attribution,
                            index.get('code'), index.get('type'),
@@ -202,7 +222,7 @@ class TomorrowIO(Weather):
         return index
 
     def gotCurrent(self, error, data, params):
-        index = self.answer(error, data)
+        index = self.answer(error, data, self.getCurrent)
         if index is None:
             return
 
@@ -229,7 +249,7 @@ class TomorrowIO(Weather):
             fn()
 
     def gotForecast(self, error, data, params):
-        index = self.answer(error, data)
+        index = self.answer(error, data, self.getForecast)
         if index is None:
             return
         timelines = index.get('timelines') or {}

@@ -215,30 +215,46 @@ class OpenWeatherMap(Weather):
     def getWeather(self):
         # two requests rather than one: the free key has no One Call, and
         # what it does have is split across these
-        for host, done in ((CURRENT, self.gotCurrent),
-                           (FORECAST, self.gotForecast)):
-            u = self.url(host)
-            logger.info('%s url %s', self.attribution, safeurl(u))
-            WebGet(u, done)
+        self.getCurrent()
+        self.getForecast()
 
-    def answer(self, error, data):
+    def getCurrent(self):
+        u = self.url(CURRENT)
+        logger.info('%s url %s', self.attribution, safeurl(u))
+        WebGet(u, self.gotCurrent)
+
+    def getForecast(self):
+        u = self.url(FORECAST)
+        logger.info('%s url %s', self.attribution, safeurl(u))
+        WebGet(u, self.gotForecast)
+
+    def answer(self, error, data, getter):
         """the json a reply carried, or None having said why not.
 
         Two ways to be told no.  An HTTP error arrives as a transport
         error with the body already thrown away, so REFUSED is what
         stands in for the sentence the service sent; anything else comes
-        back as a 200 with cod: and message: in the json.
+        back as a 200 with cod: and message: in the json.  Neither is
+        asked again before the refresh, since a refused key or a request
+        the service turned down will be turned down a minute later too.
         """
+        if error and error in REFUSED:
+            logger.warning('%s failed: %s - %s', self.attribution, error,
+                           REFUSED[error])
+            return None
         if error:
-            logger.warning('%s failed: %s%s', self.attribution, error,
-                           ' - %s' % REFUSED[error]
-                           if error in REFUSED else '')
+            logger.warning('%s failed: %s - asking again in %ds',
+                           self.attribution, error, self.retrySeconds)
+            self.askAgain(getter)
             return None
         try:
             index = json.loads(bytes(data).decode('utf-8'))
         except ValueError:
-            logger.warning('%s did not answer with json', self.attribution)
+            logger.warning('%s did not answer with json - asking again in'
+                           ' %ds', self.attribution, self.retrySeconds)
+            self.askAgain(getter)
             return None
+        self.answered(getter)
         if str(index.get('cod')) not in ('200', 'None'):
             logger.warning('%s said %s: %s', self.attribution,
                            index.get('cod'), index.get('message'))
@@ -246,7 +262,7 @@ class OpenWeatherMap(Weather):
         return index
 
     def gotCurrent(self, error, data, params):
-        index = self.answer(error, data)
+        index = self.answer(error, data, self.getCurrent)
         if index is None:
             return
 
@@ -278,7 +294,7 @@ class OpenWeatherMap(Weather):
             fn()
 
     def gotForecast(self, error, data, params):
-        index = self.answer(error, data)
+        index = self.answer(error, data, self.getForecast)
         if index is None:
             return
 

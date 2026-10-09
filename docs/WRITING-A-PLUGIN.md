@@ -507,6 +507,13 @@ ways to work out "feels like":
 whichever matches what your source reports.  `self.feelsLike()` is the dew
 point one under its first name.
 
+When a request fails in a way that may not happen next time - a timeout,
+an answer cut short - `self.askAgain(getter)` calls `getter` again a
+minute later rather than leaving the clock blank until the next refresh,
+and `self.answered(getter)` cancels that once an answer arrives.  A plan
+that allows few requests an hour sets `retrySeconds` on the class, the way
+`TomorrowIO` waits five minutes.  A refused key is not worth asking again.
+
 `raw` is the service's own record for that entry, in whatever shape the
 service uses.  It is deliberately not normalized — it exists so that anything
 a provider does not translate is still reachable by someone who wants it.
